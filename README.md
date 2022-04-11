@@ -1,4 +1,7 @@
 # Odometry_OpenCV
+
+## Schedule
+
 3/21: Finish C++ Model
 
 3/28: Experiments, Redraw the whole architecture

@@ -1,0 +1,6 @@
+.DS_Store
+.vscode/
+build/
+result/
+CPP_implementation/.DS_Store
+CPP_implementation/src/build/

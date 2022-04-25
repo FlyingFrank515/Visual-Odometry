@@ -17,6 +17,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <vector> // vector
+ 
 
 using namespace std;
 using namespace cv; 
@@ -41,6 +42,15 @@ class MYORB {
         // output to file
         string              outfile_name;
         fstream             outfile;
+
+        // FAST testbench
+        fstream             result_test;
+        fstream             result_NMS;
+        fstream             result_coordinates;
+        fstream             result_mx;
+        fstream             result_my;
+        fstream             result_score;
+        fstream             pixel_in;
         
         // img1
         Mat                 img_1;
@@ -64,11 +74,11 @@ class MYORB {
         vector<DMatch>      good_matches;
     
     public:
-        // Constructor¡
-        MYORB(int, int, int, int, int, int, int, int, float, Mat, Mat, string);
+        // Constructor
+        MYORB(int, int, int, int, int, int, int, int, float, Mat, Mat);
 
         // Called by the main program
-        Mat     Matching();
+        vector<DMatch>     Matching();
         
         // Display
         void    DISPLAY_image(Mat&, string);
@@ -82,7 +92,7 @@ class MYORB {
         void    FAST_keypoint_output(vector<KeyPoint>&);
 
         // BRIEF
-        void    BRIEF_pattern_LUT(int, int, int&, int&, int&, int&);
+        void    BRIEF_pattern_LUT(int, float, int&, int&, int&, int&);
         void    BRIEF_descriptor(int);
         bool    BRIEF_searcher(int, int, Mat&);
         void    BRIEF_smoothing();
@@ -94,6 +104,13 @@ class MYORB {
         void    MATCH_HBST_construct();
         void    MATCH_matches_output();
         void    MATCH_optimization();
+
+        // Point return (for mask function external)
+        KeyPoint POINT_k1(int);
+        KeyPoint POINT_k2(int);
+
+        // old descriptor
+        void BRIEF_descriptor_old();
     
 };
 

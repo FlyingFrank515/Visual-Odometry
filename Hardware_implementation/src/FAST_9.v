@@ -35,9 +35,9 @@ function [7:0] MAX;
     input [7:0]   num4;
     reg [7:0] max1, max2;
     begin
-        min1 = (num1 > num2) ? num1 : num2;
-        min2 = (num3 > num4) ? num3 : num4;
-        MIN = (max1 > max2) ? max1 : max2;
+        max1 = (num1 > num2) ? num1 : num2;
+        max2 = (num3 > num4) ? num3 : num4;
+        MAX = (max1 > max2) ? max1 : max2;
     end
 endfunction
 
@@ -67,6 +67,7 @@ reg [7:0]  min_stage1_w [0:15], min_stage1_r[0:15];
 reg [7:0]  min_stage2_w [0:15], min_stage2_r[0:15];
 
 reg [7:0] max_stage0_w [0:3], max_stage0_r [0:3];
+reg flag_delay [0:3];
 
 reg [7:0] score_w, score_r;
 
@@ -159,7 +160,7 @@ end
 // ========== Combinational Block ==========
 
 // ========== Sequential Block ==========
-always@(posedge i_clk) begin
+always@(posedge i_clk or negedge i_rst_n) begin
     if(!i_rst_n) begin
         darker_r <= 0;
         brighter_r <= 0;
@@ -173,14 +174,17 @@ always@(posedge i_clk) begin
             min_stage1_r[i] <= 0;
             min_stage2_r[i] <= 0;
         end
-        for(i = 0; i < 3; i = i+1) begin
+        for(i = 0; i < 4; i = i+1) begin
             max_stage0_r[i] <= 0; 
+        end
+        for(i = 0; i < 4; i = i+1) begin
+            flag_delay[i] <= 0; 
         end
     end
     else begin
         darker_r <= darker_w;
         brighter_r <= brighter_w;
-        flag_w <= flag_w;
+        flag_r <= flag_delay[3];
         score_r <= score_w;
         for(i = 0; i < 16; i = i+1) begin
             diff_stage0[i] <= diff[i]; 
@@ -190,8 +194,12 @@ always@(posedge i_clk) begin
             min_stage1_r[i] <= min_stage1_w[i];
             min_stage2_r[i] <= min_stage2_w[i];
         end
-        for(i = 0; i < 3; i = i+1) begin
+        for(i = 0; i < 4; i = i+1) begin
             max_stage0_r[i] <= max_stage0_w[i]; 
+        end
+        flag_delay[0] <= flag_w;
+        for(i = 1; i < 4; i = i+1) begin
+            flag_delay[i] <= flag_delay[i-1]; 
         end
     end
     

@@ -28,6 +28,6 @@ int main(int argc, char *argv[]){
     Mat img2 = imread(img2_path, 0);
 
     // Paramter sequence: 
-    MYORB orb(FAST_N, FAST_threshold, FAST_orientation_patch_size, FAST_scorethreshold, FAST_edgethreshold, keypoints_num, MATCH_threshold, FAST_nlevels, FAST_scaling, img1, img2, filename);
+    MYORB orb(FAST_N, FAST_threshold, FAST_orientation_patch_size, FAST_scorethreshold, FAST_edgethreshold, keypoints_num, MATCH_threshold, FAST_nlevels, FAST_scaling, img1, img2);
     orb.Matching();
 }

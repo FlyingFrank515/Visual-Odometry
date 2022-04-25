@@ -136,8 +136,17 @@ MYORB::MYORB( int N, int t , int op, int st, int et, int kn, int mt, int l, floa
     FAST_scaling = sf;
 
     // outfile
-    outfile_name = "../result.txt";
+    outfile_name = "../result/result.txt";
     outfile.open(outfile_name, ios::out);
+
+    // result
+    result_test.open("../result/result_test.txt", ios::out);
+    result_NMS.open("../result/result_NMS.txt", ios::out);
+    result_coordinates.open("../result/result_coordinates.txt", ios::out);
+    result_mx.open("../result/result_mx.txt", ios::out);
+    result_my.open("../result/result_my.txt", ios::out);
+    result_score.open("../result/result_score.txt", ios::out);
+    pixel_in.open("../result/pixel_in.txt", ios::out);
 
     // img1
     img_1 = img1;
@@ -290,6 +299,8 @@ void MYORB::FAST_detector(int option){
         int p_center;
         Mat score(img.rows, img.cols, CV_8UC1, Scalar(0));
         Mat key(img.rows, img.cols, CV_8UC1, Scalar(0));
+        Mat mx(img.rows, img.cols, CV_32SC1, Scalar(0));
+        Mat my(img.rows, img.cols, CV_32SC1, Scalar(0));
         Mat orient(img.rows, img.cols, CV_64FC1, Scalar(0));
 
         vector<KeyPoint> candidate;
@@ -369,7 +380,8 @@ void MYORB::FAST_detector(int option){
                         score_temp = local_threshold;
                     }
                 }
-                score.at<uchar>(i, j) = score_temp == 0 ? 0 : score_temp - 1;
+                // score.at<uchar>(i, j) = score_temp == 0 ? 0 : score_temp - 1;
+                score.at<uchar>(i, j) = score_temp;
 
                 // Orientation
                 int x_sum = 0;
@@ -380,9 +392,19 @@ void MYORB::FAST_detector(int option){
                         y_sum += y*(int)img.at<uchar>(i+y, j);
                     }
                 }
+                mx.at<int>(i, j) = x_sum;
+                my.at<int>(i, j) = y_sum;
                 orient.at<float>(i, j) = atan2(y_sum, x_sum);
                 
 
+            }
+        }
+
+        if(level == 0 && option == 1){
+            for (int i = 0; i < img.rows; i++) {
+                for (int j = 0; j < img.cols; j++) {
+                    result_test << int(key.at<uchar>(i, j)) << endl;
+                }
             }
         }
         
@@ -415,6 +437,21 @@ void MYORB::FAST_detector(int option){
                         keylist_2.push_back(temp);
 
                     }
+                }
+                else key.at<uchar>(i, j) = 0;
+            }
+        }
+
+        // output to files (for testbench usage)
+        if(level == 0 && option == 1){
+            for (int i = 0; i < img.rows; i++) {
+                for (int j = 0; j < img.cols; j++) {
+                    result_NMS << int(key.at<uchar>(i, j)) << endl;
+                    result_coordinates << hex << i << " " << j << endl;
+                    result_score << hex << int(score.at<uchar>(i, j)) << endl;
+                    result_mx << hex << mx.at<int>(i, j) << endl;
+                    result_my << hex << my.at<int>(i, j) << endl;
+                    pixel_in << hex << (int)img.at<uchar>(i, j) << endl;
                 }
             }
         }

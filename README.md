@@ -1,5 +1,12 @@
 # Odometry_OpenCV
 
+## TO-DO Lists
+
+Feature Detection
+1. Edge Threshold
+2. Down Sampling
+3. Coordinates assignment
+
 ## Schedule
 
 3/21: Finish C++ Model
@@ -14,7 +21,7 @@
 
 4/25: feature detecting module
 
-5/2 : feature descriptor module
+5/2 : **feature detecting module verification**, feature descriptor module
 
 5/9 : feature descriptor module
 

@@ -1,12 +1,17 @@
+`include "FAST_9.v"
+`include "Orientation.v"
+`include "NMS.v"
+
 module FAST_Detector
 #(
-    parameter WIDTH = 12'd640;
-    parameter HEIGHT = 12'd480;
+    parameter WIDTH = 12'd640,
+    parameter HEIGHT = 12'd480
 )
 (
     input           i_clk,
     input           i_rst_n,
     input [7:0]     i_pixel,
+    input           i_start,
 
     output [7:0]    o_pixel,
     output [9:0]    o_coordinate_X,
@@ -14,7 +19,152 @@ module FAST_Detector
 
     output [9:0]    o_orientation,
     output [7:0]    o_score,
-    output          o_valid,
+    output          o_flag,
+    output reg      o_start,
+    output reg      o_end
 
 );
+    // parameter
+    localparam S_IDLE = 3'd0;
+    localparam S_WORK = 3'd1;
+
+    // ========== reg/wire declaration ==========
+    integer i, j;
+    reg [2:0] state_w, state_r;
+    reg [19:0] count_w, count_r;
+    reg [7:0] LINE_BUFFER_enter;
+    reg [7:0] LINE_BUFFER [0:5][0:WIDTH-1];
+    reg [7:0] LINE_BUFFER_LAST [0:4];
+
+    reg [127:0] FAST_circle;
+    reg [7:0] FAST_center;
+    wire [7:0] FAST_score;
+    wire       FAST_flag;
+
+    reg [55:0] Orient_col;
+    wire [12:0] Orient_mx;
+    wire [12:0] Orient_my;
+
+
+    // ========== Connection ==========
+    assign o_pixel = 0;
+    assign o_coordinate_X = 0;
+    assign o_coordinate_Y = 0;
+    assign o_orientation = 0;
+
+    always@(*) begin
+        FAST_circle = {LINE_BUFFER[0][2], LINE_BUFFER[0][3], LINE_BUFFER[0][4], LINE_BUFFER[1][5], LINE_BUFFER[2][6], LINE_BUFFER[3][6], LINE_BUFFER[4][6], LINE_BUFFER[5][5]
+        , LINE_BUFFER_LAST[4], LINE_BUFFER_LAST[3], LINE_BUFFER_LAST[2], LINE_BUFFER[5][1], LINE_BUFFER[4][0], LINE_BUFFER[3][0], LINE_BUFFER[2][0], LINE_BUFFER[1][1]};
+        FAST_center = LINE_BUFFER[3][3];
+
+        Orient_col = {LINE_BUFFER[0][0], LINE_BUFFER[1][0], LINE_BUFFER[2][0], LINE_BUFFER[3][0], LINE_BUFFER[4][0], LINE_BUFFER[5][0], LINE_BUFFER_LAST[0]};
+    end
+    
+    FAST_9 
+    #(
+        .THRESHOLD(8'd20)
+    )
+    FAST_unit
+    (
+        .i_clk(i_clk),
+        .i_rst_n(i_rst_n),
+        .i_circle(FAST_circle),
+        .i_center(FAST_center),
+
+        .o_keypoints_flag(FAST_flag),
+        .o_score(FAST_score)
+    );
+
+    NMS 
+    #(
+        .WIDTH(WIDTH)    
+    )
+    NMS_unit
+    (
+        .i_clk(i_clk),
+        .i_rst_n(i_rst_n),
+        .i_score(FAST_score),
+        .i_flag(FAST_flag),
+
+        .o_score(o_score),
+        .o_flag(o_flag)
+    );
+
+    Orientation_Unit 
+    #(
+        .WIDTH(WIDTH) 
+    )
+    Orient_Unit
+    (
+        .i_clk(i_clk),
+        .i_rst_n(i_rst_n),
+        .i_col0(Orient_col),
+
+        .o_mx(Orient_mx),
+        .o_my(Orient_my)
+    );
+
+
+    // ========== Combinational Block ==========
+    always@(*) begin
+        state_w = state_r;
+        count_w = count_r;
+        LINE_BUFFER_enter = 0;
+        o_start = 0;
+        o_end = 0;
+        case(state_r)
+            S_IDLE: begin
+                if(i_start) begin
+                    state_w = S_WORK;
+                    LINE_BUFFER_enter = i_pixel;
+                    count_w = 0;
+                    o_start = 1;
+                end
+            end
+            S_WORK: begin
+                LINE_BUFFER_enter = i_pixel;
+                count_w = count_r + 1;
+                if(count_r == WIDTH*HEIGHT) begin
+                    o_end = 1;
+                    state_w = S_IDLE;
+                end          
+            end
+        endcase
+    end
+
+    // ========== Sequential Block ==========
+    always@(posedge i_clk or negedge i_rst_n) begin
+        if(!i_rst_n) begin
+            state_r <= 0;
+            count_r <= 0;
+
+            for(j = 0; j < 5; j = j+1) begin
+                LINE_BUFFER_LAST[j] <= 0;
+            end
+            for(i = 0; i < 6; i = i+1) begin
+                for(j = 0; j < WIDTH; j = j+1) begin
+                    LINE_BUFFER[i][j] <= 0;
+                end
+            end
+        end
+        else begin
+            state_r <= state_w;
+            count_r <= count_w;
+
+            LINE_BUFFER_LAST[0] <= LINE_BUFFER[5][WIDTH-1];
+            for(j = 1; j < 5; j = j+1) begin
+                LINE_BUFFER_LAST[j] <= LINE_BUFFER_LAST[j-1];
+            end
+            LINE_BUFFER[0][0] <= LINE_BUFFER_enter;
+            for(i = 1; i < 6; i = i+1) begin
+                LINE_BUFFER[i][0] <= LINE_BUFFER[i-1][WIDTH-1];
+            end
+            for(i = 0; i < 6; i = i+1) begin
+                for(j = 1; j < WIDTH; j = j+1) begin
+                    LINE_BUFFER[i][j] <= LINE_BUFFER[i][j-1];
+                end
+            end
+        end
+    end
+
 endmodule

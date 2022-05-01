@@ -50,6 +50,7 @@ class MYORB {
         fstream             result_mx;
         fstream             result_my;
         fstream             result_score;
+        fstream             read;
         fstream             pixel_in;
         
         // img1

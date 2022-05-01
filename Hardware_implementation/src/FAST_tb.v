@@ -1,6 +1,7 @@
 `timescale 1ns/10ps
 `define CYCLE    10           	         // Modify your clock period here
-`define TIME_OUT 1000000           
+// `define TIME_OUT 640*480*10       
+`define TIME_OUT 640*51*10     
 
 `ifdef RTL
     `include "FAST.v"
@@ -41,7 +42,8 @@ module FAST_tb;
     FAST_Detector 
     #(
         .WIDTH(12'd640),
-        .HEIGHT(12'd640)
+        .HEIGHT(12'd480),
+        .EDGE(6'd31)
     )
     fast0
     (
@@ -65,6 +67,7 @@ module FAST_tb;
     // `endif
     
     initial	begin
+        f = $fopen("output.txt","w");
         $readmemh ("../testfile/pixel_in.txt", pixel_in);
     end
 
@@ -114,6 +117,12 @@ module FAST_tb;
         end
         else begin
             pixel = 0;
+        end
+    end
+
+    always@(posedge clk) begin
+        if(o_flag) begin
+            $fwrite(f, "%h %h %h\n", o_coordinate_X, o_coordinate_Y, o_score);
         end
     end
 

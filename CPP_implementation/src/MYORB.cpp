@@ -146,6 +146,7 @@ MYORB::MYORB( int N, int t , int op, int st, int et, int kn, int mt, int l, floa
     result_mx.open("../result/result_mx.txt", ios::out);
     result_my.open("../result/result_my.txt", ios::out);
     result_score.open("../result/result_score.txt", ios::out);
+    read.open("../result/read.txt", ios::out);
     pixel_in.open("../result/pixel_in.txt", ios::out);
 
     // img1
@@ -299,6 +300,7 @@ void MYORB::FAST_detector(int option){
         int p_center;
         Mat score(img.rows, img.cols, CV_8UC1, Scalar(0));
         Mat key(img.rows, img.cols, CV_8UC1, Scalar(0));
+        Mat reserved(img.rows, img.cols, CV_8UC1, Scalar(0));
         Mat mx(img.rows, img.cols, CV_32SC1, Scalar(0));
         Mat my(img.rows, img.cols, CV_32SC1, Scalar(0));
         Mat orient(img.rows, img.cols, CV_64FC1, Scalar(0));
@@ -314,7 +316,7 @@ void MYORB::FAST_detector(int option){
                 score.at<uchar>(i, j) = 0;
                 orient.at<float>(i, j) = 0;
 
-                if (i < FAST_edgethreshold || j < FAST_edgethreshold || i > img.rows - FAST_edgethreshold || j > img.cols - FAST_edgethreshold)
+                if (i < 4 || j < 4 || i > img.rows - 4 || j > img.cols - 4)
                     continue;
 
                 // FAST-N
@@ -386,10 +388,12 @@ void MYORB::FAST_detector(int option){
                 // Orientation
                 int x_sum = 0;
                 int y_sum = 0;
+                
                 for(int x = -3; x < 4; x++ ){
                     for(int y = -3; y < 4; y++){
-                        x_sum += x*(int)img.at<uchar>(i, j+x);
-                        y_sum += y*(int)img.at<uchar>(i+y, j);
+                        if(i == 34 && j== 137) cout << (int)img.at<uchar>(i+y, j+x) << endl;
+                        x_sum += x*(int)img.at<uchar>(i+y, j+x);
+                        y_sum += y*(int)img.at<uchar>(i+y, j+x);
                     }
                 }
                 mx.at<int>(i, j) = x_sum;
@@ -410,18 +414,37 @@ void MYORB::FAST_detector(int option){
         
         // Non-maximal suppression
         // cout << "test" << endl;
-        for (int i = FAST_edgethreshold; i < (img.rows - FAST_edgethreshold); i++) {
-            for (int j = FAST_edgethreshold; j < (img.cols - FAST_edgethreshold); j++) {
+        for (int i = 0; i < img.rows; i++) {
+            for (int j = 0; j < img.cols; j++) {
+                if (i < FAST_edgethreshold || j < FAST_edgethreshold || i > img.rows - FAST_edgethreshold || j > img.cols - FAST_edgethreshold){
+                    reserved.at<uchar>(i, j) = 0;
+                    continue;
+                }
+                // if(i == 37 && j == 136){
+                //     cout << hex << int(score.at<uchar>(i-1, j-1)) << " ";
+                //     cout << hex << int(score.at<uchar>(i-1, j)) << " ";
+                //     cout << hex << int(score.at<uchar>(i-1, j+1)) << " ";
+                //     cout << hex << int(score.at<uchar>(i, j-1)) << " ";
+                //     cout << hex << int(score.at<uchar>(i, j)) << " ";
+                //     cout << hex << int(score.at<uchar>(i, j+1)) << " ";
+                //     cout << hex << int(score.at<uchar>(i+1, j-1)) << " ";
+                //     cout << hex << int(score.at<uchar>(i+1, j)) << " ";
+                //     cout << hex << int(score.at<uchar>(i+1, j+1)) << " " << endl;
+                //     bool a = int(score.at<uchar>(i, j)) > int(score.at<uchar>(i-1, j+1));
+                //     bool b = int(key.at<uchar>(i-1, j+1)) == 0;
+                //     cout << a <<" "<< b<<" " << (a || b) << endl;
+                // }
                 if (key.at<uchar>(i, j) == 1 // keypoint candidate
-                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i-1, j-1)) || key.at<uchar>(i-1, j-1) == 0)
-                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i+0, j-1)) || key.at<uchar>(i+0, j-1) == 0)
-                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i+1, j-1)) || key.at<uchar>(i+1, j-1) == 0)
-                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i-1, j+0)) || key.at<uchar>(i-1, j+0) == 0)
-                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i+1, j+0)) || key.at<uchar>(i+1, j+0) == 0)
-                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i-1, j+1)) || key.at<uchar>(i-1, j+1) == 0)
-                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i+0, j+1)) || key.at<uchar>(i+0, j+1) == 0)
-                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i+1, j+1)) || key.at<uchar>(i+1, j+1) == 0)
+                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i-1, j-1)) || int(key.at<uchar>(i-1, j-1)) == 0)
+                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i+0, j-1)) || int(key.at<uchar>(i+0, j-1)) == 0)
+                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i+1, j-1)) || int(key.at<uchar>(i+1, j-1)) == 0)
+                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i-1, j+0)) || int(key.at<uchar>(i-1, j+0)) == 0)
+                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i+1, j+0)) || int(key.at<uchar>(i+1, j+0)) == 0)
+                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i-1, j+1)) || int(key.at<uchar>(i-1, j+1)) == 0)
+                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i+0, j+1)) || int(key.at<uchar>(i+0, j+1)) == 0)
+                    && (int(score.at<uchar>(i, j)) > int(score.at<uchar>(i+1, j+1)) || int(key.at<uchar>(i+1, j+1)) == 0)
                     ){
+                    reserved.at<uchar>(i, j) = 1;
                     // Remember to convert the coordinates back to original coordinates
                     int power = int(pow(2, level));
                     // cout << "add keypoints: (" << j*power << ", " << i*power << ")" << endl;
@@ -438,20 +461,29 @@ void MYORB::FAST_detector(int option){
 
                     }
                 }
-                else key.at<uchar>(i, j) = 0;
             }
         }
+
+        // cout << int(key.at<uchar>(37, 136)) << endl;
 
         // output to files (for testbench usage)
         if(level == 0 && option == 1){
             for (int i = 0; i < img.rows; i++) {
                 for (int j = 0; j < img.cols; j++) {
-                    result_NMS << int(key.at<uchar>(i, j)) << endl;
+                    result_NMS << int(reserved.at<uchar>(i, j)) << endl;
                     result_coordinates << hex << i << " " << j << endl;
                     result_score << hex << int(score.at<uchar>(i, j)) << endl;
                     result_mx << hex << mx.at<int>(i, j) << endl;
                     result_my << hex << my.at<int>(i, j) << endl;
                     pixel_in << hex << (int)img.at<uchar>(i, j) << endl;
+                    
+                    if(int(reserved.at<uchar>(i, j)) == 1){
+                        read << hex << setw(3) << setfill('0') <<  j  << " " << setw(3) << setfill('0') << i << " ";
+                        read << setw(2) << int(score.at<uchar>(i, j)) << " ";
+                        read << dec << mx.at<int>(i, j) << " ";
+                        read << dec << my.at<int>(i, j) << " ";
+                        read << endl;
+                    }
                 }
             }
         }

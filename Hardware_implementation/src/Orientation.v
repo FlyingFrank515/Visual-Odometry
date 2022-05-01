@@ -5,30 +5,30 @@ module Orientation_Unit
 (
     input           i_clk,
     input           i_rst_n,
-    input [55:0]    i_col0,
+    input [55:0]    i_col0, // up to down
 
-    output [12:0]   o_mx,
-    output [12:0]   o_my
+    output [15:0]   o_mx,
+    output [15:0]   o_my
 );
 
 // ========== function declaration ==========
 
 // ========== reg/wire declaration ==========
 integer i;
-reg signed [12:0] sum_x_r [0:6], sum_x_w [0:6]; // used to store the sum in each stage
-reg signed [12:0] sum_y_r [0:6], sum_y_w [0:6]; // used to store the sum in each stage
+reg signed [15:0] sum_x_r [0:6], sum_x_w [0:6]; // used to store the sum in each stage
+reg signed [15:0] sum_y_r [0:6], sum_y_w [0:6]; // used to store the sum in each stage
 // reg [7:0] pixel [0:6][0:6]; // pixel[0][0] ... pixel[0][6]
 //                             // pixel[1][0] ... pixel[1][6]
 //                             // ...
 //                             // pixel[6][0] ... pixel[6][6]
 // reg signed [10:0] pixel_x [0:6][0:6]; // pixels multiplying delta_x 
 // reg signed [10:0] pixel_y [0:6][0:6]; // pixels multiplying delta_x 
-reg signed [10:0] pixel_3x [0:6];
-reg signed [10:0] pixel_2x [0:6];
-reg signed [10:0] pixel_1x [0:6];
-reg signed [10:0] pixel_m1x [0:6];
-reg signed [10:0] pixel_m2x [0:6];
-reg signed [10:0] pixel_m3x [0:6];
+reg signed [12:0] pixel_3x [0:6];
+reg signed [12:0] pixel_2x [0:6];
+reg signed [12:0] pixel_1x [0:6];
+reg signed [12:0] pixel_m1x [0:6];
+reg signed [12:0] pixel_m2x [0:6];
+reg signed [12:0] pixel_m3x [0:6];
 
 
 
@@ -38,9 +38,9 @@ assign o_my = sum_y_r[6];
 
 always@(*) begin
     for(i = 0; i < 7; i = i+1) begin
-        pixel_3x[i] = (i_col0[i*8 +: 7] << 1) + i_col0[i*8 +: 7];
-        pixel_2x[i] = i_col0[i*8 +: 7] << 1;
-        pixel_1x[i] = i_col0[i*8 +: 7];
+        pixel_1x[i] = $signed({1'b0, i_col0[i*8 +: 8]});
+        pixel_2x[i] = pixel_1x[i] << 1;
+        pixel_3x[i] = (pixel_1x[i] << 1) + pixel_1x[i];
         pixel_m1x[i] = -pixel_1x[i];
         pixel_m2x[i] = -pixel_2x[i];
         pixel_m3x[i] = -pixel_3x[i];

@@ -391,7 +391,7 @@ void MYORB::FAST_detector(int option){
                 
                 for(int x = -3; x < 4; x++ ){
                     for(int y = -3; y < 4; y++){
-                        if(i == 34 && j== 137) cout << (int)img.at<uchar>(i+y, j+x) << endl;
+                        // if(i == 34 && j== 137) cout << (int)img.at<uchar>(i+y, j+x) << endl;
                         x_sum += x*(int)img.at<uchar>(i+y, j+x);
                         y_sum += y*(int)img.at<uchar>(i+y, j+x);
                     }
@@ -480,8 +480,15 @@ void MYORB::FAST_detector(int option){
                     if(int(reserved.at<uchar>(i, j)) == 1){
                         read << hex << setw(3) << setfill('0') <<  j  << " " << setw(3) << setfill('0') << i << " ";
                         read << setw(2) << int(score.at<uchar>(i, j)) << " ";
-                        read << dec << mx.at<int>(i, j) << " ";
-                        read << dec << my.at<int>(i, j) << " ";
+                        int x = mx.at<int>(i, j);
+                        int y = my.at<int>(i, j);
+                        if(j == 137 && i == 34){
+                            cout << "haha" << endl;
+                            cout << x << " " << y << endl;
+                        }
+
+                        read << dec << 1024*x/(int)sqrt(x*x+y*y) << " ";
+                        read << dec << 1024*y/(int)sqrt(x*x+y*y) << " ";
                         read << endl;
                     }
                 }

@@ -1,0 +1,153 @@
+#!/bin/zsh
+
+# define constants
+SCRIPT_PATH=/opt/CAD/bash_scripts
+
+function check_command()
+{
+	for cmd in $*
+	do
+		which $cmd > /dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			echo "You can use" $cmd "now"
+		else
+			echo $cmd "not found, maybe not installed?"
+		fi
+	done
+}
+
+function sourceCIC()
+{
+	case $1 in
+		"1")
+			source ${SCRIPT_PATH}/synthesis.bashrc
+			check_command design_vision dc_shell
+			;;
+		"2")
+			source ${SCRIPT_PATH}/incisiv.bashrc
+			source ${SCRIPT_PATH}/debussy.bashrc
+			check_command ncverilog nWave debussy verdi
+			;;
+		"3")
+			source ${SCRIPT_PATH}/xcelium.bashrc
+			check_command ncverilog
+			;;
+		"4")
+			source ${SCRIPT_PATH}/vcs.bashrc
+			check_command vcs
+			;;
+		"5")
+			source ${SCRIPT_PATH}/calibre.bashrc
+			check_command calibre
+			;;
+		"6")
+			source ${SCRIPT_PATH}/adp.bashrc
+			source ${SCRIPT_PATH}/laker.bashrc
+			check_command adp laker
+			;;
+		"7")
+			echo "The memory compiler is under:"
+			echo -e "/opt/CAD/cell_lib/CBDK_TSMC90G_Arm_v1.1/CIC/Memory/\e[1;31mxxxx\e[m/bin/\e[1;31mxxxx\e[m"
+			echo -e "/opt/CAD/cell_lib/CBDK_TSMC90GUTM_Arm_v1.0/CIC/Memory/\e[1;31mxxxx\e[m/bin/\e[1;31mxxxx\e[m"
+			;;
+		"8")
+			source ${SCRIPT_PATH}/milkyway.bashrc
+			check_command Milkyway
+			;;
+		"9")
+			source ${SCRIPT_PATH}/astro.bashrc
+			check_command Astro
+			;;
+		"10")
+			source ${SCRIPT_PATH}/conformal.bashrc
+			check_command lec
+			;;
+		"11")
+			source ${SCRIPT_PATH}/ic.bashrc
+			check_command virtuoso
+			;;
+		"12")
+			source ${SCRIPT_PATH}/tmax.bashrc
+			check_command tmax
+			;;
+		"13")
+			source ${SCRIPT_PATH}/synplify.bashrc
+			echo "You can use \"TODO\" now!"
+			;;
+		"14")
+			source ${SCRIPT_PATH}/pa.bashrc
+			source ${SCRIPT_PATH}/ds5.bashrc
+			check_command pct scsh
+			echo "Storngly recommand that also source ncverilog"
+			;;
+		"15")
+			source ${SCRIPT_PATH}/primetime.bashrc
+			source ${SCRIPT_PATH}/primepower.bashrc
+			check_command primetime
+			check_command primepower
+			;;
+		"16")
+			source ${SCRIPT_PATH}/spyglass.bashrc
+			check_command spyglass
+			;;
+		"17")
+			source ${SCRIPT_PATH}/innovus.bashrc
+			check_command innovus
+			export TERM=vt100
+			export TEMCAP=$INFORMIXDIR/etc/termcap
+			;;
+		"18")
+			source ${SCRIPT_PATH}/jasper.bashrc
+			check_command jg
+			;;
+		"19")
+			source ${SCRIPT_PATH}/modelsim.bashrc
+			check_command vsim
+			;;
+		"20")   
+			source ${SCRIPT_PATH}/vcformal.bashrc
+  			source ${SCRIPT_PATH}/synthesis.bashrc
+                        check_command dc_shell vcf
+			;;
+		esac
+}
+
+# main function
+if [ $# -ne 0 ]
+then
+	IN=$*
+else
+	cat << EOF
+[1;33mCBDK library is under /opt/CAD/cell_lib/[m
+[1;33mThere are 3 options:[m
+[1;33mCBDK_IC_Contest_v2.1 (for IC contest)[m
++--------------------------------------------------+
+|*[1] dv                  *[2] nWave & ncverilog   |
+|                              & verdi             |
+| [3] XCELIUM              [4] vcs                 |
+| [5] calibre (drc, lvs)   [6] Laker               |
+| [7] Memory compiler      [8] Milkyway            |
+| [9] Astro                [10] Conformal          |
+| [11] Virtuoso (icfb)    *[12] TetraMAX ATPG      |
+| [13] Synplify            [14] PA & DS-5          |
+|*[15] PrimeTime          *[16] SpyGlass           |
+|*[17] Innovus            *[18] Jasper             |
+| [19] Modelsim           *[20] VC formal          |
++--------------------------------------------------+
+[1;32mEnter you  choice >>>[m
+EOF
+read IN
+fi
+
+if [ ${SHELL:t} = "zsh" ]
+then
+	IN=(${(s: :)IN})
+fi
+for arg in $IN
+do
+	sourceCIC $arg
+done
+
+export LM_LICENSE_FILE
+export PATH
+export LD_LIBRARY_PATH

@@ -14,8 +14,8 @@
 //     `define SDFFILE "FFT_syn.sdf"
 // `endif
 
-// simulation (you can adjust the T to change the test data)
-// RTL: ncverilog FAST_tb.v +define+RTL +access+r
+// simulation
+// RTL: ncverilog FAST_tb.v +incdir+/opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver/ -y /opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver +libext+.v+notimingchecks +define+RTL +access+r 
 
 
 
@@ -33,7 +33,8 @@ module FAST_tb;
     wire [9:0]    o_coordinate_X;
     wire [9:0]    o_coordinate_Y;
 
-    wire [9:0]    o_orientation;
+    wire [11:0]    o_cos;
+    wire [11:0]    o_sin;
     wire [7:0]    o_score;
     wire          o_flag;
     wire          o_start;
@@ -54,7 +55,8 @@ module FAST_tb;
         .o_pixel(o_pixel),
         .o_coordinate_X(o_coordinate_X),
         .o_coordinate_Y(o_coordinate_Y),
-        .o_orientation(o_orientation),
+        .o_cos(o_cos),
+        .o_sin(o_sin),
         .o_score(o_score),
         .o_flag(o_flag),
         .o_start(o_start),
@@ -122,7 +124,7 @@ module FAST_tb;
 
     always@(posedge clk) begin
         if(o_flag) begin
-            $fwrite(f, "%h %h %h\n", o_coordinate_X, o_coordinate_Y, o_score);
+            $fwrite(f, "%h %h %h %d %d\n", o_coordinate_X, o_coordinate_Y, o_score, $signed(o_cos), $signed(o_sin));
         end
     end
 

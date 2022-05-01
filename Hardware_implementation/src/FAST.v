@@ -18,7 +18,8 @@ module FAST_Detector
     output [9:0]    o_coordinate_X,
     output [9:0]    o_coordinate_Y,
 
-    output [9:0]    o_orientation,
+    output [11:0]   o_cos,
+    output [11:0]   o_sin,
     output [7:0]    o_score,
     output          o_flag,
     output reg      o_start,
@@ -49,10 +50,10 @@ module FAST_Detector
     wire          NMS_flag;
 
     reg [55:0] Orient_col;
-    reg [15:0] mx_buffer [0:WIDTH-3];
-    reg [15:0] my_buffer [0:WIDTH-3];
-    wire [15:0] Orient_mx;
-    wire [15:0] Orient_my;
+    reg [11:0] cos_buffer [0:WIDTH+3];
+    reg [11:0] sin_buffer [0:WIDTH+3];
+    wire [11:0] Orient_cos;
+    wire [11:0] Orient_sin;
 
     // coordinates mask
     reg mask;
@@ -60,7 +61,8 @@ module FAST_Detector
     reg [9:0] o_y_r, o_y_w;
     reg [7:0] o_score_r, o_score_w;
     reg       o_flag_r, o_flag_w;
-    reg [15:0] o_mx, o_my;
+    reg [11:0] o_cos_w, o_cos_r;
+    reg [11:0] o_sin_w, o_sin_r;
 
 
     // ========== Connection ==========
@@ -70,6 +72,9 @@ module FAST_Detector
     assign o_coordinate_X = o_x_r;
     assign o_coordinate_Y = o_y_r;
     assign o_orientation = 0;
+    assign o_cos = o_cos_r;
+    assign o_sin = o_sin_r;
+
 
     always@(*) begin
         FAST_circle = {LINE_BUFFER[0][2], LINE_BUFFER[0][3], LINE_BUFFER[0][4], LINE_BUFFER[1][5], LINE_BUFFER[2][6], LINE_BUFFER[3][6], LINE_BUFFER[4][6], LINE_BUFFER[5][5]
@@ -78,8 +83,6 @@ module FAST_Detector
 
         Orient_col = {LINE_BUFFER[0][0], LINE_BUFFER[1][0], LINE_BUFFER[2][0], LINE_BUFFER[3][0], LINE_BUFFER[4][0], LINE_BUFFER[5][0], LINE_BUFFER_LAST[0]}; // up to down
 
-        o_mx = mx_buffer[WIDTH-3];
-        o_my = my_buffer[WIDTH-3];
     end
     
     FAST_9 
@@ -122,8 +125,8 @@ module FAST_Detector
         .i_rst_n(i_rst_n),
         .i_col0(Orient_col),
 
-        .o_mx(Orient_mx),
-        .o_my(Orient_my)
+        .o_cos(Orient_cos),
+        .o_sin(Orient_sin)
     );
 
 
@@ -133,6 +136,9 @@ module FAST_Detector
         o_x_w = coor_x_r;
         o_y_w = coor_y_r;
         o_flag_w = mask ? 0 : NMS_flag;
+        o_score_w = mask ? 0 : NMS_score;
+        o_cos_w = mask ? 0 : cos_buffer[WIDTH+3];
+        o_sin_w = mask ? 0 : sin_buffer[WIDTH+3];
         o_score_w = mask ? 0 : NMS_score;
     end
 
@@ -190,10 +196,12 @@ module FAST_Detector
             o_y_r <= 0;
             o_score_r <= 0;
             o_flag_r <= 0;
+            o_cos_r <= 0;
+            o_sin_r <= 0;
 
-            for(k = 0; k < WIDTH-2; k = k+1) begin
-                mx_buffer[k] <= 0;
-                my_buffer[k] <= 0;
+            for(k = 0; k < WIDTH+4; k = k+1) begin
+                cos_buffer[k] <= 0;
+                sin_buffer[k] <= 0;
             end
             for(j = 0; j < 5; j = j+1) begin
                 LINE_BUFFER_LAST[j] <= 0;
@@ -214,12 +222,14 @@ module FAST_Detector
             o_y_r <= o_y_w;
             o_score_r <= o_score_w;
             o_flag_r <= o_flag_w;
+            o_cos_r <= o_cos_w;
+            o_sin_r <= o_sin_w;
             
-            mx_buffer[0] <= Orient_mx;
-            my_buffer[0] <= Orient_my;
-            for(k = 1; k < WIDTH-2; k = k+1) begin
-                mx_buffer[k] <= mx_buffer[k-1];
-                my_buffer[k] <= my_buffer[k-1];
+            cos_buffer[0] <= Orient_cos;
+            sin_buffer[0] <= Orient_sin;
+            for(k = 1; k < WIDTH+4; k = k+1) begin
+                cos_buffer[k] <= cos_buffer[k-1];
+                sin_buffer[k] <= sin_buffer[k-1];
             end
 
             LINE_BUFFER_LAST[0] <= LINE_BUFFER[5][WIDTH-1];

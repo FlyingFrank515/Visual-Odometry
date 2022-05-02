@@ -1,7 +1,7 @@
 `timescale 1ns/10ps
 `define CYCLE    10           	         // Modify your clock period here
-// `define TIME_OUT 640*480*10       
-`define TIME_OUT 640*51*10     
+`define TIME_OUT 640*480*10       
+// `define TIME_OUT 640*51*10     
 
 `ifdef RTL
     `include "FAST.v"

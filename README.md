@@ -2,11 +2,6 @@
 
 ## TO-DO Lists
 
-Feature Detection
-1. Edge Threshold
-2. Down Sampling
-3. Coordinates assignment
-
 ## Schedule
 
 3/21: Finish C++ Model

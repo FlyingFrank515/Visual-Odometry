@@ -22,8 +22,10 @@
 
 5/16: feature descriptor module
 
-5/23: matching module
+5/23: feature descriptor module
 
 5/30: matching module (Final)
 
-6/6 : Summary
+6/6 : matching module
+
+6/13: report

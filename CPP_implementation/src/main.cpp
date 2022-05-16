@@ -15,8 +15,8 @@ using namespace cv;
 #define keypoints_num                   500
 #define MATCH_threshold                 30
 // Image pyramid
-#define FAST_nlevels                    4
-#define FAST_scaling                    2
+#define FAST_nlevels                    1
+#define FAST_scaling                    1
 
 int main(int argc, char *argv[]){
     string filename = argv[3];

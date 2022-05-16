@@ -1,6 +1,7 @@
 `include "FAST_9.v"
 `include "Orientation.v"
 `include "NMS.v"
+`include "SMOOTH.v"
 
 module FAST_Detector
 #(
@@ -50,6 +51,8 @@ module FAST_Detector
     wire          NMS_flag;
 
     reg [55:0] Orient_col;
+    reg [39:0] SMOOTH_col;
+    wire [7:0] SMOOTH_pixel;
     reg [11:0] cos_buffer [0:WIDTH+3];
     reg [11:0] sin_buffer [0:WIDTH+3];
     wire [11:0] Orient_cos;
@@ -68,7 +71,7 @@ module FAST_Detector
     // ========== Connection ==========
     assign o_flag = o_flag_r;
     assign o_score = o_score_r;
-    assign o_pixel = 0;
+    assign o_pixel = SMOOTH_pixel;
     assign o_coordinate_X = o_x_r;
     assign o_coordinate_Y = o_y_r;
     assign o_orientation = 0;
@@ -82,8 +85,20 @@ module FAST_Detector
         FAST_center = LINE_BUFFER[3][3];
 
         Orient_col = {LINE_BUFFER[0][0], LINE_BUFFER[1][0], LINE_BUFFER[2][0], LINE_BUFFER[3][0], LINE_BUFFER[4][0], LINE_BUFFER[5][0], LINE_BUFFER_LAST[0]}; // up to down
-
+        SMOOTH_col = {LINE_BUFFER[0][0], LINE_BUFFER[1][0], LINE_BUFFER[2][0], LINE_BUFFER[3][0], LINE_BUFFER[4][0]};
     end
+
+    SMOOTH
+    #(
+        .WIDTH(12'd640)
+    )
+    SMOOTH_unit
+    (
+        .i_clk(i_clk),
+        .i_rst_n(i_rst_n),
+        .i_col0(SMOOTH_col),
+        .o_pixel(SMOOTH_pixel)
+    );
     
     FAST_9 
     #(

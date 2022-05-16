@@ -17,6 +17,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <vector> // vector
+#include <bitset> // print descriptor
  
 
 using namespace std;
@@ -52,6 +53,8 @@ class MYORB {
         fstream             result_score;
         fstream             read;
         fstream             pixel_in;
+        fstream             pixel_smooth;
+        
         
         // img1
         Mat                 img_1;

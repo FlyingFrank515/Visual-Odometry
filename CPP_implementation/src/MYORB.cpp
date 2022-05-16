@@ -148,6 +148,7 @@ MYORB::MYORB( int N, int t , int op, int st, int et, int kn, int mt, int l, floa
     result_score.open("../result/result_score.txt", ios::out);
     read.open("../result/read.txt", ios::out);
     pixel_in.open("../result/pixel_in.txt", ios::out);
+    pixel_smooth.open("../result/pixel_smooth.txt", ios::out);
 
     // img1
     img_1 = img1;
@@ -169,11 +170,9 @@ vector<DMatch> MYORB::Matching(){
     FAST_detector(1);
     FAST_detector(2);
 
-    // cout << keylist_1.size() << endl;
-    sort(keylist_1.begin(), keylist_1.end(), response_comparator);
-    // sort(keylist_2.begin(), keylist_2.end(), response_comparator);
-    while (keylist_1.size() > keypoints_num) keylist_1.pop_back();
-    // while (keylist_2.size() > keypoints_num) keylist_2.pop_back();
+    // sort(keylist_1.begin(), keylist_1.end(), response_comparator);
+    // while (keylist_1.size() > keypoints_num) keylist_1.pop_back();
+    
     // smoothing the image
     BRIEF_smoothing();
 
@@ -184,6 +183,15 @@ vector<DMatch> MYORB::Matching(){
     BRIEF_descriptor(1);
     BRIEF_descriptor(2);
     // BRIEF_descriptor_old();
+
+    for (int i = 0; i < keylist_1.size(); i++){
+        read << hex << setw(3) << setfill('0') <<  int(keylist_1[i].pt.x)  << " " << setw(3) << setfill('0') << int(keylist_1[i].pt.y) << " ";
+        //                 read << setw(2) << int(score.at<uchar>(i, j)) << " ";
+        for (int j = 0; j < 32; j++){
+            read << bitset<8>(descriptor_1.at<uchar>(i, j));
+        }
+        read << endl;
+    }
 
 
     // default descriptor
@@ -404,13 +412,13 @@ void MYORB::FAST_detector(int option){
             }
         }
 
-        if(level == 0 && option == 1){
-            for (int i = 0; i < img.rows; i++) {
-                for (int j = 0; j < img.cols; j++) {
-                    result_test << int(key.at<uchar>(i, j)) << endl;
-                }
-            }
-        }
+        // if(level == 0 && option == 1){
+        //     for (int i = 0; i < img.rows; i++) {
+        //         for (int j = 0; j < img.cols; j++) {
+        //             result_test << int(key.at<uchar>(i, j)) << endl;
+        //         }
+        //     }
+        // }
         
         // Non-maximal suppression
         // cout << "test" << endl;
@@ -449,7 +457,7 @@ void MYORB::FAST_detector(int option){
                     int power = int(pow(2, level));
                     // cout << "add keypoints: (" << j*power << ", " << i*power << ")" << endl;
                     KeyPoint temp = KeyPoint(Point2f(j*power, i*power), 1, orient.at<uchar>(i, j), int(score.at<uchar>(i, j)), 0, -1);
-                    
+                    // cout << j << " " << i << " " << temp.pt.x << " " << temp.pt.y << endl;
                     if(option == 1){
                         // if(keylist_1.size() < keypoints_num)
                         keylist_1.push_back(temp);
@@ -467,33 +475,33 @@ void MYORB::FAST_detector(int option){
         // cout << int(key.at<uchar>(37, 136)) << endl;
 
         // output to files (for testbench usage)
-        if(level == 0 && option == 1){
-            for (int i = 0; i < img.rows; i++) {
-                for (int j = 0; j < img.cols; j++) {
-                    result_NMS << int(reserved.at<uchar>(i, j)) << endl;
-                    result_coordinates << hex << i << " " << j << endl;
-                    result_score << hex << int(score.at<uchar>(i, j)) << endl;
-                    result_mx << hex << mx.at<int>(i, j) << endl;
-                    result_my << hex << my.at<int>(i, j) << endl;
-                    pixel_in << hex << (int)img.at<uchar>(i, j) << endl;
+        // if(level == 0 && option == 1){
+        //     for (int i = 0; i < img.rows; i++) {
+        //         for (int j = 0; j < img.cols; j++) {
+        //             result_NMS << int(reserved.at<uchar>(i, j)) << endl;
+        //             result_coordinates << hex << i << " " << j << endl;
+        //             result_score << hex << int(score.at<uchar>(i, j)) << endl;
+        //             result_mx << hex << mx.at<int>(i, j) << endl;
+        //             result_my << hex << my.at<int>(i, j) << endl;
+        //             pixel_in << hex << (int)img.at<uchar>(i, j) << endl;
                     
-                    if(int(reserved.at<uchar>(i, j)) == 1){
-                        read << hex << setw(3) << setfill('0') <<  j  << " " << setw(3) << setfill('0') << i << " ";
-                        read << setw(2) << int(score.at<uchar>(i, j)) << " ";
-                        int x = mx.at<int>(i, j);
-                        int y = my.at<int>(i, j);
-                        if(j == 137 && i == 34){
-                            cout << "haha" << endl;
-                            cout << x << " " << y << endl;
-                        }
+        //             if(int(reserved.at<uchar>(i, j)) == 1){
+        //                 read << hex << setw(3) << setfill('0') <<  j  << " " << setw(3) << setfill('0') << i << " ";
+        //                 read << setw(2) << int(score.at<uchar>(i, j)) << " ";
+        //                 int x = mx.at<int>(i, j);
+        //                 int y = my.at<int>(i, j);
+        //                 if(j == 137 && i == 34){
+        //                     cout << "haha" << endl;
+        //                     cout << x << " " << y << endl;
+        //                 }
 
-                        read << dec << 1024*x/(int)sqrt(x*x+y*y) << " ";
-                        read << dec << 1024*y/(int)sqrt(x*x+y*y) << " ";
-                        read << endl;
-                    }
-                }
-            }
-        }
+        //                 read << dec << 1024*x/(int)sqrt(x*x+y*y) << " ";
+        //                 read << dec << 1024*y/(int)sqrt(x*x+y*y) << " ";
+        //                 read << endl;
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
 
@@ -505,6 +513,13 @@ void MYORB::BRIEF_smoothing(){
 
     filter2D(img_1, smth_1, -1, kernel);
     filter2D(img_2, smth_2, -1, kernel);
+
+    for (int i = 0; i < img_1.rows; i++) {
+        for (int j = 0; j < img_1.cols; j++) {
+            pixel_smooth << hex << (int)img_1.at<uchar>(i, j) << endl;
+        }
+    }
+
 
 }
 

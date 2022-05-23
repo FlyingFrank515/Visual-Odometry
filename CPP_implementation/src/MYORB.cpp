@@ -186,7 +186,7 @@ vector<DMatch> MYORB::Matching(){
 
     for (int i = 0; i < keylist_1.size(); i++){
         read << hex << setw(3) << setfill('0') <<  int(keylist_1[i].pt.x)  << " " << setw(3) << setfill('0') << int(keylist_1[i].pt.y) << " ";
-        //                 read << setw(2) << int(score.at<uchar>(i, j)) << " ";
+        read << setw(2) << int(smth_1.at<uchar>(int(keylist_1[i].pt.y), int(keylist_1[i].pt.x))) << " ";
         for (int j = 0; j < 32; j++){
             read << bitset<8>(descriptor_1.at<uchar>(i, j));
         }
@@ -206,6 +206,8 @@ vector<DMatch> MYORB::Matching(){
     // Optimize the matches
     // cout << "Optimize matches..." << endl;
     MATCH_optimization();
+
+    DISPLAY_matches();
 
     return good_matches;
 
@@ -240,6 +242,7 @@ void MYORB::DISPLAY_matches(){
     cout << "optimized matching pair" << endl;
     drawMatches(img_2, keylist_2, img_1, keylist_1, good_matches, img_goodmatch);
     imshow ( "optimized matching pair", img_goodmatch );
+    waitKey(0);
 }
 
 int MYORB::FAST_consecutive1_finder(vector<int>& array){
@@ -311,6 +314,8 @@ void MYORB::FAST_detector(int option){
         Mat reserved(img.rows, img.cols, CV_8UC1, Scalar(0));
         Mat mx(img.rows, img.cols, CV_32SC1, Scalar(0));
         Mat my(img.rows, img.cols, CV_32SC1, Scalar(0));
+        Mat cos(img.rows, img.cols, CV_32SC1, Scalar(0));
+        Mat sin(img.rows, img.cols, CV_32SC1, Scalar(0));
         Mat orient(img.rows, img.cols, CV_64FC1, Scalar(0));
 
         vector<KeyPoint> candidate;
@@ -386,7 +391,7 @@ void MYORB::FAST_detector(int option){
                             local_threshold = abs(p_double[k + s] - p_center);
                     }
                     if (local_threshold > score_temp){
-                        orient.at<uchar>(i, j) = k;
+                        // orient.at<uchar>(i, j) = k;
                         score_temp = local_threshold;
                     }
                 }
@@ -407,8 +412,11 @@ void MYORB::FAST_detector(int option){
                 mx.at<int>(i, j) = x_sum;
                 my.at<int>(i, j) = y_sum;
                 orient.at<float>(i, j) = atan2(y_sum, x_sum);
+                // cout << (1024 * x_sum) / int(sqrt(x_sum*x_sum + y_sum*y_sum)) << endl;
+                cos.at<int>(i, j) = (1024 * x_sum) / int(sqrt(x_sum*x_sum + y_sum*y_sum));
+                sin.at<int>(i, j) = (1024 * y_sum) / int(sqrt(x_sum*x_sum + y_sum*y_sum));
                 
-
+                
             }
         }
 
@@ -456,16 +464,21 @@ void MYORB::FAST_detector(int option){
                     // Remember to convert the coordinates back to original coordinates
                     int power = int(pow(2, level));
                     // cout << "add keypoints: (" << j*power << ", " << i*power << ")" << endl;
-                    KeyPoint temp = KeyPoint(Point2f(j*power, i*power), 1, orient.at<uchar>(i, j), int(score.at<uchar>(i, j)), 0, -1);
+                    KeyPoint temp = KeyPoint(Point2f(j*power, i*power), 1, orient.at<float>(i, j), int(score.at<uchar>(i, j)), 0, -1);
                     // cout << j << " " << i << " " << temp.pt.x << " " << temp.pt.y << endl;
+                    // cout << cos << " " << sin << endl;
                     if(option == 1){
                         // if(keylist_1.size() < keypoints_num)
                         keylist_1.push_back(temp);
-
+                        cos_1.push_back(cos.at<int>(i, j));
+                        sin_1.push_back(sin.at<int>(i, j));
+                    
                     }
                     else if(option == 2){
                         // if(keylist_2.size() < keypoints_num)
                         keylist_2.push_back(temp);
+                        cos_2.push_back(cos.at<int>(i, j));
+                        sin_2.push_back(sin.at<int>(i, j));
 
                     }
                 }
@@ -475,15 +488,15 @@ void MYORB::FAST_detector(int option){
         // cout << int(key.at<uchar>(37, 136)) << endl;
 
         // output to files (for testbench usage)
-        // if(level == 0 && option == 1){
-        //     for (int i = 0; i < img.rows; i++) {
-        //         for (int j = 0; j < img.cols; j++) {
-        //             result_NMS << int(reserved.at<uchar>(i, j)) << endl;
-        //             result_coordinates << hex << i << " " << j << endl;
-        //             result_score << hex << int(score.at<uchar>(i, j)) << endl;
-        //             result_mx << hex << mx.at<int>(i, j) << endl;
-        //             result_my << hex << my.at<int>(i, j) << endl;
-        //             pixel_in << hex << (int)img.at<uchar>(i, j) << endl;
+        if(level == 0 && option == 1){
+            for (int i = 0; i < img.rows; i++) {
+                for (int j = 0; j < img.cols; j++) {
+                    // result_NMS << int(reserved.at<uchar>(i, j)) << endl;
+                    // result_coordinates << hex << i << " " << j << endl;
+                    // result_score << hex << int(score.at<uchar>(i, j)) << endl;
+                    // result_mx << hex << mx.at<int>(i, j) << endl;
+                    // result_my << hex << my.at<int>(i, j) << endl;
+                    pixel_in << hex << (int)img.at<uchar>(i, j) << endl;
                     
         //             if(int(reserved.at<uchar>(i, j)) == 1){
         //                 read << hex << setw(3) << setfill('0') <<  j  << " " << setw(3) << setfill('0') << i << " ";
@@ -499,9 +512,9 @@ void MYORB::FAST_detector(int option){
         //                 read << dec << 1024*y/(int)sqrt(x*x+y*y) << " ";
         //                 read << endl;
         //             }
-        //         }
-        //     }
-        // }
+                }
+            }
+        }
     }
 }
 
@@ -514,30 +527,34 @@ void MYORB::BRIEF_smoothing(){
     filter2D(img_1, smth_1, -1, kernel);
     filter2D(img_2, smth_2, -1, kernel);
 
-    for (int i = 0; i < img_1.rows; i++) {
-        for (int j = 0; j < img_1.cols; j++) {
-            pixel_smooth << hex << (int)img_1.at<uchar>(i, j) << endl;
+
+    for (int i = 0; i < smth_1.rows; i++) {
+        for (int j = 0; j < smth_1.cols; j++) {
+            pixel_smooth << hex << (int)smth_1.at<uchar>(i, j) << endl;
         }
     }
-
-
 }
 
 
 void MYORB::BRIEF_descriptor(int option){
     Mat img;
     vector<KeyPoint> keylist;
-    vector<int> orient;
+    vector<int> cos, sin;
     if(option == 1){
         img = smth_1;
         keylist = keylist_1;
-        orient = orientation_1;
+        cos = cos_1;
+        sin = sin_1;
     }
     else if(option == 2){
         img = smth_2;
         keylist = keylist_2;
-        orient = orientation_2;
+        cos = cos_2;
+        sin = sin_2;
     }
+    // for(int i = 0; i < keylist.size(); i++){
+    //     cout << cos[i] << " " << sin[i] << endl;
+    // }
     // assert(orient.size() == keylist.size());
     for(int i = 0; i < keylist.size(); i++){
         int x = keylist[i].pt.x;
@@ -546,7 +563,7 @@ void MYORB::BRIEF_descriptor(int option){
             uchar desc = 0;
             for(int bit = 0; bit < 8; bit++){
                 int x_d1, x_d2, y_d1, y_d2;
-                BRIEF_pattern_LUT(ic*8+bit, float(keylist[i].angle), x_d1, x_d2, y_d1, y_d2);
+                BRIEF_pattern_LUT(ic*8+bit, float(keylist[i].angle), cos[i], sin[i], x_d1, x_d2, y_d1, y_d2);
                 // BRIEF_pattern_LUT(ic*8+bit, 0, x_d1, x_d2, y_d1, y_d2);
                 bool result = img.at<uchar>(y+y_d1, x+x_d1) > img.at<uchar>(y+y_d2, x+x_d2);
                 // cout << result;
@@ -605,93 +622,28 @@ void MYORB::MATCH_BFmatcher(){
     }
 }
 
-void MYORB::MATCH_HBST_construct(){
-    // Use descriptor matrix 1 to build the HBST
-    // So the img1 -> train idnex
-    vector<int> blank;
-    for(int i = 0; i < 128; i++) 
-        HBST_index_buckets.push_back(blank);
-    
-    for(int idx1 = 0; idx1 < descriptor_1.rows; idx1++){
-        
-        // Tracerse the tree
-        int bit = 0;
-        int next_bit = 0;
-        while(1){
-            if(BRIEF_searcher(idx1, bit, descriptor_1)){
-                next_bit = bit*2 + 1;
-            }
-            else next_bit = bit*2 + 2;
-            if(next_bit > 254) break;
-            else bit = next_bit;
-        }
-        int bucket_num = bit - 127;
-
-        // Reach the bucket, add the index into it
-        cout << "Direct to bucket [" << bucket_num << "]" << endl;
-        HBST_index_buckets[bucket_num].push_back(idx1);
-    }
-
-    // DEBUG
-    for(int i = 0; i < 128; i++) {
-        cout << "bucket [" << i << "] ";
-        for(int j = 0; j < HBST_index_buckets[i].size(); j++){
-            cout << HBST_index_buckets[i][j] << " ";
-        }
-        cout << endl;
-    }
-}
-
-void MYORB::MATCH_HBST_matcher(){
-    // assert(descriptor_1.cols == descriptor_2.cols);
-    // For each descriptor in desc2, find the most similar desciptor in desc1
-    // query -> img2
-    // train -> img1
-    for(int idx2 = 0; idx2 < descriptor_2.rows; idx2++){
-        // Traverse the tree (Find the bucket)
-        int bit = 0;
-        int next_bit = 0;
-        while(1){
-            if(BRIEF_searcher(idx2, bit, descriptor_2)){
-                next_bit = bit*2 + 1;
-            }
-            else next_bit = bit*2 + 2;
-            if(next_bit > 254) break;
-            else bit = next_bit;
-        }
-        int bucket_num = bit - 127;
-
-        int min_index = -1;
-        int min_value = 256;
-        // Search the corresponding bucket
-        for(int idx_bucket = 0; idx_bucket < HBST_index_buckets[bucket_num].size(); idx_bucket++){
-            int hamming_distance_counter = 0;
-            int idx1 = HBST_index_buckets[bucket_num][idx_bucket];
-            for(int k = 0; k < descriptor_1.cols; k++){
-                hamming_distance_counter += MATCH_Hamming_distance(descriptor_1.at<uchar>(idx1, k), descriptor_2.at<uchar>(idx2, k));
-            }
-            if(hamming_distance_counter < min_value){
-                min_index = idx1;
-                min_value = hamming_distance_counter;
-            }
-        }
-        // constructor: query -> train -> distance
-        //              img2     img1
-        assert(idx2 < descriptor_2.rows && min_index < descriptor_1.rows);
-        if(min_index != -1){
-            cout << idx2 << " <-> " << min_index << endl; 
-            DMatch temp(idx2, min_index, min_value);
-            matches.push_back(temp);
-        }
-    }
-}
-
 void MYORB::MATCH_optimization(){
     for (int i = 0; i < matches.size(); i++) {
         if (matches[i].distance <= MATCH_threshold) {
             good_matches.push_back(matches[i]);
         }
     }
+
+    // double min_dist=10000, max_dist=0;
+    // for ( int i = 0; i < matches.size(); i++ )
+    // {
+    //     double dist = matches[i].distance;
+    //     if ( dist < min_dist ) min_dist = dist;
+    //     if ( dist > max_dist ) max_dist = dist;
+    // }
+
+    // int thres =  max ( 2*min_dist, 30.0 );
+    // cout << thres << endl;
+    // for ( int i = 0; i < matches.size(); i++ ){
+    //     if ( matches[i].distance <= thres ){
+    //         good_matches.push_back ( matches[i] );
+    //     }
+    // }
 }
 
 void MYORB::MATCH_matches_output(){

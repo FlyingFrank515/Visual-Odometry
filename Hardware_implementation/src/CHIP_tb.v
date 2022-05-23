@@ -1,11 +1,10 @@
 `timescale 1ns/10ps
 `define CYCLE    10           	         // Modify your clock period here
-
 // `define TIME_OUT 640*480*10       
-`define TIME_OUT 640*51*10     
+`define TIME_OUT 640*70*10     
 
 `ifdef RTL
-    `include "FAST.v"
+    `include "CHIP.v"
 `endif
 
 // `ifdef SYN
@@ -16,55 +15,51 @@
 // `endif
 
 // simulation
-// RTL: ncverilog FAST_tb.v +incdir+/opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver/ -y /opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver +libext+.v+notimingchecks +define+RTL +access+r 
+// RTL: ncverilog CHIP_tb.v +incdir+/opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver/ -y /opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver +libext+.v+notimingchecks +define+RTL +access+r 
 
 
 
-module FAST_tb;
+module CHIP_tb;
     
-    integer i, j, f, f2, err;
+    integer i, j, f, err;
     reg clk, rst_n;
 
     reg [7:0] pixel_in [0:307199];
     
     reg start;
-    reg start_flag;
     reg [7:0] pixel;
     
-    wire [7:0]    o_pixel;
     wire [9:0]    o_coordinate_X;
     wire [9:0]    o_coordinate_Y;
-
-    wire [11:0]    o_cos;
-    wire [11:0]    o_sin;
     wire [7:0]    o_score;
     wire          o_flag;
+    wire [255:0]  o_descriptor;
     wire          o_start;
     wire          o_end;
 
-    FAST_Detector 
+    CHIP
     #(
         .WIDTH(12'd640),
         .HEIGHT(12'd480),
-        .EDGE(6'd31)
+        .EDGE(12'd31)
     )
-    fast0
+    chip0  
     (
         .i_clk(clk),
         .i_rst_n(rst_n),
         .i_pixel(pixel),
         .i_start(start),
-        .o_pixel(o_pixel),
+
         .o_coordinate_X(o_coordinate_X),
         .o_coordinate_Y(o_coordinate_Y),
-        .o_cos(o_cos),
-        .o_sin(o_sin),
         .o_score(o_score),
         .o_flag(o_flag),
+        .o_descriptor(o_descriptor),
         .o_start(o_start),
         .o_end(o_end)
+    );
 
-    ); 
+
 
     // `ifdef SDF
     //     initial $sdf_annotate(`SDFFILE, chip0);
@@ -72,7 +67,6 @@ module FAST_tb;
     
     initial	begin
         f = $fopen("output.txt","w");
-        f2 = $fopen("smooth.txt", "w");
         $readmemh ("../testfile/pixel_in.txt", pixel_in);
     end
 
@@ -84,7 +78,6 @@ module FAST_tb;
         i           = 0;
         j           = 0;
         err         = 0;
-        start_flag  = 0;
         #2.5 rst_n=1'b0;         
         #2.5 rst_n=1'b1;
 
@@ -93,8 +86,8 @@ module FAST_tb;
     always begin #(`CYCLE/2) clk = ~clk; end
 
     initial begin
-        $fsdbDumpfile("FAST.fsdb");
-        $fsdbDumpvars(0, FAST_tb, "+mda");
+        $fsdbDumpfile("CHIP.fsdb");
+        $fsdbDumpvars(0, CHIP_tb, "+mda");
     end
 
     initial #(`TIME_OUT) begin
@@ -128,14 +121,7 @@ module FAST_tb;
 
     always@(posedge clk) begin
         if(o_flag) begin
-            $fwrite(f, "%h %h %h %d %d\n", o_coordinate_X, o_coordinate_Y, o_score, $signed(o_cos), $signed(o_sin));
-        end
-        if(o_start) begin
-            $fwrite(f2, "%h\n", o_pixel);
-            start_flag = 1;
-        end
-        if(o_pixel != 0 && start_flag == 1) begin
-            $fwrite(f2, "%h\n", o_pixel);
+            $fwrite(f, "%h %h %h %b \n", o_coordinate_X, o_coordinate_Y, o_score, o_descriptor);
         end
     end
 

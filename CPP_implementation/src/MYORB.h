@@ -61,14 +61,16 @@ class MYORB {
         Mat                 smth_1;
         vector<KeyPoint>    keylist_1;
         Mat                 descriptor_1; 
-        vector<int>         orientation_1;
+        vector<int>         cos_1;
+        vector<int>         sin_1;
 
         // img2
         Mat                 img_2;
         Mat                 smth_2;
         vector<KeyPoint>    keylist_2;
         Mat                 descriptor_2; 
-        vector<int>         orientation_2;
+        vector<int>         cos_2;
+        vector<int>         sin_2;
 
         // HBST (Hamming distance embedded binary search tree)
         vector<vector<int>> HBST_index_buckets;        
@@ -96,7 +98,7 @@ class MYORB {
         void    FAST_keypoint_output(vector<KeyPoint>&);
 
         // BRIEF
-        void    BRIEF_pattern_LUT(int, float, int&, int&, int&, int&);
+        void    BRIEF_pattern_LUT(int, float, int, int, int&, int&, int&, int&);
         void    BRIEF_descriptor(int);
         bool    BRIEF_searcher(int, int, Mat&);
         void    BRIEF_smoothing();
@@ -104,8 +106,6 @@ class MYORB {
         // Matching
         int     MATCH_Hamming_distance(uchar, uchar);
         void    MATCH_BFmatcher();
-        void    MATCH_HBST_matcher();
-        void    MATCH_HBST_construct();
         void    MATCH_matches_output();
         void    MATCH_optimization();
 

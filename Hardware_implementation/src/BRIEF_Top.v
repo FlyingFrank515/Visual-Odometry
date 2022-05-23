@@ -11,20 +11,23 @@ module BRIEF_Top
     input           i_rst_n,
     input [7:0]     i_pixel,
     input           i_start,
+    input           i_end,
 
     input           i_flag,
     input [11:0]    i_sin,
     input [11:0]    i_cos,
     input [9:0]     i_coor_x, 
     input [9:0]     i_coor_y, 
+    input [7:0]     i_score,
 
     output [9:0]    o_coordinate_X,
     output [9:0]    o_coordinate_Y,
+    output [255:0]  o_descriptor,
 
     output [7:0]    o_score,
     output          o_flag,
     output reg      o_start,
-    output reg      o_end,
+    output reg      o_end
 
 );
     // parameter
@@ -57,7 +60,7 @@ module BRIEF_Top
                             LINE_BUFFER[6][i], LINE_BUFFER[7][i], LINE_BUFFER[8][i], LINE_BUFFER[9][i], LINE_BUFFER[10][i], LINE_BUFFER[11][i],
                             LINE_BUFFER[12][i], LINE_BUFFER[13][i], LINE_BUFFER[14][i], LINE_BUFFER[15][i], LINE_BUFFER[16][i], LINE_BUFFER[17][i],
                             LINE_BUFFER[18][i], LINE_BUFFER[19][i], LINE_BUFFER[20][i], LINE_BUFFER[21][i], LINE_BUFFER[22][i], LINE_BUFFER[23][i],
-                            LINE_BUFFER[24][i], LINE_BUFFER[25][i], LINE_BUFFER[26][i], LINE_BUFFER[27][i], LINE_BUFFER[28][i], LINE_BUFFER[29][i], LINE_BUFFER_LAST[i]}
+                            LINE_BUFFER[24][i], LINE_BUFFER[25][i], LINE_BUFFER[26][i], LINE_BUFFER[27][i], LINE_BUFFER[28][i], LINE_BUFFER[29][i], LINE_BUFFER_LAST[i]};
                             
         end
     end
@@ -80,7 +83,7 @@ module BRIEF_Top
         .o_sin(BUFFER_sin),
         .o_cos(BUFFER_cos),
         .o_coor_x(BUFFER_x), 
-        .o_coor_y(BUFFER_y), 
+        .o_coor_y(BUFFER_y)
     );
 
     BRIEF brief_unit
@@ -130,7 +133,8 @@ module BRIEF_Top
         .o_hit(BUFFER_hit),
         .o_coor_x(o_coordinate_X), 
         .o_coor_y(o_coordinate_Y), 
-        .o_descriptor(o_descriptor)
+        .o_descriptor(o_descriptor),
+        .o_flag(o_flag)
     );
 
     // ========== Combinational Block ==========
@@ -145,24 +149,25 @@ module BRIEF_Top
         case(state_r)
             S_IDLE: begin
                 if(i_start) begin
-                    state_w = S_WAIT1;
+                    state_w = S_WAIT2;
+                    LINE_BUFFER_enter = i_pixel;
                     count_w = 0;
                     o_start = 1;
                 end
             end
-            S_WAIT1: begin
-                count_w = count_r + 1;
-                if(count_r == (4 + 9 + WIDTH*4)) begin
-                    state_w = S_WAIT2;
-                end          
-            end
+            // S_WAIT1: begin
+            //     count_w = count_r + 1;
+            //     if(count_r == (4 + 9 + WIDTH*4)) begin
+            //         state_w = S_WAIT2;
+            //     end          
+            // end
             S_WAIT2: begin
+                LINE_BUFFER_enter = i_pixel;
                 count_w = count_r + 1;
-                if(count_r == (4 + 9 + WIDTH*4)) begin
+                if(count_r == (11 + WIDTH*15)) begin
                     coor_x_w = 0;
                     coor_y_w = 0;
                     state_w = S_WORK;
-                    LINE_BUFFER_enter = i_pixel;
                 end          
             end
             S_WORK: begin

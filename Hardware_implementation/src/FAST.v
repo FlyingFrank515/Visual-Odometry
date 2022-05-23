@@ -171,12 +171,15 @@ module FAST_Detector
                     state_w = S_WAIT;
                     LINE_BUFFER_enter = i_pixel;
                     count_w = 0;
-                    o_start = 1;
+                    // o_start = 1;
                 end
             end
             S_WAIT: begin
                 LINE_BUFFER_enter = i_pixel;
                 count_w = count_r + 1;
+                if(count_r == (2*WIDTH + 5)) begin
+                    o_start = 1;
+                end
                 if(count_r == (4 + 9 + WIDTH*4)) begin
                     coor_x_w = 0;
                     coor_y_w = 0;

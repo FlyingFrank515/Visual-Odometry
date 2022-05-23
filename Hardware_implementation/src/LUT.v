@@ -14,10 +14,10 @@
 module LUT
 (
     input [7:0] i_num,
-    output signed reg [7:0] o_xa,
-    output signed reg [7:0] o_ya,
-    output signed reg [7:0] o_xb,
-    output signed reg [7:0] o_yb
+    output reg [7:0] o_xa,
+    output reg [7:0] o_ya,
+    output reg [7:0] o_xb,
+    output reg [7:0] o_yb
 );
 
     always@(*) begin

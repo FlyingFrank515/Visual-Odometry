@@ -403,7 +403,7 @@ void MYORB::FAST_detector(int option){
                     // Remember to convert the coordinates back to original coordinates
                     int power = int(pow(2, level));
                     // cout << "add keypoints: (" << j*power << ", " << i*power << ")" << endl;
-                    KeyPoint temp = KeyPoint(Point2f(j*power, i*power), 1, orient.at<uchar>(i, j), int(score.at<uchar>(i, j)), 0, -1);
+                    KeyPoint temp = KeyPoint(Point2f(j*power, i*power), 1, orient.at<float>(i, j), int(score.at<uchar>(i, j)), 0, -1);
                     
                     if(option == 1){
                         // if(keylist_1.size() < keypoints_num)

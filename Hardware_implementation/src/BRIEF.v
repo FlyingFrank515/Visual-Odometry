@@ -47,7 +47,8 @@ module BRIEF
     output          o_hit,
     output [9:0]    o_coor_x, 
     output [9:0]    o_coor_y, 
-    output [255:0]  o_descriptor
+    output [255:0]  o_descriptor,
+    output          o_flag
 
 );
     // parameter
@@ -71,21 +72,34 @@ module BRIEF
     reg signed [7:0] y_b_cos_w [0:255], y_b_cos_r [0:255];
     reg signed [7:0] y_b_sin_w [0:255], y_b_sin_r [0:255];
 
-    reg [9:0] coor1_x_w, coor1_x_r;
-    reg [9:0] coor1_y_w, coor1_y_r;
+    reg signed [19:0] x_a_cos [0:255];
+    reg signed [19:0] x_a_sin [0:255];
+    reg signed [19:0] y_a_cos [0:255];
+    reg signed [19:0] y_a_sin [0:255];
+    reg signed [19:0] x_b_cos [0:255];
+    reg signed [19:0] x_b_sin [0:255];
+    reg signed [19:0] y_b_cos [0:255];
+    reg signed [19:0] y_b_sin [0:255];
+
+    // reg [9:0] coor1_x_w, coor1_x_r;
+    // reg [9:0] coor1_y_w, coor1_y_r;
+    reg       flag1_w, flag1_r;
 
     reg signed [7:0] x1_w [0:255], x1_r[0:255];
     reg signed [7:0] x2_w [0:255], x2_r[0:255];
     reg signed [7:0] y1_w [0:255], y1_r[0:255];
     reg signed [7:0] y2_w [0:255], y2_r[0:255];
 
-    reg [9:0] coor2_x_w, coor2_x_r;
-    reg [9:0] coor2_y_w, coor2_y_r;
+    // reg [9:0] coor2_x_w, coor2_x_r;
+    // reg [9:0] coor2_y_w, coor2_y_r;
+    reg       flag2_w, flag2_r;
+    reg [7:0] center;
 
     reg [255:0] descriptor_w, descriptor_r;
 
     reg [9:0] coor3_x_w, coor3_x_r;
     reg [9:0] coor3_y_w, coor3_y_r;
+    reg       flag3_w, flag3_r;
 
     // ========== Connection ==========
     always@(*) begin
@@ -122,17 +136,18 @@ module BRIEF
             pixel[i][29] = i_col29[i*8 +: 8];
             pixel[i][30] = i_col30[i*8 +: 8];
         end
+        center = i_col15[127:120];
     end
 
 
     generate
         for (idx = 0; idx < 256; idx = idx + 1) begin
             LUT inst(
-                .i_num(idx),
+                .i_num(idx[7:0]),
                 .o_xa(x_a[idx]),
                 .o_ya(y_a[idx]),
                 .o_xb(x_b[idx]),
-                .o_yb(y_b[idx]),
+                .o_yb(y_b[idx])
             );
         end
     endgenerate
@@ -142,32 +157,46 @@ module BRIEF
     assign o_hit = (i_buf_coor_x == i_coor_x) && (i_buf_coor_y == i_coor_y);
     assign o_coor_x = coor3_x_r;
     assign o_coor_y = coor3_y_r;
+    assign o_flag = flag3_r;
     assign o_descriptor = descriptor_r;
 
     always@(*) begin
         for(i = 0; i < 256; i = i+1) begin
-            x_a_cos_w[i] = (x_a[i]*i_cos)[17:10];
-            x_a_sin_w[i] = (x_a[i]*i_sin)[17:10];
-            y_a_cos_w[i] = (y_a[i]*i_cos)[17:10];
-            y_a_sin_w[i] = (y_a[i]*i_sin)[17:10];
-            x_b_cos_w[i] = (x_b[i]*i_cos)[17:10];
-            x_b_sin_w[i] = (x_b[i]*i_sin)[17:10];
-            y_b_cos_w[i] = (y_b[i]*i_cos)[17:10];
-            y_b_sin_w[i] = (y_b[i]*i_sin)[17:10];
 
-            x1_w[i] = ($signed)(x_a_cos_r[i] - y_a_sin_r[i]) + ($signed)8'd15;
-            y1_w[i] = ($signed)(x_a_sin_r[i] + y_a_cos_r[i]) + ($signed)8'd15;
-            x2_w[i] = ($signed)(x_b_cos_r[i] - y_b_sin_r[i]) + ($signed)8'd15;
-            y2_w[i] = ($signed)(x_b_sin_r[i] + y_a_cos_r[i]) + ($signed)8'd15;
+            x_a_cos[i] = (x_a[i]*i_cos);
+            x_a_sin[i] = (x_a[i]*i_sin);
+            y_a_cos[i] = (y_a[i]*i_cos);
+            y_a_sin[i] = (y_a[i]*i_sin);
+            x_b_cos[i] = (x_b[i]*i_cos);
+            x_b_sin[i] = (x_b[i]*i_sin);
+            y_b_cos[i] = (y_b[i]*i_cos);
+            y_b_sin[i] = (y_b[i]*i_sin);
 
-            descriptor_w[i] = (coor2_x_r != 0 && coor2_y_r != 0) ? pixel[y1_r[i]][x1_r[i]] > pixel[y2_r[i]][x2_r[i]] : 0;
+            x_a_cos_w[i] = x_a_cos[i][17:10];
+            x_a_sin_w[i] = x_a_sin[i][17:10];
+            y_a_cos_w[i] = y_a_cos[i][17:10];
+            y_a_sin_w[i] = y_a_sin[i][17:10];
+            x_b_cos_w[i] = x_b_cos[i][17:10];
+            x_b_sin_w[i] = x_b_sin[i][17:10];
+            y_b_cos_w[i] = y_b_cos[i][17:10];
+            y_b_sin_w[i] = y_b_sin[i][17:10];
+
+            x1_w[i] = (x_a_cos_r[i] - y_a_sin_r[i]) + $signed(8'd15);
+            y1_w[i] = (x_a_sin_r[i] + y_a_cos_r[i]) + $signed(8'd15);
+            x2_w[i] = (x_b_cos_r[i] - y_b_sin_r[i]) + $signed(8'd15);
+            y2_w[i] = (x_b_sin_r[i] + y_a_cos_r[i]) + $signed(8'd15);
+
+            descriptor_w[i] = (flag2_r) ? (pixel[y1_r[i]][x1_r[i]] > pixel[y2_r[i]][x2_r[i]]) : 0;
         end
-        coor1_x_w = ((i_buf_coor_x == i_coor_x) && (i_buf_coor_y == i_coor_y)) ? i_coor_x : 0;
-        coor1_y_w = ((i_buf_coor_x == i_coor_x) && (i_buf_coor_y == i_coor_y)) ? i_coor_y : 0;
-        coor2_x_w = coor1_x_r;
-        coor2_y_w = coor1_y_r;
-        coor3_x_w = coor2_x_r;
-        coor3_y_w = coor2_y_r;
+        // coor1_x_w = ((i_buf_coor_x == i_coor_x) && (i_buf_coor_y == i_coor_y)) ? i_coor_x : 0;
+        // coor1_y_w = ((i_buf_coor_x == i_coor_x) && (i_buf_coor_y == i_coor_y)) ? i_coor_y : 0;
+        flag1_w = ((i_buf_coor_x == i_coor_x) && (i_buf_coor_y == i_coor_y)) && i_coor_x != 0 && i_coor_y != 0;
+        flag2_w = flag1_r;
+        flag3_w = flag2_r;
+        // coor2_x_w = coor1_x_r;
+        // coor2_y_w = coor1_y_r;
+        coor3_x_w = flag2_r ? i_coor_x - 2 : 0;
+        coor3_y_w = flag2_r ? i_coor_y : 0;
         
     end
 
@@ -189,12 +218,15 @@ module BRIEF
                 y2_r[i] <= 0;
             end
             descriptor_r <= 0;
-            coor1_x_r <= 0;
-            coor1_y_r <= 0;
-            coor2_x_r <= 0;
-            coor2_y_r <= 0;
+            // coor1_x_r <= 0;
+            // coor1_y_r <= 0;
+            // coor2_x_r <= 0;
+            // coor2_y_r <= 0;
             coor3_x_r <= 0;
             coor3_y_r <= 0;
+            flag1_r <= 0;
+            flag2_r <= 0;
+            flag3_r <= 0;
         end
         else begin
             for(i = 0; i < 256; i = i+1) begin
@@ -213,12 +245,15 @@ module BRIEF
                 y2_r[i] <= y2_w[i];
             end
             descriptor_r <= descriptor_w;
-            coor1_x_r <= coor1_x_w;
-            coor1_y_r <= coor1_y_w;
-            coor2_x_r <= coor2_x_w;
-            coor2_y_r <= coor2_y_w;
+            // coor1_x_r <= coor1_x_w;
+            // coor1_y_r <= coor1_y_w;
+            // coor2_x_r <= coor2_x_w;
+            // coor2_y_r <= coor2_y_w;
             coor3_x_r <= coor3_x_w;
             coor3_y_r <= coor3_y_w;
+            flag1_r <= flag1_w;
+            flag2_r <= flag2_w;
+            flag3_r <= flag3_w;
             
         end
     end

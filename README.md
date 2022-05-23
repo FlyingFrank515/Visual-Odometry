@@ -22,7 +22,7 @@
 
 5/16: feature descriptor module
 
-5/23: feature descriptor module
+5/23: feature descriptor module verification
 
 5/30: matching module (Final)
 

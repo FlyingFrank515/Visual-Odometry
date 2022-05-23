@@ -16,15 +16,20 @@ module Key_Buffer
     output [11:0]    o_sin,
     output [11:0]    o_cos,
     output [9:0]     o_coor_x, 
-    output [9:0]     o_coor_y, 
+    output [9:0]     o_coor_y
 );
     integer i;
-    reg [9:0] coor_x_w [0:SIZE], coor_x_r[0:SIZE];
-    reg [9:0] coor_y_w [0:SIZE], coor_y_r[0:SIZE];
-    reg [9:0] sin_w [0:SIZE], sin_r[0:SIZE];
-    reg [9:0] cos_w [0:SIZE], cos_r[0:SIZE];
+    reg [9:0] coor_x_w [0:SIZE-1], coor_x_r[0:SIZE-1];
+    reg [9:0] coor_y_w [0:SIZE-1], coor_y_r[0:SIZE-1];
+    reg [11:0] sin_w [0:SIZE-1], sin_r[0:SIZE-1];
+    reg [11:0] cos_w [0:SIZE-1], cos_r[0:SIZE-1];
     
     reg [9:0] count_r, count_w;
+
+    assign o_sin = sin_r[SIZE-1];
+    assign o_cos = cos_r[SIZE-1];
+    assign o_coor_x = coor_x_r[SIZE-1];
+    assign o_coor_y = coor_y_r[SIZE-1];
 
     always@(*) begin
         // default
@@ -37,17 +42,17 @@ module Key_Buffer
         end
 
         // hit -> move elements in buffer forward
-        if(i_hit) begin
+        if(!i_flag && i_hit) begin
             for(i = 1; i < SIZE; i = i+1) begin
                 coor_x_w[i] = coor_x_r[i-1];
                 coor_y_w[i] = coor_y_r[i-1];
                 sin_w[i] = sin_r[i-1];
                 cos_w[i] = cos_r[i-1];
             end
-            coor_x_w[SIZE-1] = 0;
-            coor_y_w[SIZE-1] = 0;
-            sin_w[SIZE-1] = 0;
-            cos_w[SIZE-1] = 0;
+            coor_x_w[0] = 0;
+            coor_y_w[0] = 0;
+            sin_w[0] = 0;
+            cos_w[0] = 0;
         end
         // flag -> put the input in backmost position
         if(i_flag) begin
@@ -56,7 +61,7 @@ module Key_Buffer
                 coor_y_w[count_r] = i_coor_y;
                 sin_w[count_r] = i_sin;
                 cos_w[count_r] = i_cos;
-                count_w = count_r != 99 ? count_r + 1 : count_r;
+                count_w = count_r != 0 ? count_r - 1 : count_r;
             end
             else begin
                 coor_x_w[count_r-1] = i_coor_x;
@@ -75,7 +80,7 @@ module Key_Buffer
                 sin_r[i] <= 0;
                 cos_r[i] <= 0;
             end
-            count_r <= 0;
+            count_r <= SIZE-1;
         end
         else begin
             for(i = 0; i < SIZE; i = i+1) begin

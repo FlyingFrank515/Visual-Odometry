@@ -40,6 +40,11 @@ class MYORB {
         vector<Mat>         img_pyramid_1;
         vector<Mat>         img_pyramid_2;
 
+        // options
+        bool                DISPLAY;
+        bool                FIXED;
+        bool                TESTBENCH; 
+
         // output to file
         string              outfile_name;
         fstream             outfile;
@@ -63,6 +68,7 @@ class MYORB {
         Mat                 descriptor_1; 
         vector<int>         cos_1;
         vector<int>         sin_1;
+        int                 min_thres;
 
         // img2
         Mat                 img_2;
@@ -70,10 +76,7 @@ class MYORB {
         vector<KeyPoint>    keylist_2;
         Mat                 descriptor_2; 
         vector<int>         cos_2;
-        vector<int>         sin_2;
-
-        // HBST (Hamming distance embedded binary search tree)
-        vector<vector<int>> HBST_index_buckets;        
+        vector<int>         sin_2;     
         
         // match
         vector<DMatch>      matches;
@@ -81,7 +84,7 @@ class MYORB {
     
     public:
         // Constructor
-        MYORB(int, int, int, int, int, int, int, int, float, Mat, Mat);
+        MYORB(int, int, int, int, int, int, int, int, float, Mat, Mat, bool, bool, bool);
 
         // Called by the main program
         vector<DMatch>     Matching();
@@ -115,7 +118,6 @@ class MYORB {
 
         // old descriptor
         void BRIEF_descriptor_old();
-    
 };
 
 #endif

@@ -27,18 +27,20 @@ void MYORB::BRIEF_pattern_LUT(int index, float orientation, int cos, int sin, in
     char gaussian_bit_pattern_31_x_b[256] = {9,7,-8,12,2,1,-2,-11,-12,11,-8,-9,12,-3,-12,-7,12,-2,-4,12,5,10,6,-6,-1,-8,-5,-3,-6,6,7,4,11,4,4,-2,-7,9,1,-8,-2,-4,10,1,11,-11,12,-6,12,-8,-8,7,10,1,5,3,-13,-12,-11,-4,12,-7,0,-7,8,-4,-1,5,-5,0,5,-4,-9,-8,12,12,-6,-3,12,-5,-12,-2,12,-11,12,3,-2,1,8,3,12,-1,-10,10,12,7,6,2,4,12,10,-7,-4,2,7,3,11,8,9,-6,-5,-3,-9,12,6,-8,6,-2,-5,10,-8,-5,9,-9,1,9,-1,12,-6,7,10,2,-5,2,1,7,6,-8,-3,-3,8,-6,-5,3,8,2,12,0,9,-3,-1,12,5,-9,8,7,-7,-7,-12,3,12,-6,9,2,-10,-7,-10,11,-1,0,-12,-10,-2,3,-4,-3,-2,-4,6,-5,12,12,0,-3,-6,-8,-6,-6,-4,-8,5,10,10,10,1,-6,1,-8,10,3,12,-5,-8,8,8,-3,10,5,-4,3,-6,4,-10,12,-6,3,11,8,-6,-3,-1,-3,-8,12,3,11,7,12,-3,4,2,-8,-11,-11,11,1,-9,-6,-8,8,3,-1,11,12,3,0,4,-10,12,9,8,-10,12,10,12,0};
     char gaussian_bit_pattern_31_y_b[256] = {5,-12,2,-13,12,6,-4,-8,-9,9,-9,12,6,0,-3,5,-1,12,-8,-8,1,-3,12,-2,-10,10,-3,7,11,-7,-1,-5,-13,12,4,7,-10,12,-13,2,3,-9,7,3,-10,0,1,12,-4,-12,-4,8,-7,-12,6,-10,5,12,8,7,8,-6,12,5,-13,5,-7,-11,-13,-1,2,12,6,-4,-3,12,5,4,2,1,5,-6,-7,-12,12,0,-13,9,-6,12,6,3,5,12,9,11,10,3,-6,-13,3,9,-6,-8,-4,-2,0,-8,3,-4,10,12,0,-6,-11,7,7,12,2,12,-8,-2,-13,0,-2,1,-4,-11,4,12,8,8,-13,12,7,-9,-8,9,-3,-12,0,12,-2,10,-4,-13,12,-6,3,-5,1,-11,-7,-5,6,6,1,-8,-8,9,3,7,-8,8,3,-9,-5,8,12,9,-5,11,-13,2,0,-10,-7,9,11,5,6,-2,7,-2,7,-13,-8,-9,5,10,-13,-13,-1,-9,-13,2,12,-10,-6,-6,-9,-7,-13,5,-13,-3,-12,-1,3,-9,1,-8,9,12,-5,7,-8,-12,5,9,5,4,3,12,11,-13,12,4,6,12,1,1,1,-13,-13,4,-2,-3,-2,10,-9,-1,-2,-8,5,10,5,5,11,-6,-12,9,4,-2,-2,-11};
     
-    // float cos_angle = std::cos(orientation);
-	// float sin_angle = std::sin(orientation);
-    // x1 = round((gaussian_bit_pattern_31_x_a[index]*cos_angle - gaussian_bit_pattern_31_y_a[index]*sin_angle));
-	// y1 = round((gaussian_bit_pattern_31_x_a[index]*sin_angle + gaussian_bit_pattern_31_y_a[index]*cos_angle));
-	// x2 = round((gaussian_bit_pattern_31_x_b[index]*cos_angle - gaussian_bit_pattern_31_y_b[index]*sin_angle));
-	// y2 = round((gaussian_bit_pattern_31_x_b[index]*sin_angle + gaussian_bit_pattern_31_y_b[index]*cos_angle));
+    if(FIXED){
+        x1 = (int(gaussian_bit_pattern_31_x_a[index]*cos/1024)) - (int(gaussian_bit_pattern_31_y_a[index]*sin/1024));
+        y1 = (int(gaussian_bit_pattern_31_x_a[index]*sin/1024)) + (int(gaussian_bit_pattern_31_y_a[index]*cos/1024));
+        x2 = (int(gaussian_bit_pattern_31_x_b[index]*cos/1024)) - (int(gaussian_bit_pattern_31_y_b[index]*sin/1024));
+        y2 = (int(gaussian_bit_pattern_31_x_b[index]*sin/1024)) + (int(gaussian_bit_pattern_31_y_b[index]*cos/1024));
+    }
+    
+    else{
+        float cos_angle = std::cos(orientation);
+        float sin_angle = std::sin(orientation);
+        x1 = round((gaussian_bit_pattern_31_x_a[index]*cos_angle - gaussian_bit_pattern_31_y_a[index]*sin_angle));
+        y1 = round((gaussian_bit_pattern_31_x_a[index]*sin_angle + gaussian_bit_pattern_31_y_a[index]*cos_angle));
+        x2 = round((gaussian_bit_pattern_31_x_b[index]*cos_angle - gaussian_bit_pattern_31_y_b[index]*sin_angle));
+        y2 = round((gaussian_bit_pattern_31_x_b[index]*sin_angle + gaussian_bit_pattern_31_y_b[index]*cos_angle));
+    }
 
-    // cout << float(cos/1024) << " " << float(sin/1024) << " " << std::cos(orientation) << " " << std::sin(orientation) << endl;
-    // cout << cos << " " << sin << endl;
-    x1 = (int(int(gaussian_bit_pattern_31_x_a[index])*cos/1024)) - (int(int(gaussian_bit_pattern_31_y_a[index])*sin/1024));
-	y1 = (int(int(gaussian_bit_pattern_31_x_a[index])*sin/1024)) + (int(int(gaussian_bit_pattern_31_y_a[index])*cos/1024));
-	x2 = (int(int(gaussian_bit_pattern_31_x_b[index])*cos/1024)) - (int(int(gaussian_bit_pattern_31_y_b[index])*sin/1024));
-	y2 = (int(int(gaussian_bit_pattern_31_x_b[index])*sin/1024)) + (int(int(gaussian_bit_pattern_31_y_b[index])*cos/1024));
-    // cout << x1 << " " << y1 << " " << x2 << " " << y2 << endl;
 }

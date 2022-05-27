@@ -14,6 +14,10 @@ using namespace cv;
 #define FAST_edgethreshold              31
 #define keypoints_num                   500
 #define MATCH_threshold                 30
+#define DISPLAY                         true
+#define FIXED                           false
+#define TESTBENCH                       false
+
 // Image pyramid
 #define FAST_nlevels                    1
 #define FAST_scaling                    1
@@ -28,6 +32,6 @@ int main(int argc, char *argv[]){
     Mat img2 = imread(img2_path, 0);
 
     // Paramter sequence: 
-    MYORB orb(FAST_N, FAST_threshold, FAST_orientation_patch_size, FAST_scorethreshold, FAST_edgethreshold, keypoints_num, MATCH_threshold, FAST_nlevels, FAST_scaling, img1, img2);
+    MYORB orb(FAST_N, FAST_threshold, FAST_orientation_patch_size, FAST_scorethreshold, FAST_edgethreshold, keypoints_num, MATCH_threshold, FAST_nlevels, FAST_scaling, img1, img2, DISPLAY, FIXED, TESTBENCH);
     orb.Matching();
 }

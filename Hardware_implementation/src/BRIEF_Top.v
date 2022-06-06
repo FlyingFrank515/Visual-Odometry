@@ -1,5 +1,5 @@
 `include "BRIEF.v"
-`include "Key_Buffer.v"
+`include "Key_Buffer1.v"
 
 module BRIEF_Top
 #(
@@ -49,6 +49,7 @@ module BRIEF_Top
     wire BUFFER_hit;
     wire [11:0] BUFFER_sin, BUFFER_cos;
     wire [9:0] BUFFER_x, BUFFER_y;
+    wire [7:0] BUFFER_score;
 
     reg [247:0] BRIEF_col [0:30];
 
@@ -65,7 +66,7 @@ module BRIEF_Top
         end
     end
 
-    Key_Buffer 
+    Key_Buffer1 
     #(
         .SIZE(12'd100)   
     )
@@ -79,11 +80,13 @@ module BRIEF_Top
         .i_cos(i_cos),
         .i_coor_x(i_coor_x), 
         .i_coor_y(i_coor_y), 
+        .i_score(i_score),
 
         .o_sin(BUFFER_sin),
         .o_cos(BUFFER_cos),
         .o_coor_x(BUFFER_x), 
-        .o_coor_y(BUFFER_y)
+        .o_coor_y(BUFFER_y),
+        .o_score(BUFFER_score)
     );
 
     BRIEF brief_unit
@@ -124,6 +127,7 @@ module BRIEF_Top
 
         .i_coor_x(coor_x_r), 
         .i_coor_y(coor_y_r), 
+        .i_score(BUFFER_score),
 
         .i_sin(BUFFER_sin),
         .i_cos(BUFFER_cos),
@@ -134,7 +138,8 @@ module BRIEF_Top
         .o_coor_x(o_coordinate_X), 
         .o_coor_y(o_coordinate_Y), 
         .o_descriptor(o_descriptor),
-        .o_flag(o_flag)
+        .o_flag(o_flag),
+        .o_score(o_score)
     );
 
     // ========== Combinational Block ==========

@@ -1,5 +1,6 @@
 .DS_Store
 .vscode/
+*.txt
 build/
 result/
 CPP_implementation/.DS_Store

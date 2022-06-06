@@ -44,7 +44,7 @@ private:
 };
 
 static
-void writeResults( const string& filename, const vector<string>& timestamps, const vector<Mat>& Rt, const int &v_max )
+void writeResults( const string& filename, const vector<string>& timestamps, const vector<Mat>& Rt, const int &v_max , const double &av_times )
 {
     CV_Assert( timestamps.size() == Rt.size() );
 
@@ -79,7 +79,8 @@ void writeResults( const string& filename, const vector<string>& timestamps, con
              << rvec.at<double>(0) << " " << rvec.at<double>(1) << " " << rvec.at<double>(2) << " " << cos_alpha2 << endl;
 
     }
-    //file << v_max << endl;
+    // file << v_max << endl;
+    // file << av_times << endl;
     file.close();
 }
 
@@ -219,7 +220,7 @@ int main(int argc, char** argv)
     }
 
     std::cout << "Average time " << gtm.getTimeSec()/count << std::endl;
-    writeResults(argv[2], timestamps, Rts, v_max);
+    writeResults(argv[2], timestamps, Rts, v_max, gtm.getTimeSec()/count);
     std::cout << "v_max " << v_max << std::endl;
 
     return 0;

@@ -14,9 +14,9 @@ using namespace cv;
 #define FAST_edgethreshold              31
 #define keypoints_num                   500
 #define MATCH_threshold                 30
-#define DISPLAY                         true
-#define FIXED                           false
-#define TESTBENCH                       false
+#define DISPLAY                         false
+#define FIXED                           true
+#define TESTBENCH                       true
 
 // Image pyramid
 #define FAST_nlevels                    1

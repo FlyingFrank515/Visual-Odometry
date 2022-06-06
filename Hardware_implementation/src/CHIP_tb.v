@@ -1,7 +1,7 @@
 `timescale 1ns/10ps
 `define CYCLE    10           	         // Modify your clock period here
-// `define TIME_OUT 640*480*10       
-`define TIME_OUT 640*70*10     
+`define TIME_OUT 640*480*10       
+// `define TIME_OUT 640*100*10     
 
 `ifdef RTL
     `include "CHIP.v"
@@ -121,62 +121,9 @@ module CHIP_tb;
 
     always@(posedge clk) begin
         if(o_flag) begin
-            $fwrite(f, "%h %h %h %b \n", o_coordinate_X, o_coordinate_Y, o_score, o_descriptor);
+            $display("keypoint found: %h %h %h %h \n", o_coordinate_X, o_coordinate_Y, o_score, o_descriptor);
+            $fwrite(f, "%h %h %h %h \n", o_coordinate_X, o_coordinate_Y, o_score, o_descriptor);
         end
     end
 
-    // always @(posedge clk) begin
-    //     if(finish) begin
-    //         $fwrite(f,"%b\n", data_out);
-    //         // $display("Output %0d: %b ", j , data_out);
-            
-    //         // allow some error in last bit
-    //         if((after_ff[j] != data_out)) begin
-    //             if(j < 32)
-    //                 $display("There is an error at NO.%d Real part; expected: %b / golden: %b" , j, data_out, after_ff[j]);
-    //             else
-    //                 $display("There is an error at NO.%d Imag part; expected: %b / golden: %b" , j-32, data_out, after_ff[j]);
-    //             err = err + 1;
-    //         end
-    //         j = j + 1;
-    //     end
-    //     if(j > 63) begin
-    //         if(!err) begin
-    //             $display("Finishing Fast fourier transform!");
-    //             $display("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠔⠉⠱⠀⠀⠀⠀⠀⠀");
-    //             $display("⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠁⠀⢀⠁⠀⠀⠀⠀⠀⠀");
-    //             $display("⠀⠀⠀⠀⠀⠀⠀⠀⠰⠂⠰⠄⢸⠀⠀⠀⠀⠀⠀⠀");
-    //             $display("⡄⠄⡀⠀⠀⠀⢀⠊⣈⢊⠁⡄⢸⠀⠀⠀⠀⠀⢀⢀");
-    //             $display("⢁⠀⠈⠢⡀⠀⢘⢀⡹⡈⡠⠁⠈⠀⠀⠀⠔⠈⠀⡘");
-    //             $display("⠀⢂⠀⠀⠀⢑⠌⢢⣤⣴⣶⡏⠀⡢⠊⠀⠀⠀⠐⠀");
-    //             $display("⠀⠀⠢⠀⢀⠊⠠⣟⣉⡩⠉⠀⠈⠀⠀⠀⢁⠊⠀⠀");
-    //             $display("⠀⠀⠀⠱⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡐⠁⠀⠀⠀");
-    //             $display("⠀⠀⢠⡁⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢁⠀⠀⠀⠀");
-    //             $display("⠀⠀⢸⣷⣄⡀⢂⠀⠀⠀⠀⠀⠀⣀⣤⣾⠀⠀⠀⠀");
-    //             $display("⠀⠀⠀⢿⣿⣿⣷⣶⣶⣶⣶⣶⣿⣿⣿⡏⠀⠀⠀");⠀
-    //             $display("⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠋⠀⠀⠀⠀⠀");
-    //             $display("⠀⠀⠀⠈⡟⠛⢿⠋⠉⠹⠿⣿⡿⠿⠂⠀⠀⠀⠀");⠀
-    //             $display("⠀⠀⠀⠀⠐⠀⠂⠀⠀⠀⠐⢄⡀⠂⠀⠀⠀⠀⠀⠀");
-    //         end
-    //         else begin
-    //             $display("AAAAA, There are total %d errors in your design", err);
-    //             $display("⠄⠄⠄⠄⠄⠄⠄⠈⠉⠁⠈⠉⠉⠙⠿⣿⣿⣿⣿⣿");
-    //             $display("⠄⠄⠄⠄⠄⠄⠄⠄⣀⣀⣀⠄⠄⠄⠄⠄⠹⣿⣿⣿");
-    //             $display("⠄⠄⠄⠄⠄⢐⣲⣿⣿⣯⠭⠉⠙⠲⣄⡀⠄⠈⢿⣿");
-    //             $display("⠐⠄⠄⠰⠒⠚⢩⣉⠼⡟⠙⠛⠿⡟⣤⡳⡀⠄⠄⢻");
-    //             $display("⠄⠄⢀⣀⣀⣢⣶⣿⣦⣭⣤⣭⣵⣶⣿⣿⣏⠄⠄⣿");
-    //             $display("⠄⣼⣿⣿⣿⡉⣿⣀⣽⣸⣿⣿⣿⣿⣿⣿⣿⡆⣀⣿");
-    //             $display("⢠⣿⣿⣿⠿⠟⠛⠻⢿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣼");
-    //             $display("⠄⣿⣿⣿⡆⠄⠄⠄⠄⠳⡈⣿⣿⣿⣿⣿⣿⣿⣿⣿");
-    //             $display("⠄⢹⣿⣿⡇⠄⠄⠄⠄⢀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
-    //             $display("⠄⠄⢿⣿⣷⣨⣽⣭⢁⣡⣿⣿⠟⣩⣿⣿⣿⠿⠿⠟");
-    //             $display("⠄⠄⠈⡍⠻⣿⣿⣿⣿⠟⠋⢁⣼⠿⠋⠉⠄⠄⠄⠄");
-    //             $display("⠄⠄⠄⠈⠴⢬⣙⣛⡥⠴⠂⠄⠄⠄⠄⠄⠄⠄⠄.");
-    //         end
-
-    //         $fclose(f);
-    //         $finish;
-    //     end
-    // end
-   
 endmodule

@@ -402,15 +402,17 @@ void MYORB::FAST_detector(int option){
         // cout << int(key.at<uchar>(37, 136)) << endl;
 
         // output to files (for testbench usage)
-        if(level == 0 && option == 1){
-            for (int i = 0; i < img.rows; i++) {
-                for (int j = 0; j < img.cols; j++) {
-                    // result_NMS << int(reserved.at<uchar>(i, j)) << endl;
-                    // result_coordinates << hex << i << " " << j << endl;
-                    // result_score << hex << int(score.at<uchar>(i, j)) << endl;
-                    // result_mx << hex << mx.at<int>(i, j) << endl;
-                    // result_my << hex << my.at<int>(i, j) << endl;
-                    pixel_in << hex << (int)img.at<uchar>(i, j) << endl;
+        if(TESTBENCH){
+            if(level == 0 && option == 1){
+                for (int i = 0; i < img.rows; i++) {
+                    for (int j = 0; j < img.cols; j++) {
+                        // result_NMS << int(reserved.at<uchar>(i, j)) << endl;
+                        // result_coordinates << hex << i << " " << j << endl;
+                        // result_score << hex << int(score.at<uchar>(i, j)) << endl;
+                        // result_mx << hex << mx.at<int>(i, j) << endl;
+                        // result_my << hex << my.at<int>(i, j) << endl;
+                        pixel_in << hex << (int)img.at<uchar>(i, j) << endl;
+        }
                     
         //             if(int(reserved.at<uchar>(i, j)) == 1){
         //                 read << hex << setw(3) << setfill('0') <<  j  << " " << setw(3) << setfill('0') << i << " ";
@@ -518,7 +520,7 @@ void MYORB::MATCH_BFmatcher(){
     // query -> img2
     // train -> img1
     for(int idx2 = 0; idx2 < descriptor_2.rows; idx2++){
-        int min_index = -1;
+        int min_index = 0;
         int min_value = 256;
         for(int idx1 = 0; idx1 < descriptor_1.rows; idx1++){
             int hamming_distance_counter = 0;
@@ -555,7 +557,7 @@ void MYORB::MATCH_optimization(){
     // }
 
     // int thres =  max ( 2*min_dist, 30.0 );
-    // cout << thres << endl;
+    // // cout << thres << endl;
     // for ( int i = 0; i < matches.size(); i++ ){
     //     if ( matches[i].distance <= thres ){
     //         good_matches.push_back ( matches[i] );

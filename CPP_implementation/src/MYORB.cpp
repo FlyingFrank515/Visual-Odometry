@@ -82,6 +82,12 @@ vector<DMatch> MYORB::Matching(){
     min_thres = int(temp[-1].response);
     
     // smoothing the image
+    // for (int i = -2; i < 3; i++){
+    //     for (int j = -2; j < 3; j++){
+    //         cout << int(img_1.at<uchar>(97+i, 231+j)) << " ";
+    //     }
+    //     cout << endl;
+    // }
     BRIEF_smoothing();
 
     // Create descriptor matrix and use BRIEF descriptor
@@ -95,9 +101,9 @@ vector<DMatch> MYORB::Matching(){
     if(TESTBENCH){
         for (int i = 0; i < keylist_1.size(); i++){
             read << hex << setw(3) << setfill('0') <<  int(keylist_1[i].pt.x)  << " " << setw(3) << setfill('0') << int(keylist_1[i].pt.y) << " ";
-            read << setw(2) << int(smth_1.at<uchar>(int(keylist_1[i].pt.y), int(keylist_1[i].pt.x))) << " ";
+            read << hex << setw(2) << int(keylist_1[i].response) << " ";
             for (int j = 0; j < 32; j++){
-                read << bitset<8>(descriptor_1.at<uchar>(i, j));
+                read << hex << setw(2) << setfill('0') << int(descriptor_1.at<uchar>(i, 31-j));
             }
             read << endl;
         }
@@ -325,12 +331,19 @@ void MYORB::FAST_detector(int option){
                 orient.at<float>(i, j) = atan2(y_sum, x_sum);
                 // cout << (1024 * x_sum) / int(sqrt(x_sum*x_sum + y_sum*y_sum)) << endl;
                 int denominator = int(sqrt(x_sum*x_sum + y_sum*y_sum));
+                int x_sign = (x_sum < 0) ? -1 : 1;
+                int y_sign = (y_sum < 0) ? -1 : 1;
 
                 if(denominator != 0){
-                    cos.at<int>(i, j) = (1024 * x_sum) / denominator;
-                    sin.at<int>(i, j) = (1024 * y_sum) / denominator;
+                    cos.at<int>(i, j) = int(1024 * abs(x_sum) / denominator );
+                    sin.at<int>(i, j) = int(1024 * abs(y_sum) / denominator );
                 }
-
+                else {
+                    cos.at<int>(i, j) = int(1024 * abs(x_sum));
+                    sin.at<int>(i, j) = int(1024 * abs(y_sum));
+                }
+                cos.at<int>(i, j) = cos.at<int>(i, j) * x_sign;
+                sin.at<int>(i, j) = sin.at<int>(i, j) * y_sign;
             }
         }
 
@@ -475,13 +488,31 @@ void MYORB::BRIEF_descriptor(int option){
     for(int i = 0; i < keylist.size(); i++){
         int x = keylist[i].pt.x;
         int y = keylist[i].pt.y;
+        
+        if(TESTBENCH){
+            // result_test << cos[i] << " " << sin[i] << endl;
+            result_test << hex << y << " " << x << " " << int(img.at<uchar>(y, x)) << dec << endl;
+            for(int ky = -15; ky < 16; ky++){
+                for(int kx = -15; kx < 16; kx++){
+                    result_test << hex << setw(3) << int(img.at<uchar>(y+ky, x+kx)) << " ";
+                }
+                result_test << dec << endl;
+            }
+        }
         for(int ic = 0; ic < 32; ic++){
             uchar desc = 0;
             for(int bit = 0; bit < 8; bit++){
                 int x_d1, x_d2, y_d1, y_d2;
                 BRIEF_pattern_LUT(ic*8+bit, float(keylist[i].angle), cos[i], sin[i], x_d1, x_d2, y_d1, y_d2);
+                if(TESTBENCH){
+                    // result_test  << x_d1+15 << " " << y_d1+15 << " " << x_d2+15 << " " << y_d2+15 << " | ";
+                    result_test  << x_d1 << " " << y_d1 << " " << x_d2 << " " << y_d2 << " | ";
+                }
                 // BRIEF_pattern_LUT(ic*8+bit, 0, x_d1, x_d2, y_d1, y_d2);
-                bool result = img.at<uchar>(y+y_d1, x+x_d1) > img.at<uchar>(y+y_d2, x+x_d2);
+                bool result = int(img.at<uchar>(y+y_d1, x+x_d1)) > int(img.at<uchar>(y+y_d2, x+x_d2));
+                if(TESTBENCH){
+                    result_test  << int(img.at<uchar>(y+y_d1, x+x_d1)) << " " << int(img.at<uchar>(y+y_d2, x+x_d2)) << endl;
+                }
                 // cout << result;
                 desc += int(result) << bit;
                 // cout << endl;
@@ -490,6 +521,7 @@ void MYORB::BRIEF_descriptor(int option){
             if(option == 1) descriptor_1.at<uchar>(i, ic) = desc;
             else if(option == 2) descriptor_2.at<uchar>(i, ic) = desc;
         }
+        if(TESTBENCH) result_test << endl;
 
     }
 

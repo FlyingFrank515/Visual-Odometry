@@ -14,7 +14,7 @@ using namespace cv;
 #define FAST_edgethreshold              31
 #define keypoints_num                   500
 #define MATCH_threshold                 30
-#define DISPLAY                         false
+#define DISPLAY                         true
 #define FIXED                           true
 #define TESTBENCH                       true
 
@@ -23,7 +23,7 @@ using namespace cv;
 #define FAST_scaling                    1
 
 int main(int argc, char *argv[]){
-    string filename = argv[3];
+    // string filename = argv[3];
     string img1_path = argv[1];
     string img2_path = argv[2];
     

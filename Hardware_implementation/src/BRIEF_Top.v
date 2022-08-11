@@ -42,6 +42,7 @@ module BRIEF_Top
     reg [19:0] count_w, count_r;
     reg [9:0] coor_x_w, coor_x_r;
     reg [9:0] coor_y_w, coor_y_r;
+    reg start_delay_r, start_delay_w;
     reg [7:0] LINE_BUFFER_enter;
     reg [7:0] LINE_BUFFER [0:29][0:WIDTH-1];
     reg [7:0] LINE_BUFFER_LAST [0:31];
@@ -148,6 +149,7 @@ module BRIEF_Top
         count_w = count_r;
         coor_x_w = coor_x_r;
         coor_y_w = coor_y_r;
+        // start_delay_w = start_delay_r;
         LINE_BUFFER_enter = 0;
         o_start = 0;
         o_end = 0;
@@ -174,6 +176,7 @@ module BRIEF_Top
                     coor_y_w = 0;
                     state_w = S_WORK;
                 end          
+
             end
             S_WORK: begin
                 LINE_BUFFER_enter = i_pixel;
@@ -181,11 +184,18 @@ module BRIEF_Top
                 coor_x_w = (coor_x_r == WIDTH-1) ? 0 : coor_x_r + 1;
                 coor_y_w = (coor_x_r == WIDTH-1) ? coor_y_r + 1 : coor_y_r;
 
-                if(coor_x_r == WIDTH-1 && coor_y_r == HEIGHT-1) begin
+                if((coor_x_r == WIDTH-1 && coor_y_r == HEIGHT-1)) begin
                     o_end = 1;
                     state_w = S_IDLE;
                     coor_x_w = 0;
                     coor_y_w = 0;
+                end
+                if(i_start) begin
+                    o_end = 1;
+                    state_w = S_WAIT2;
+                    LINE_BUFFER_enter = i_pixel;
+                    count_w = 0;
+                    o_start = 1;
                 end
             end
         endcase
@@ -198,6 +208,7 @@ module BRIEF_Top
             count_r <= 0;
             coor_x_r <= 0;
             coor_y_r <= 0;
+            // start_delay_r <= 0;
 
             for(j = 0; j < 32; j = j+1) begin
                 LINE_BUFFER_LAST[j] <= 0;
@@ -213,6 +224,7 @@ module BRIEF_Top
             count_r <= count_w;
             coor_x_r <= coor_x_w;
             coor_y_r <= coor_y_w;
+            // start_delay_r <= start_delay_w;
 
             LINE_BUFFER_LAST[0] <= LINE_BUFFER[29][WIDTH-1];
             for(j = 1; j < 32; j = j+1) begin

@@ -19,6 +19,7 @@ module FAST_Detector
     output [9:0]    o_coordinate_X,
     output [9:0]    o_coordinate_Y,
 
+    output reg      o_ready,
     output [11:0]   o_cos,
     output [11:0]   o_sin,
     output [7:0]    o_score,
@@ -74,7 +75,6 @@ module FAST_Detector
     assign o_pixel = SMOOTH_pixel;
     assign o_coordinate_X = o_x_r;
     assign o_coordinate_Y = o_y_r;
-    assign o_orientation = 0;
     assign o_cos = o_cos_r;
     assign o_sin = o_sin_r;
 
@@ -165,8 +165,10 @@ module FAST_Detector
         LINE_BUFFER_enter = 0;
         o_start = 0;
         o_end = 0;
+        o_ready = 0;
         case(state_r)
             S_IDLE: begin
+                o_ready = 1;
                 if(i_start) begin
                     state_w = S_WAIT;
                     LINE_BUFFER_enter = i_pixel;

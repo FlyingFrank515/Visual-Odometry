@@ -99,6 +99,7 @@ class MYORB {
         void    FAST_detector(int);
         int     FAST_consecutive1_finder(vector<int>&);
         void    FAST_keypoint_output(vector<KeyPoint>&);
+        void    FAST_sort();
 
         // BRIEF
         void    BRIEF_pattern_LUT(int, float, int, int, int&, int&, int&, int&);

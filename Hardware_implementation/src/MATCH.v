@@ -1,3 +1,5 @@
+`include "HAMMING.v"
+
 module MATCH
 #(
     parameter SIZE = 12'd500   
@@ -7,19 +9,19 @@ module MATCH
     input           i_rst_n,
 
     input           i_flag,
-    input           i_next,
+    input           i_end,
     input [9:0]     i_coor_x, 
     input [9:0]     i_coor_y,
     input [7:0]     i_score,
     input [255:0]   i_descriptor,
 
-    output reg          o_next,
-    output reg          o_end,
-    output reg          o_valid,
-    output reg [9:0]    o_src_coor_x,
-    output reg [9:0]    o_src_coor_y,
-    output reg [9:0]    o_dst_coor_x,
-    output reg [9:0]    o_dst_coor_y
+    output reg      o_next,
+    output reg      o_end,
+    output          o_valid,
+    output [9:0]    o_src_coor_x,
+    output [9:0]    o_src_coor_y,
+    output [9:0]    o_dst_coor_x,
+    output [9:0]    o_dst_coor_y
 
 );
     // parameter
@@ -28,17 +30,26 @@ module MATCH
     localparam OUTPUT = 2'd2;
     localparam COPY = 2'd3;
 
-    localparam SUB1 = 2'd1;
-    localparam SUB2 = 2'd2;
-    localparam SUB3 = 2'd3;
-
     // ========== function declaration ==========
 
     // ========== reg/wire declaration ==========
     integer i, j;
     // --- others ---
     reg [2:0] state_r, state_w;
-    
+
+    // output reg
+    reg          o_valid_r, o_valid_w;
+    reg [9:0]    o_src_coor_x_r, o_src_coor_x_w;
+    reg [9:0]    o_src_coor_y_r, o_src_coor_y_w;
+    reg [9:0]    o_dst_coor_x_r, o_dst_coor_x_w;
+    reg [9:0]    o_dst_coor_y_r, o_dst_coor_y_w;
+
+    assign o_valid = o_valid_r;
+    assign o_src_coor_x = o_src_coor_x_r;
+    assign o_src_coor_y = o_src_coor_y_r;
+    assign o_dst_coor_x = o_dst_coor_x_r;
+    assign o_dst_coor_y = o_dst_coor_y_r;
+
     // --- SORT --- 
     reg [9:0] SORT_coor_x_r [0:SIZE-1], SORT_coor_x_w [0:SIZE-1];
     reg [9:0] SORT_coor_y_r [0:SIZE-1], SORT_coor_y_w [0:SIZE-1];
@@ -61,76 +72,55 @@ module MATCH
 
 
     // --- MIN_DISTANCE ---
-    reg [9:0] DIST_coor_x_r [0:SIZE-1], DIST_coor_x_w [0:SIZE-1];
-    reg [9:0] DIST_coor_y_r [0:SIZE-1], DIST_coor_y_w [0:SIZE-1];
-    reg [255:0] DIST_desc_r [0:SIZE-1], DIST_desc_w [0:SIZE-1];
+    reg [9:0] COMP1_coor_x_r [0:SIZE-1], COMP1_coor_x_w [0:SIZE-1];
+    reg [9:0] COMP1_coor_y_r [0:SIZE-1], COMP1_coor_y_w [0:SIZE-1];
+    reg [255:0] COMP1_desc_r [0:SIZE-1], COMP1_desc_w [0:SIZE-1];
+    reg [12:0] COMP1_len_r, COMP1_len_w;
+    
+    reg [9:0] COMP2_coor_x_r [0:SIZE-1], COMP2_coor_x_w [0:SIZE-1];
+    reg [9:0] COMP2_coor_y_r [0:SIZE-1], COMP2_coor_y_w [0:SIZE-1];
+    reg [255:0] COMP2_desc_r [0:SIZE-1], COMP2_desc_w [0:SIZE-1];
+    reg [12:0] COMP2_len_r, COMP2_len_w;
 
-    reg [9:0] DIST_comp_x_r, DIST_comp_x_w;
-    reg [9:0] DIST_comp_y_r, DIST_comp_y_w;
-    reg [255:0] DIST_comp_desc_r, DIST_comp_desc_w;
+    reg [12:0] COMP1_count_r, COMP1_count_w;
+    reg [12:0] COMP2_count_r, COMP2_count_w;
 
-    reg [7:0] DIST_min_r, DIST_min_w;
-    reg [9:0] DIST_best_x_r, DIST_best_x_w;
-    reg [9:0] DIST_best_y_r, DIST_best_y_w;
+    reg [12:0] best_count_r, best_count_w;
+    reg [8:0] best_dist_r, best_dist_w;
 
-    reg [255:0] DIST_result_r, DIST_result_w;
-    reg         DIST_finish_r, DIST_finish_w;
+    // connection
+    reg [255:0] COMP1_target_desc, COMP2_target_desc;
+    reg [12:0] COMP1_count_prev3;
+    reg [9:0] COMP1_target_x, COMP1_target_y, COMP2_target_x, COMP2_target_y;
+    reg [9:0] COMP1_best_x, COMP1_best_y;
+    reg HAMMING_valid;
+    wire [8:0] HAMMING_dist;
+    wire HAMMING_o_valid;
 
-    reg [10:0] DIST_count_r, DIST_count_w;
-    reg [5:0] DIST_partial_sum_w [0:7], DIST_partial_sum_r [0:7];
-    reg [8:0] DIST_hamming_r, DIST_hamming_w;
-    reg [12:0] DIST_len_w, DIST_len_r;
-    reg [2:0] sub_state_w, sub_state_r;
-
-    reg [9:0] DIST_target_x;
-    reg [9:0] DIST_target_y;
-    reg [255:0] DIST_target_desc;
-
-    reg [1:0] DIST_sum_layer1 [0:127];
-    reg [2:0] DIST_sum_layer2 [0:63];
-    reg [3:0] DIST_sum_layer3 [0:31];
-    reg [4:0] DIST_sum_layer4 [0:15];
-
-    reg [6:0] DIST_sum_layer5 [0:3];
-    reg [7:0] DIST_sum_layer6 [0:1];
 
 
     // ========== Combinational Block ==========
-    // --- STATE & OUTPUT ---
+    // --- STATE MACHINE ---
     always@(*) begin
         // register default value
         state_w = state_r;
         o_next = 0;
         o_end = 0;
-        o_valid = 0;
-        o_src_coor_x = 0;
-        o_src_coor_y = 0;
-        o_dst_coor_x = 0;
-        o_dst_coor_y = 0;
-
         case(state_r)
             IDLE: begin
                 if(i_flag) begin
                     state_w = WORK;
                     o_next = 1;
                 end
-                if(i_next) begin
+                if(i_end) begin
                     state_w = COPY;
                     o_end = 1;
                 end
             end
             WORK: begin
-                if(DIST_finish_r && SORT_finish_r) begin
-                    state_w = OUTPUT;
+                if(SORT_finish_r) begin
+                    state_w = IDLE;
                 end
-            end
-            OUTPUT: begin
-                state_w = IDLE;
-                o_valid = 0;
-                o_src_coor_x = DIST_best_x_r;
-                o_src_coor_y = DIST_best_y_r;
-                o_dst_coor_x = DIST_comp_x_r;
-                o_dst_coor_y = DIST_comp_y_r;
             end
             COPY: begin
                 state_w = IDLE;
@@ -195,126 +185,124 @@ module MATCH
                     end
                 end 
             end
-            OUTPUT: begin
-                
-            end
             COPY: begin
                 SORT_len_w = 0;
+                for(i = 0; i < SIZE; i = i+1) begin
+                    SORT_coor_x_w[i] = 0;
+                    SORT_coor_y_w[i] = 0;
+                    SORT_score_w[i] = 0;
+                    SORT_desc_w[i] = 0;
+                end
             end
         endcase
     end
 
-    // --- MIN_DISTANCE ---
+    // --- COPY ---
     always@(*) begin
-        // connection
-        DIST_target_x = DIST_coor_x_r[DIST_count_r];
-        DIST_target_y = DIST_coor_y_r[DIST_count_r];
-        DIST_target_desc = DIST_desc_r[DIST_count_r];
+        // default value
+        for (i = 0; i < SIZE; i = i+1) begin
+            COMP1_coor_x_w[i] = COMP1_coor_x_r[i]; 
+            COMP1_coor_y_w[i] = COMP1_coor_y_r[i];
+            COMP1_desc_w[i] = COMP1_desc_r[i];
 
-        for(j = 0; j < 128; j = j+1) begin
-            DIST_sum_layer1[j] = DIST_result_r[j] + DIST_result_r[j+128];
+            COMP2_coor_x_w[i] = COMP2_coor_x_r[i]; 
+            COMP2_coor_y_w[i] = COMP2_coor_y_r[i];
+            COMP2_desc_w[i] = COMP2_desc_r[i];
         end
-        for(j = 0; j < 64; j = j+1) begin
-            DIST_sum_layer2[j] = DIST_sum_layer1[j] + DIST_sum_layer1[j+64];
-        end
-        for(j = 0; j < 32; j = j+1) begin
-            DIST_sum_layer3[j] = DIST_sum_layer2[j] + DIST_sum_layer2[j+32];
-        end
-        for(j = 0; j < 16; j = j+1) begin
-            DIST_sum_layer4[j] = DIST_sum_layer3[j] + DIST_sum_layer3[j+16];
-        end
-        for(j = 0; j < 8; j = j+1) begin
-            DIST_partial_sum_w[j] = DIST_sum_layer4[j] + DIST_sum_layer4[j+8];
-        end
-        for(j = 0; j < 4; j = j+1) begin
-            DIST_sum_layer5[j] = DIST_partial_sum_r[j] + DIST_partial_sum_r[j+4];
-        end
-        for(j = 0; j < 2; j = j+1) begin
-            DIST_sum_layer6[j] = DIST_sum_layer5[j] + DIST_sum_layer5[j+2];
-        end
-        
-         
-        // register default value
-        for(i = 0; i < SIZE; i = i+1) begin
-            DIST_coor_x_w[i] = DIST_coor_x_r[i];
-            DIST_coor_y_w[i] = DIST_coor_y_r[i];
-            DIST_desc_w[i] = DIST_desc_r[i];
-        end
-        DIST_comp_x_w = DIST_comp_x_r;
-        DIST_comp_y_w = DIST_comp_y_r;
-        DIST_comp_desc_w = DIST_comp_desc_r;
-        DIST_finish_w = DIST_finish_w;
-
-        DIST_best_x_w = DIST_best_x_r;
-        DIST_best_y_w = DIST_best_y_r;
-        DIST_min_w = DIST_min_r;
-        DIST_count_w = DIST_count_r;
-        DIST_result_w = DIST_result_r;
-        DIST_hamming_w = DIST_hamming_r;
-        DIST_len_w = DIST_len_r;
-
-        for(i = 0; i < 16; i = i+1) begin
-            DIST_partial_sum_w[i] = DIST_partial_sum_r[i];
-        end
-        
-        sub_state_w = sub_state_r;
+        COMP1_len_w = COMP1_len_r;
+        COMP2_len_w = COMP2_len_r;
 
         case(state_r)
-            IDLE: begin
-                DIST_finish_w = 0;
-                if(i_flag) begin
-                    DIST_comp_x_w = i_coor_x;
-                    DIST_comp_y_w = i_coor_y;
-                    DIST_comp_desc_w = i_descriptor;
-                    DIST_count_w = 0;
-                    DIST_finish_w = 0;
-
-                    DIST_best_x_w = 0;
-                    DIST_best_y_w = 0;
-                    DIST_min_w = 255;
-                    DIST_result_w = i_descriptor ^ DIST_desc_r[0];
-                    
-                    sub_state_w = SUB1;
-                end
-            end
-            WORK: begin
-                if(!DIST_finish_r) begin
-                    case(sub_state_r)
-                        SUB1: begin
-                            // count partial sum
-                            sub_state_w = SUB2;
-                        end
-                        SUB2: begin
-                            // count hamming distance
-                            sub_state_w = SUB3;
-                            DIST_hamming_w = DIST_sum_layer6[0] + DIST_sum_layer6[1];
-                        end
-                        SUB3: begin
-                            if(DIST_hamming_r < DIST_min_r) begin
-                                DIST_best_x_w = DIST_target_x;
-                                DIST_best_y_w = DIST_target_y;
-                                DIST_min_w = DIST_hamming_r;
-                            end
-                            DIST_count_w = DIST_count_r + 1;
-                            sub_state_w = SUB1;
-                        end
-                    endcase
-                    if(DIST_count_r == DIST_len_r - 1) begin
-                        DIST_finish_w = 1;
-                    end
-                end
-            end
-            OUTPUT: begin
-            end
             COPY: begin
-                for(i = 0; i < SIZE; i = i+1) begin
-                    DIST_coor_x_w[i] = SORT_coor_x_r[i];
-                    DIST_coor_y_w[i] = SORT_coor_y_r[i];
-                    DIST_desc_w[i] = SORT_desc_r[i];
+                for (i = 0; i < SIZE; i = i+1) begin
+                    COMP2_coor_x_w[i] = SORT_coor_x_r[i]; 
+                    COMP2_coor_y_w[i] = SORT_coor_y_r[i];
+                    COMP2_desc_w[i] = SORT_desc_r[i];
+
+                    COMP1_coor_x_w[i] = COMP2_coor_x_r[i]; 
+                    COMP1_coor_y_w[i] = COMP2_coor_y_r[i];
+                    COMP1_desc_w[i] = COMP2_desc_r[i];
                 end
-                DIST_len_w = SORT_len_r;
+                COMP2_len_w = SORT_len_r;
+                COMP1_len_w = COMP2_len_r;
             end
         endcase
+
+    end
+
+    HAMMING dist_unit(
+        .i_clk(i_clk),
+        .i_rst_n(i_rst_n),
+
+        .i_valid(HAMMING_valid),
+        .i_src_desc(COMP1_target_desc),
+        .i_dst_desc(COMP2_target_desc),
+        .o_dist(HAMMING_dist),
+        .o_valid(HAMMING_o_valid)
+    );
+
+    // --- MIN_DISTANCE ---
+    // for each keypoints in comp2 array, find the closet keypoint in comp1 array
+    always@(*) begin
+        // default
+        COMP1_count_w = COMP1_count_r;
+        COMP2_count_w = COMP2_count_r;
+        best_count_w = best_count_r;
+        best_dist_w = best_dist_r;
+
+        o_src_coor_x_w = 0;
+        o_src_coor_y_w = 0;
+        o_dst_coor_x_w = 0;
+        o_dst_coor_y_w = 0;
+        o_valid_w = 0;
+
+        // connection
+        COMP1_target_desc = COMP1_desc_r[COMP1_count_r];
+        COMP2_target_desc = COMP2_desc_r[COMP2_count_r];
+        HAMMING_valid = COMP1_count_r < COMP1_len_r && COMP2_count_r < COMP2_len_r;
+        COMP1_best_x = COMP1_coor_x_r[best_count_r];
+        COMP1_best_y = COMP1_coor_y_r[best_count_r];
+
+        COMP1_count_prev3 = COMP1_count_r - 2;
+        COMP1_target_x = COMP1_coor_x_r[COMP1_count_prev3];
+        COMP1_target_y = COMP1_coor_y_r[COMP1_count_prev3];
+
+        COMP2_target_x = COMP2_coor_x_r[COMP2_count_r];
+        COMP2_target_y = COMP2_coor_y_r[COMP2_count_r];
+
+
+
+        if(state_r == COPY) begin // RESET
+            COMP1_count_w = 0;
+            COMP2_count_w = 0;
+            best_dist_w = 9'b111111111;
+        end
+
+        if(COMP2_count_r < COMP2_len_r) begin
+            if(HAMMING_o_valid && COMP1_count_r > 1) begin
+                if(HAMMING_dist < best_dist_r) begin
+                    best_dist_w = HAMMING_dist;
+                    best_count_w = COMP1_count_prev3;
+                end
+            end
+            COMP1_count_w = COMP1_count_r + 1;
+            // output
+            if(COMP1_count_prev3 == COMP1_len_r - 1) begin
+                // output reg
+                if(best_dist_r <= 30) begin
+                    o_dst_coor_x_w = COMP2_target_x;
+                    o_dst_coor_y_w = COMP2_target_y;
+                    o_src_coor_x_w = COMP1_best_x;
+                    o_src_coor_y_w = COMP1_best_y;
+                    o_valid_w = 1;
+                end
+                
+                // move comp2_count forward
+                COMP2_count_w = COMP2_count_r + 1;
+                COMP1_count_w = 0;
+                best_dist_w = 9'b111111111;
+            end
+        end
     end
 
 
@@ -328,9 +316,13 @@ module MATCH
                 SORT_score_r[i] <= 0;
                 SORT_desc_r[i] <= 0;
                 
-                DIST_coor_x_r[i] <= 0;
-                DIST_coor_y_r[i] <= 0;
-                DIST_desc_r[i] <= 0;
+                COMP1_coor_x_r[i] <= 0;
+                COMP1_coor_y_r[i] <= 0;
+                COMP1_desc_r[i] <= 0;
+
+                COMP2_coor_x_r[i] <= 0;
+                COMP2_coor_y_r[i] <= 0;
+                COMP2_desc_r[i] <= 0;
             end
             SORT_comp_x_r <= 0;
             SORT_comp_y_r <= 0;
@@ -340,24 +332,20 @@ module MATCH
             SORT_finish_r <= 0;
             SORT_len_r <= 0;
 
-            DIST_comp_x_r <= 0;
-            DIST_comp_y_r <= 0;
-            DIST_comp_desc_r <= 0;
-            DIST_min_r <= 0;
-            DIST_best_x_r <= 0;
-            DIST_best_y_r <= 0;
-            DIST_finish_r <= 0;
-            DIST_result_r <= 0;
-            DIST_count_r <= 0;
-            DIST_hamming_r <= 0;
-            DIST_len_r <= 0;
-            sub_state_r <= 0;
+            o_valid_r <= 0;
+            o_src_coor_x_r <= 0;
+            o_src_coor_y_r <= 0;
+            o_dst_coor_x_r <= 0;
+            o_dst_coor_y_r <= 0;
 
-            for(i = 0; i < 8; i = i+1) begin
-                DIST_partial_sum_r[i] <= 0;
-            end
-            
+            COMP1_len_r <= 0;
+            COMP2_len_r <= 0;
+            COMP1_count_r <= 0;
+            COMP2_count_r <= 0;
+            best_count_r <= 0;
+            best_dist_r <= 0;
         end
+            
         else begin
             state_r <= state_w;
             for(i = 0; i < SIZE; i = i+1) begin
@@ -366,9 +354,13 @@ module MATCH
                 SORT_score_r[i] <= SORT_score_w[i];
                 SORT_desc_r[i] <= SORT_desc_w[i];
                 
-                DIST_coor_x_r[i] <= DIST_coor_x_w[i];
-                DIST_coor_y_r[i] <= DIST_coor_y_w[i];
-                DIST_desc_r[i] <= DIST_desc_w[i];
+                COMP1_coor_x_r[i] <= COMP1_coor_x_w[i];
+                COMP1_coor_y_r[i] <= COMP1_coor_y_w[i];
+                COMP1_desc_r[i] <= COMP1_desc_w[i];
+
+                COMP2_coor_x_r[i] <= COMP2_coor_x_w[i];
+                COMP2_coor_y_r[i] <= COMP2_coor_y_w[i];
+                COMP2_desc_r[i] <= COMP2_desc_w[i];
             end
             SORT_comp_x_r <= SORT_comp_x_w;
             SORT_comp_y_r <= SORT_comp_y_w;
@@ -378,24 +370,18 @@ module MATCH
             SORT_finish_r <= SORT_finish_w;
             SORT_len_r <= SORT_len_w;
 
-            DIST_comp_x_r <= DIST_comp_x_w;
-            DIST_comp_y_r <= DIST_comp_y_w;
-            DIST_comp_desc_r <= DIST_comp_desc_w;
-            DIST_min_r <= DIST_min_w;
-            DIST_best_x_r <= DIST_best_x_w;
-            DIST_best_y_r <= DIST_best_y_w;
-            DIST_finish_r <= DIST_finish_w;
-            DIST_result_r <= DIST_finish_w;
-            DIST_count_r <= DIST_count_w;
-            DIST_hamming_r <= DIST_hamming_w;
-            DIST_len_r <= DIST_len_w;
-            sub_state_r <= sub_state_w;
+            o_valid_r <= o_valid_w;
+            o_src_coor_x_r <= o_src_coor_x_w;
+            o_src_coor_y_r <= o_src_coor_y_w;
+            o_dst_coor_x_r <= o_dst_coor_x_w;
+            o_dst_coor_y_r <= o_dst_coor_y_w;
 
-            for(i = 0; i < 8; i = i+1) begin
-                DIST_partial_sum_r[i] <= DIST_partial_sum_w[i];
-            end
-
-            
+            COMP1_len_r <= COMP1_len_w;
+            COMP2_len_r <= COMP2_len_w;
+            COMP1_count_r <= COMP1_count_w;
+            COMP2_count_r <= COMP2_count_w;
+            best_count_r <= best_count_w;
+            best_dist_r <= best_dist_w;
         end
     end
     

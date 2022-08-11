@@ -17,8 +17,10 @@ module Key_Buffer2
     output [9:0]     o_coor_x, 
     output [9:0]     o_coor_y,
     output [7:0]     o_score,
-    output [255:0]   o_descriptor
+    output [255:0]   o_descriptor,
+    output           o_flag
 );
+
     integer i;
     reg [9:0] coor_x_w [0:SIZE-1], coor_x_r[0:SIZE-1];
     reg [9:0] coor_y_w [0:SIZE-1], coor_y_r[0:SIZE-1];
@@ -31,7 +33,8 @@ module Key_Buffer2
     assign o_coor_x = coor_x_r[SIZE-1];
     assign o_coor_y = coor_y_r[SIZE-1];
     assign o_score = score_r[SIZE-1];
-    assign o_desc = desc_r[SIZE-1];
+    assign o_descriptor = desc_r[SIZE-1];
+    assign o_flag = (count_r != 99);
 
 
     always@(*) begin
@@ -61,7 +64,7 @@ module Key_Buffer2
             count_w = (count_r != (SIZE-1)) ? count_r + 1 : count_r;
         end
         // flag -> put the input in backmost position
-        if(i_flag) begin
+        if(i_valid) begin
             if(!i_next) begin
                 coor_x_w[count_r] = i_coor_x;
                 coor_y_w[count_r] = i_coor_y;

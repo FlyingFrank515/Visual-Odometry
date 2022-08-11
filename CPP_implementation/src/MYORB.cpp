@@ -76,10 +76,18 @@ vector<DMatch> MYORB::Matching(){
     FAST_detector(1);
     FAST_detector(2);
 
-    vector<KeyPoint> temp = keylist_1;
-    sort(temp.begin(), temp.end(), response_comparator);
-    while (temp.size() > keypoints_num) temp.pop_back();
-    min_thres = int(temp[-1].response);
+    // sort(keylist_1.begin(), keylist_1.end(), response_comparator);
+    // while (keylist_1.size() > keypoints_num) keylist_1.pop_back();
+    // sort(keylist_2.begin(), keylist_2.end(), response_comparator);
+    // while (keylist_2.size() > keypoints_num) keylist_2.pop_back();
+    FAST_sort();
+    cout << keylist_1.size() << "  " << keylist_2.size() << endl;
+    
+
+    // vector<KeyPoint> temp = keylist_1;
+    // sort(temp.begin(), temp.end(), response_comparator);
+    // while (temp.size() > keypoints_num) temp.pop_back();
+    // min_thres = int(temp[-1].response);
     
     // smoothing the image
     // for (int i = -2; i < 3; i++){
@@ -98,16 +106,16 @@ vector<DMatch> MYORB::Matching(){
     BRIEF_descriptor(2);
     // BRIEF_descriptor_old();
 
-    if(TESTBENCH){
-        for (int i = 0; i < keylist_1.size(); i++){
-            read << hex << setw(3) << setfill('0') <<  int(keylist_1[i].pt.x)  << " " << setw(3) << setfill('0') << int(keylist_1[i].pt.y) << " ";
-            read << hex << setw(2) << int(keylist_1[i].response) << " ";
-            for (int j = 0; j < 32; j++){
-                read << hex << setw(2) << setfill('0') << int(descriptor_1.at<uchar>(i, 31-j));
-            }
-            read << endl;
-        }
-    }
+    // if(TESTBENCH){
+    //     for (int i = 0; i < keylist_1.size(); i++){
+    //         read << hex << setw(3) << setfill('0') <<  int(keylist_1[i].pt.x)  << " " << setw(3) << setfill('0') << int(keylist_1[i].pt.y) << " ";
+    //         read << hex << setw(2) << int(keylist_1[i].response) << " ";
+    //         for (int j = 0; j < 32; j++){
+    //             read << hex << setw(2) << setfill('0') << int(descriptor_1.at<uchar>(i, 31-j));
+    //         }
+    //         read << endl;
+    //     }
+    // }
 
 
     // default descriptor
@@ -123,8 +131,22 @@ vector<DMatch> MYORB::Matching(){
     // cout << "Optimize matches..." << endl;
     MATCH_optimization();
 
+    if(1){
+        for(int i = 0; i < matches.size(); i++){
+            cout << "(" << hex << setw(3) << setfill('0') << int(keylist_1[matches[i].trainIdx].pt.x) << ", " << hex << setw(3) << setfill('0') << int(keylist_1[matches[i].trainIdx].pt.y) << ")";
+            cout << " <---> ";
+            cout << "(" << hex << setw(3) << setfill('0') << int(keylist_2[matches[i].queryIdx].pt.x) << ", " << hex << setw(3) << setfill('0') << int(keylist_2[matches[i].queryIdx].pt.y) << ") ";
+            cout << matches[i].distance << endl;
+        }
+    }
+
     if(DISPLAY){
         DISPLAY_matches();
+        for(int i = 0; i < good_matches.size(); i++){
+            read << "(" << hex << setw(3) << setfill('0') << int(keylist_1[good_matches[i].trainIdx].pt.x) << ", " << hex << setw(3) << setfill('0') << int(keylist_1[good_matches[i].trainIdx].pt.y) << ")";
+            read << " <---> ";
+            read << "(" << hex << setw(3) << setfill('0') << int(keylist_2[good_matches[i].queryIdx].pt.x) << ", " << hex << setw(3) << setfill('0') << int(keylist_2[good_matches[i].queryIdx].pt.y) << ")" << endl;
+        }
     }
 
     return good_matches;
@@ -329,10 +351,13 @@ void MYORB::FAST_detector(int option){
                 }
 
                 orient.at<float>(i, j) = atan2(y_sum, x_sum);
-                // cout << (1024 * x_sum) / int(sqrt(x_sum*x_sum + y_sum*y_sum)) << endl;
-                int denominator = int(sqrt(x_sum*x_sum + y_sum*y_sum));
+                unsigned int sum2 = (x_sum*x_sum + y_sum*y_sum);
+                int denominator = int(sqrt(sum2));
                 int x_sign = (x_sum < 0) ? -1 : 1;
                 int y_sign = (y_sum < 0) ? -1 : 1;
+
+                // denominator = int(denominator / 32);
+                // cout << denominator << " " << denominator_2 << endl;
 
                 if(denominator != 0){
                     cos.at<int>(i, j) = int(1024 * abs(x_sum) / denominator );
@@ -415,7 +440,7 @@ void MYORB::FAST_detector(int option){
         // cout << int(key.at<uchar>(37, 136)) << endl;
 
         // output to files (for testbench usage)
-        if(level == 0 && option == 1){
+        if(level == 0 && option == 2){
             for (int i = 0; i < img.rows; i++) {
                 for (int j = 0; j < img.cols; j++) {
                     // result_NMS << int(reserved.at<uchar>(i, j)) << endl;
@@ -443,6 +468,50 @@ void MYORB::FAST_detector(int option){
             }
         }
     }
+}
+
+void MYORB::FAST_sort(){
+    for(int i = 0; i < keylist_1.size(); i++){
+        KeyPoint target = keylist_1[i];
+        for(int j = 0; j < i; j++){
+            if(target.response > keylist_1[j].response){
+                // swap
+                KeyPoint temp = target;
+                target = keylist_1[j];
+                keylist_1[j] = temp;
+
+                int cos_temp = cos_1[i];
+                cos_1[i] = cos_1[j];
+                cos_1[j] = cos_temp;
+
+                int sin_temp = sin_1[i];
+                sin_1[i] = sin_1[j];
+                sin_1[j] = sin_temp;
+            }
+        }
+        keylist_1[i] = target;
+    }
+    for(int i = 0; i < keylist_2.size(); i++){
+        KeyPoint target = keylist_2[i];
+        for(int j = 0; j < i; j++){
+            if(target.response > keylist_2[j].response){
+                // swap
+                KeyPoint temp = target;
+                target = keylist_2[j];
+                keylist_2[j] = temp;
+
+                int cos_temp = cos_2[i];
+                cos_2[i] = cos_2[j];
+                cos_2[j] = cos_temp;
+                
+                int sin_temp = sin_2[i];
+                sin_2[i] = sin_2[j];
+                sin_2[j] = sin_temp;
+            }
+        }
+        keylist_2[i] = target;
+    }
+    
 }
 
 void MYORB::BRIEF_smoothing(){
@@ -491,7 +560,7 @@ void MYORB::BRIEF_descriptor(int option){
         
         if(TESTBENCH){
             // result_test << cos[i] << " " << sin[i] << endl;
-            result_test << hex << y << " " << x << " " << int(img.at<uchar>(y, x)) << dec << endl;
+            result_test << hex << y << " " << x << " " << int(img.at<uchar>(y, x)) << dec << " " << cos[i] << " " << sin[i] << endl;
             for(int ky = -15; ky < 16; ky++){
                 for(int kx = -15; kx < 16; kx++){
                     result_test << hex << setw(3) << int(img.at<uchar>(y+ky, x+kx)) << " ";
@@ -535,7 +604,7 @@ int MYORB::MATCH_Hamming_distance(uchar x, uchar y){
         setbits += temp & 1;
         temp >>= 1;
     }
-
+    
     return setbits;
 }
 
@@ -550,19 +619,44 @@ void MYORB::MATCH_BFmatcher(){
     // query -> img2
     // train -> img1
     for(int idx2 = 0; idx2 < descriptor_2.rows; idx2++){
-        int min_index = -1;
+        int min_index = 0;
         int min_value = 256;
+        int min_dist = 999;
+        // ----
+        // read << "coor(" << keylist_2[idx2].pt.x << ", " << keylist_2[idx2].pt.y <<  ")";
+        // for (int j = 0; j < 32; j++){
+        //     read << hex << setw(2) << setfill('0') << int(descriptor_2.at<uchar>(idx2, 31-j));
+        // }
+        // read << endl;
+        // ----
         for(int idx1 = 0; idx1 < descriptor_1.rows; idx1++){
             int hamming_distance_counter = 0;
-            if(keylist_1[idx1].response >= min_thres){
-                for(int k = 0; k < descriptor_2.cols; k++){
-                    hamming_distance_counter += MATCH_Hamming_distance(descriptor_2.at<uchar>(idx2, k), descriptor_1.at<uchar>(idx1, k));
-                }
-                if(hamming_distance_counter < min_value){
-                    min_index = idx1;
-                    min_value = hamming_distance_counter;
-                }
+
+            for(int k = 0; k < descriptor_2.cols; k++){
+                hamming_distance_counter += MATCH_Hamming_distance(descriptor_2.at<uchar>(idx2, k), descriptor_1.at<uchar>(idx1, k));
             }
+            // if(idx2 == 6){
+            //     cout << "min_value = " << min_value << " ";
+            //     cout << "present_hamming = " << hamming_distance_counter << endl;
+            // }
+            // ----
+            // read << "comparing (" << keylist_1[idx1].pt.x << ", " << keylist_1[idx1].pt.y <<  ")" << " hamming = " << dec << hamming_distance_counter << " ";
+            // ----
+            if(hamming_distance_counter <= min_value){
+                min_index = idx1;
+                min_value = hamming_distance_counter;
+                // read << "replaced" << endl;
+            }
+            // else read << "keep" << endl;
+            
+            // else if(hamming_distance_counter == min_value){
+            //     int dist = abs(keylist_1[idx1].pt.x - keylist_2[idx2].pt.x) + abs(keylist_1[idx1].pt.y - keylist_2[idx2].pt.y);
+            //     if(dist < min_dist){
+            //         min_index = idx1;
+            //         min_value = hamming_distance_counter;
+            //         min_dist = dist;
+            //     }
+            // }
         }
         // constructor: query -> train -> distance
         //              img2     img1

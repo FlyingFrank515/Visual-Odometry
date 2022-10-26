@@ -4,7 +4,7 @@
 // `define TIME_OUT 640*100*10     
 
 `ifdef RTL
-    `include "CHIP_all.v"
+    `include "CHIP_all.sv"
 `endif
 
 // `ifdef SYN
@@ -15,7 +15,7 @@
 // `endif
 
 // simulation
-// RTL: ncverilog CHIP_tb.v +incdir+/opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver/ -y /opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver +libext+.v+notimingchecks +define+RTL +access+r 
+// RTL: ncverilog CHIP_alltb.v +incdir+/opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver/ -y /opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver +libext+.v+notimingchecks +define+RTL +access+r 
 
 
 

@@ -6,21 +6,25 @@ module SMOOTH
     input           i_clk,
     input           i_rst_n,
     input [39:0]    i_col0, // up to down
+    input           i_valid,
 
-    output [7:0]    o_pixel
+    output [7:0]    o_pixel,
+    output          o_valid
 );
 
 // ========== function declaration ==========
 
 // ========== reg/wire declaration ==========
 integer i;
-reg [16:0] sum_r [0:4], sum_w [0:4]; // used to store the sum in each stage
-reg [7:0] pixel [0:4];
-reg [16:0] col [0:2][0:4];
-reg [7:0] o_pixel_r, o_pixel_w;
+logic [16:0] sum_r [0:4], sum_w [0:4]; // used to store the sum in each stage
+logic [7:0] pixel [0:4];
+logic [16:0] col [0:2][0:4];
+logic [7:0] o_pixel_r, o_pixel_w;
+logic valid [0:4], valid_w, valid_r;
 assign o_pixel = o_pixel_r;
+assign o_valid = valid_r;
 
-always@(*) begin
+always_comb begin
     pixel[0] = i_col0[39:32];
     pixel[1] = i_col0[31:24];
     pixel[2] = i_col0[23:16];
@@ -28,7 +32,7 @@ always@(*) begin
     pixel[4] = i_col0[7:0];
 end
 
-always@(*) begin
+always_comb begin
     col[0][0] = pixel[0];
     col[0][1] = {7'd0, pixel[1], 2'd0};
     col[0][2] = {7'd0, pixel[2], 2'd0} + {8'd0, pixel[2], 1'd0};
@@ -53,7 +57,7 @@ end
 // ========== Connection ==========
 
 // ========== Combinational Block ==========
-always@(*) begin
+always_comb begin
     // 1 4 6 4 1
     sum_w[0] = (col[0][0] + col[0][1]) + (col[0][2] + col[0][3]) + (col[0][4]);
     // 4 16 24 16 4
@@ -66,21 +70,27 @@ always@(*) begin
     sum_w[4] = (col[0][0] + col[0][1]) + (col[0][2] + col[0][3]) + (col[0][4] + sum_r[3]);
     
     o_pixel_w = sum_r[4][7] ? sum_r[4][15:8]+1 : sum_r[4][15:8];
+    valid_w = valid[4];
 
 end
 // ========== Sequential Block ==========
-always@(posedge i_clk or negedge i_rst_n) begin
+always_ff @(posedge i_clk or negedge i_rst_n) begin
     if(!i_rst_n) begin
-        for(i = 0; i < 5; i = i+1) begin
+        for(int i = 0; i < 5; i = i+1) begin
             sum_r[i] <= 0;
         end
         o_pixel_r <= 0;
     end
-    else begin
-        for(i = 0; i < 5; i = i+1) begin
+    else if(i_valid) begin
+        for(int i = 0; i < 5; i = i+1) begin
             sum_r[i] <= sum_w[i];
         end
         o_pixel_r <= o_pixel_w;
+        valid[0] <= i_valid;
+        valid_r <= valid_w;
+        for(int i = 1; i < 5; i = i+1) begin
+            valid[i] <= valid[i-1];
+        end
     end
 end
 endmodule

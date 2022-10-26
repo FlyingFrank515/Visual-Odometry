@@ -1,7 +1,7 @@
-`include "FAST_9.v"
-`include "Orientation.v"
-`include "NMS.v"
-`include "SMOOTH.v"
+`include "FAST_9.sv"
+`include "Orientation.sv"
+`include "NMS.sv"
+`include "SMOOTH.sv"
 
 module FAST_Detector
 #(
@@ -14,18 +14,32 @@ module FAST_Detector
     input           i_rst_n,
     input [7:0]     i_pixel,
     input           i_start,
+    input           i_valid,
 
     output [7:0]    o_pixel,
+    output          o_pixel_valid,
+
     output [9:0]    o_coordinate_X,
     output [9:0]    o_coordinate_Y,
 
-    output reg      o_ready,
+    output logic    o_ready,
     output [11:0]   o_cos,
     output [11:0]   o_sin,
     output [7:0]    o_score,
     output          o_flag,
-    output reg      o_start,
-    output reg      o_end
+    output logic    o_start,
+    output logic    o_end,
+    output          o_point_valid,
+
+    // SRAM interface
+    input [7:0]     sram_QA,
+    input [7:0]     sram_QB,
+    output          sram_WENA,
+    output          sram_WENB,
+    output [7:0]    sram_DA,
+    output [7:0]    sram_DB,
+    output [9:0]    sram_AA,
+    output [9:0]    sram_AB
 
 );
     // parameter
@@ -35,38 +49,49 @@ module FAST_Detector
 
     // ========== reg/wire declaration ==========
     integer i, j, k;
-    reg [2:0] state_w, state_r;
-    reg [19:0] count_w, count_r;
-    reg [9:0] coor_x_w, coor_x_r;
-    reg [9:0] coor_y_w, coor_y_r;
-    reg [7:0] LINE_BUFFER_enter;
-    reg [7:0] LINE_BUFFER [0:5][0:WIDTH-1];
-    reg [7:0] LINE_BUFFER_LAST [0:4];
+    logic [2:0] state_w, state_r;
+    logic [19:0] count_w, count_r;
+    logic [9:0] coor_x_w, coor_x_r;
+    logic [9:0] coor_y_w, coor_y_r;
+    logic [7:0] LINE_BUFFER_enter;
+    logic [7:0] LINE_BUFFER [0:5][0:WIDTH-1];
+    logic [7:0] LINE_BUFFER_LAST [0:4];
 
-    reg [127:0] FAST_circle;
-    reg [7:0] FAST_center;
-    wire [7:0] FAST_score;
-    wire       FAST_flag;
+    logic [127:0] FAST_circle;
+    logic [7:0] FAST_center;
+    logic [7:0] FAST_score;
+    logic       FAST_flag;
 
-    wire [7:0]    NMS_score;
-    wire          NMS_flag;
+    logic [7:0]    NMS_score;
+    logic          NMS_flag;
 
-    reg [55:0] Orient_col;
-    reg [39:0] SMOOTH_col;
-    wire [7:0] SMOOTH_pixel;
-    reg [11:0] cos_buffer [0:WIDTH+3];
-    reg [11:0] sin_buffer [0:WIDTH+3];
-    wire [11:0] Orient_cos;
-    wire [11:0] Orient_sin;
+    logic [55:0] Orient_col;
+    logic [39:0] SMOOTH_col;
+    logic [7:0] SMOOTH_pixel;
+    logic       SMOOTH_valid;
+    logic [11:0] cos_buffer [0:WIDTH+3];
+    logic [11:0] sin_buffer [0:WIDTH+3];
+    logic [11:0] Orient_cos;
+    logic [11:0] Orient_sin;
 
     // coordinates mask
-    reg mask;
-    reg [9:0] o_x_r, o_x_w;
-    reg [9:0] o_y_r, o_y_w;
-    reg [7:0] o_score_r, o_score_w;
-    reg       o_flag_r, o_flag_w;
-    reg [11:0] o_cos_w, o_cos_r;
-    reg [11:0] o_sin_w, o_sin_r;
+    logic mask;
+    logic [9:0] o_x_r, o_x_w;
+    logic [9:0] o_y_r, o_y_w;
+    logic [7:0] o_score_r, o_score_w;
+    logic       o_flag_r, o_flag_w;
+    logic [11:0] o_cos_w, o_cos_r;
+    logic [11:0] o_sin_w, o_sin_r;
+
+    // sram interface
+    logic [7:0]    sram_QA_r;
+    logic [7:0]    sram_QB_r;
+    logic          sram_WENA_w, sram_WENA_r;
+    logic          sram_WENB_w, sram_WENB_r;
+    logic [7:0]    sram_DA_w, sram_DA_r;
+    logic [7:0]    sram_DB_w, sram_DB_r;
+    logic [9:0]    sram_AA_w, sram_AA_r;
+    logic [9:0]    sram_AB_w, sram_AB_r;
 
 
     // ========== Connection ==========
@@ -77,9 +102,20 @@ module FAST_Detector
     assign o_coordinate_Y = o_y_r;
     assign o_cos = o_cos_r;
     assign o_sin = o_sin_r;
+    assign o_valid = i_valid;
+    assign o_pixel_valid = SMOOTH_valid;
+    assign o_point_valid = i_valid;
+
+    // sram connection
+    assign sram_WENA = sram_WENA_r;
+    assign sram_WENB = sram_WENB_r;
+    assign sram_DA = sram_DA_r;
+    assign sram_DB = sram_DB_r;
+    assign sram_AA = sram_AA_r;
+    assign sram_AB = sram_AB_r;
 
 
-    always@(*) begin
+    always_comb begin
         FAST_circle = {LINE_BUFFER[0][2], LINE_BUFFER[0][3], LINE_BUFFER[0][4], LINE_BUFFER[1][5], LINE_BUFFER[2][6], LINE_BUFFER[3][6], LINE_BUFFER[4][6], LINE_BUFFER[5][5]
         , LINE_BUFFER_LAST[4], LINE_BUFFER_LAST[3], LINE_BUFFER_LAST[2], LINE_BUFFER[5][1], LINE_BUFFER[4][0], LINE_BUFFER[3][0], LINE_BUFFER[2][0], LINE_BUFFER[1][1]};
         FAST_center = LINE_BUFFER[3][3];
@@ -97,7 +133,10 @@ module FAST_Detector
         .i_clk(i_clk),
         .i_rst_n(i_rst_n),
         .i_col0(SMOOTH_col),
-        .o_pixel(SMOOTH_pixel)
+        .i_valid(i_valid),
+
+        .o_pixel(SMOOTH_pixel),
+        .o_valid(SMOOTH_valid)
     );
     
     FAST_9 
@@ -110,6 +149,7 @@ module FAST_Detector
         .i_rst_n(i_rst_n),
         .i_circle(FAST_circle),
         .i_center(FAST_center),
+        .i_valid(i_valid),
 
         .o_keypoints_flag(FAST_flag),
         .o_score(FAST_score)
@@ -125,6 +165,7 @@ module FAST_Detector
         .i_rst_n(i_rst_n),
         .i_score(FAST_score),
         .i_flag(FAST_flag),
+        .i_valid(i_valid),
 
         .o_score(NMS_score),
         .o_flag(NMS_flag)
@@ -139,6 +180,7 @@ module FAST_Detector
         .i_clk(i_clk),
         .i_rst_n(i_rst_n),
         .i_col0(Orient_col),
+        .i_valid(i_valid),
 
         .o_cos(Orient_cos),
         .o_sin(Orient_sin)
@@ -146,7 +188,7 @@ module FAST_Detector
 
 
     // ========== Combinational Block ==========
-    always@(*) begin
+    always_comb begin
         mask = coor_x_r < EDGE || coor_x_r > WIDTH-EDGE || coor_y_r < EDGE || coor_y_r > HEIGHT-EDGE;
         o_x_w = coor_x_r;
         o_y_w = coor_y_r;
@@ -157,7 +199,7 @@ module FAST_Detector
         o_score_w = mask ? 0 : NMS_score;
     end
 
-    always@(*) begin
+    always_comb begin
         state_w = state_r;
         count_w = count_r;
         coor_x_w = coor_x_r;
@@ -204,8 +246,46 @@ module FAST_Detector
         endcase
     end
 
+    always_comb begin
+        sram_WENA_w = 1; // 1 for read
+        sram_WENB_w = 1;
+        sram_DA_w = sram_DA_r;
+        sram_DB_w = sram_DB_r;
+        sram_AA_w = sram_AA_r;
+        sram_AB_w = sram_AB_r;
+        case(state_r)
+            S_IDLE: begin
+                if(i_start) begin
+                    sram_DA_w = LINE_BUFFER[0][6];
+                    sram_AA_w = 0;
+                    sram_WENA_w = 0;
+                    // sram_DB_w = i_pixel;
+                    sram_AB_w = 1;
+                    sram_WENB_w = 1;
+                end
+            end
+            S_WAIT: begin
+                sram_DA_w = LINE_BUFFER[0][6];
+                sram_AA_w = (sram_AA_r == 632) ? 0 : sram_AA_r + 1;
+                sram_WENA_w = 0;
+                // sram_DB_w = i_pixel;
+                sram_AB_w = (sram_AB_r == 632) ? 0 : sram_AB_r + 1;
+                sram_WENB_w = 1;     
+            end
+            S_WORK: begin
+                sram_DA_w = i_pixel;
+                sram_AA_w = (sram_AA_r == 632) ? 0 : sram_AA_r + 1;
+                sram_WENA_w = 0;
+                // sram_DB_w = i_pixel;
+                sram_AB_w = (sram_AB_r == 632) ? 0 : sram_AB_r + 1;
+                sram_WENB_w = 1;    
+            end
+        endcase
+
+    end
+
     // ========== Sequential Block ==========
-    always@(posedge i_clk or negedge i_rst_n) begin
+    always_ff @(posedge i_clk or negedge i_rst_n) begin
         if(!i_rst_n) begin
             state_r <= 0;
             count_r <= 0;
@@ -219,20 +299,30 @@ module FAST_Detector
             o_cos_r <= 0;
             o_sin_r <= 0;
 
-            for(k = 0; k < WIDTH+4; k = k+1) begin
+            for(int k = 0; k < WIDTH+4; k = k+1) begin
                 cos_buffer[k] <= 0;
                 sin_buffer[k] <= 0;
             end
-            for(j = 0; j < 5; j = j+1) begin
+            for(int j = 0; j < 5; j = j+1) begin
                 LINE_BUFFER_LAST[j] <= 0;
             end
-            for(i = 0; i < 6; i = i+1) begin
-                for(j = 0; j < WIDTH; j = j+1) begin
+            for(int i = 0; i < 6; i = i+1) begin
+                for(int j = 0; j < WIDTH; j = j+1) begin
                     LINE_BUFFER[i][j] <= 0;
                 end
             end
+
+            sram_QA_r <= 0;
+            sram_QB_r <= 0;
+            sram_WENA_r <= 1; // read
+            sram_WENB_r <= 1; // read
+            sram_DA_r <= 0;
+            sram_DB_r <= 0;
+            sram_AA_r <= 0;
+            sram_AB_r <= 1;
+
         end
-        else begin
+        else if(i_valid) begin
             state_r <= state_w;
             count_r <= count_w;
             coor_x_r <= coor_x_w;
@@ -247,24 +337,35 @@ module FAST_Detector
             
             cos_buffer[0] <= Orient_cos;
             sin_buffer[0] <= Orient_sin;
-            for(k = 1; k < WIDTH+4; k = k+1) begin
+            for(int k = 1; k < WIDTH+4; k = k+1) begin
                 cos_buffer[k] <= cos_buffer[k-1];
                 sin_buffer[k] <= sin_buffer[k-1];
             end
 
             LINE_BUFFER_LAST[0] <= LINE_BUFFER[5][WIDTH-1];
-            for(j = 1; j < 5; j = j+1) begin
+            for(int j = 1; j < 5; j = j+1) begin
                 LINE_BUFFER_LAST[j] <= LINE_BUFFER_LAST[j-1];
             end
             LINE_BUFFER[0][0] <= LINE_BUFFER_enter;
-            for(i = 1; i < 6; i = i+1) begin
-                LINE_BUFFER[i][0] <= LINE_BUFFER[i-1][WIDTH-1];
-            end
-            for(i = 0; i < 6; i = i+1) begin
-                for(j = 1; j < WIDTH; j = j+1) begin
+            LINE_BUFFER[1][0] <= sram_QB_r;
+            LINE_BUFFER[2][0] <= LINE_BUFFER[1][WIDTH-1];
+            LINE_BUFFER[3][0] <= LINE_BUFFER[2][WIDTH-1];
+            LINE_BUFFER[4][0] <= LINE_BUFFER[3][WIDTH-1];
+            LINE_BUFFER[5][0] <= LINE_BUFFER[4][WIDTH-1];
+            for(int i = 0; i < 6; i = i+1) begin
+                for(int j = 1; j < WIDTH; j = j+1) begin
                     LINE_BUFFER[i][j] <= LINE_BUFFER[i][j-1];
                 end
             end
+
+            sram_QA_r <= sram_QA;
+            sram_QB_r <= sram_QB;
+            sram_WENA_r <= sram_WENA_w;
+            sram_WENB_r <= sram_WENB_w;
+            sram_DA_r <= sram_DA_w;
+            sram_DB_r <= sram_DB_w;
+            sram_AA_r <= sram_AA_w;
+            sram_AB_r <= sram_AB_w;
         end
     end
 

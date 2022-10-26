@@ -1,5 +1,5 @@
-`include "MATCH.v"
-`include "Key_Buffer2.v"
+`include "MATCH.sv"
+`include "Key_Buffer2.sv"
 
 module MATCH_Top
 #(
@@ -26,13 +26,13 @@ module MATCH_Top
     output [9:0]    o_dst_coor_y
 );
 
-    wire  [9:0]     BUFFER_coor_x; 
-    wire  [9:0]     BUFFER_coor_y;
-    wire  [7:0]     BUFFER_score;
-    wire  [255:0]   BUFFER_descriptor;
-    wire            BUFFER_flag;
+    logic  [9:0]     BUFFER_coor_x; 
+    logic  [9:0]     BUFFER_coor_y;
+    logic  [7:0]     BUFFER_score;
+    logic  [255:0]   BUFFER_descriptor;
+    logic            BUFFER_flag;
 
-    wire            MATCH_next;
+    logic            MATCH_next;
 
     Key_Buffer2
     #(

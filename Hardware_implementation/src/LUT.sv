@@ -14,13 +14,13 @@
 module LUT
 (
     input [7:0] i_num,
-    output reg [7:0] o_xa,
-    output reg [7:0] o_ya,
-    output reg [7:0] o_xb,
-    output reg [7:0] o_yb
+    output logic [7:0] o_xa,
+    output logic [7:0] o_ya,
+    output logic [7:0] o_xb,
+    output logic [7:0] o_yb
 );
 
-    always@(*) begin
+    always_comb begin
         case(i_num)
             0: begin
                 o_xa = 8'd8;

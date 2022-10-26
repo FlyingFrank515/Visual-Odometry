@@ -7,6 +7,7 @@ module NMS
     input           i_rst_n,
     input [7:0]     i_score,
     input           i_flag,
+    input           i_valid,
     output [7:0]    o_score,
     output          o_flag
 );
@@ -31,9 +32,9 @@ function M2; // determine whether we should reserve pixel_1
     input         flag_2;
     input         flag_3;
     input         flag_4;
-    reg           com2;
-    reg           com3;
-    reg           com4;
+    logic           com2;
+    logic           com3;
+    logic           com4;
     begin
         com2 = flag_1 ? (!flag_2 ? 1'b1 : score_1 > score_2) : 1'b0;
         com3 = flag_1 ? (!flag_3 ? 1'b1 : score_1 > score_3) : 1'b0;
@@ -43,28 +44,28 @@ function M2; // determine whether we should reserve pixel_1
 endfunction
 // ========== reg/wire declaration ==========
 integer ia, ib, i;
-reg [7:0] candidate_score_buffer [0:WIDTH-3];
-reg       candidate_flag_buffer [0:WIDTH-3];
-reg       candidate_reserved_buffer [0:WIDTH-3];
-reg [7:0] candidate_score_start;
-reg       candidate_flag_start;
-reg       candidate_reserved_start;
+logic [7:0] candidate_score_buffer [0:WIDTH-3];
+logic       candidate_flag_buffer [0:WIDTH-3];
+logic       candidate_reserved_buffer [0:WIDTH-3];
+logic [7:0] candidate_score_start;
+logic       candidate_flag_start;
+logic       candidate_reserved_start;
 
-reg [7:0] B_score_r [0:4],      B_score_w [0:4];
-reg       B_flag_r [0:4],       B_flag_w [0:4];
-reg       B_reserved_r [0:4],   B_reserved_w [0:4];
-reg [7:0] A_score_r [0:2],      A_score_w [0:2];
-reg       A_flag_r [0:2],       A_flag_w [0:2];
-reg       A_reserved_r [0:2],   A_reserved_w [0:2];
-reg [7:0] o_score_r, o_score_w;
-reg       o_flag_r, o_flag_w;
-reg       o_reserved;
+logic [7:0] B_score_r [0:4],      B_score_w [0:4];
+logic       B_flag_r [0:4],       B_flag_w [0:4];
+logic       B_reserved_r [0:4],   B_reserved_w [0:4];
+logic [7:0] A_score_r [0:2],      A_score_w [0:2];
+logic       A_flag_r [0:2],       A_flag_w [0:2];
+logic       A_reserved_r [0:2],   A_reserved_w [0:2];
+logic [7:0] o_score_r, o_score_w;
+logic       o_flag_r, o_flag_w;
+logic       o_reserved;
 
 // ========== Connection ==========
 assign o_score = o_score_r;
 assign o_flag = o_flag_r;
 // ========== Combinational Block ==========
-always@(*) begin
+always_comb begin
 
     B_score_w[4] = i_score;
     B_flag_w[4] = i_flag;
@@ -111,17 +112,17 @@ end
 // ========== Sequential Block ==========
 always@(posedge i_clk or negedge i_rst_n) begin
     if(!i_rst_n) begin
-        for(ia = 0; ia < 3; ia = ia+1) begin
+        for(int ia = 0; ia < 3; ia = ia+1) begin
             A_score_r[ia] <= 0;
             A_flag_r[ia] <= 0;
             A_reserved_r[ia] <= 0;
         end
-        for(ib = 0; ib < 5; ib = ib+1) begin
+        for(int ib = 0; ib < 5; ib = ib+1) begin
             B_score_r[ib] <= 0;
             B_flag_r[ib] <= 0;
             B_reserved_r[ib] <= 0;
         end
-        for(i = 0; i < WIDTH-2; i = i+1) begin
+        for(int i = 0; i < WIDTH-2; i = i+1) begin
             candidate_score_buffer[i] <= 0;
             candidate_flag_buffer[i] <= 0;
             candidate_reserved_buffer[i] <= 0;
@@ -129,18 +130,18 @@ always@(posedge i_clk or negedge i_rst_n) begin
         o_score_r <= 0;
         o_flag_r <= 0;
     end
-    else begin
-        for(ia = 0; ia < 3; ia = ia+1) begin
+    else if(i_valid)begin
+        for(int ia = 0; ia < 3; ia = ia+1) begin
             A_score_r[ia] <= A_score_w[ia];
             A_flag_r[ia] <= A_flag_w[ia];
             A_reserved_r[ia] <= A_reserved_w[ia];
         end
-        for(ib = 0; ib < 5; ib = ib+1) begin
+        for(int ib = 0; ib < 5; ib = ib+1) begin
             B_score_r[ib] <= B_score_w[ib];
             B_flag_r[ib] <= B_flag_w[ib];
             B_reserved_r[ib] <= B_reserved_w[ib];
         end
-        for(i = 1; i < WIDTH-2; i = i+1) begin
+        for(int i = 1; i < WIDTH-2; i = i+1) begin
             candidate_score_buffer[i] <= candidate_score_buffer[i-1];
             candidate_flag_buffer[i] <= candidate_flag_buffer[i-1];
             candidate_reserved_buffer[i] <= candidate_reserved_buffer[i-1];

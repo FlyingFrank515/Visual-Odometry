@@ -1,40 +1,42 @@
-`include "LUT.v"
+`include "LUT.sv"
+
 module BRIEF
 (
     input           i_clk,
     input           i_rst_n,
 
-    input [247:0]   i_col0,
-    input [247:0]   i_col1,
-    input [247:0]   i_col2,
-    input [247:0]   i_col3,
-    input [247:0]   i_col4,
-    input [247:0]   i_col5,
-    input [247:0]   i_col6,
-    input [247:0]   i_col7,
-    input [247:0]   i_col8,
-    input [247:0]   i_col9,
-    input [247:0]   i_col10,
-    input [247:0]   i_col11,
-    input [247:0]   i_col12,
-    input [247:0]   i_col13,
-    input [247:0]   i_col14,
-    input [247:0]   i_col15,
-    input [247:0]   i_col16,
-    input [247:0]   i_col17,
-    input [247:0]   i_col18, 
-    input [247:0]   i_col19,
-    input [247:0]   i_col20,
-    input [247:0]   i_col21,
-    input [247:0]   i_col22,
-    input [247:0]   i_col23,
-    input [247:0]   i_col24,
-    input [247:0]   i_col25,
-    input [247:0]   i_col26,
-    input [247:0]   i_col27,
-    input [247:0]   i_col28,
-    input [247:0]   i_col29,
-    input [247:0]   i_col30,
+    input [7:0]     i_window [0:30][0:30],
+    // input [247:0]   i_col0,
+    // input [247:0]   i_col1,
+    // input [247:0]   i_col2,
+    // input [247:0]   i_col3,
+    // input [247:0]   i_col4,
+    // input [247:0]   i_col5,
+    // input [247:0]   i_col6,
+    // input [247:0]   i_col7,
+    // input [247:0]   i_col8,
+    // input [247:0]   i_col9,
+    // input [247:0]   i_col10,
+    // input [247:0]   i_col11,
+    // input [247:0]   i_col12,
+    // input [247:0]   i_col13,
+    // input [247:0]   i_col14,
+    // input [247:0]   i_col15,
+    // input [247:0]   i_col16,
+    // input [247:0]   i_col17,
+    // input [247:0]   i_col18, 
+    // input [247:0]   i_col19,
+    // input [247:0]   i_col20,
+    // input [247:0]   i_col21,
+    // input [247:0]   i_col22,
+    // input [247:0]   i_col23,
+    // input [247:0]   i_col24,
+    // input [247:0]   i_col25,
+    // input [247:0]   i_col26,
+    // input [247:0]   i_col27,
+    // input [247:0]   i_col28,
+    // input [247:0]   i_col29,
+    // input [247:0]   i_col30,
 
     input [9:0]     i_coor_x, 
     input [9:0]     i_coor_y, 
@@ -59,95 +61,95 @@ module BRIEF
     // ========== reg/wire declaration ==========
     integer i;
     genvar idx;
-    reg [7:0] pixel [0:30][0:30];
-    wire signed [7:0] x_a [0:255];
-    wire signed [7:0] y_a [0:255];
-    wire signed [7:0] x_b [0:255];
-    wire signed [7:0] y_b [0:255];
+    // logic [7:0] pixel [0:30][0:30];
+    logic signed [7:0] x_a [0:255];
+    logic signed [7:0] y_a [0:255];
+    logic signed [7:0] x_b [0:255];
+    logic signed [7:0] y_b [0:255];
 
-    reg signed [7:0] x_a_cos_w [0:255], x_a_cos_r [0:255];
-    reg signed [7:0] x_a_sin_w [0:255], x_a_sin_r [0:255];
-    reg signed [7:0] y_a_cos_w [0:255], y_a_cos_r [0:255];
-    reg signed [7:0] y_a_sin_w [0:255], y_a_sin_r [0:255];
-    reg signed [7:0] x_b_cos_w [0:255], x_b_cos_r [0:255];
-    reg signed [7:0] x_b_sin_w [0:255], x_b_sin_r [0:255];
-    reg signed [7:0] y_b_cos_w [0:255], y_b_cos_r [0:255];
-    reg signed [7:0] y_b_sin_w [0:255], y_b_sin_r [0:255];
+    logic signed [7:0] x_a_cos_w [0:255], x_a_cos_r [0:255];
+    logic signed [7:0] x_a_sin_w [0:255], x_a_sin_r [0:255];
+    logic signed [7:0] y_a_cos_w [0:255], y_a_cos_r [0:255];
+    logic signed [7:0] y_a_sin_w [0:255], y_a_sin_r [0:255];
+    logic signed [7:0] x_b_cos_w [0:255], x_b_cos_r [0:255];
+    logic signed [7:0] x_b_sin_w [0:255], x_b_sin_r [0:255];
+    logic signed [7:0] y_b_cos_w [0:255], y_b_cos_r [0:255];
+    logic signed [7:0] y_b_sin_w [0:255], y_b_sin_r [0:255];
 
-    reg signed [19:0] x_a_cos [0:255];
-    reg signed [19:0] x_a_sin [0:255];
-    reg signed [19:0] y_a_cos [0:255];
-    reg signed [19:0] y_a_sin [0:255];
-    reg signed [19:0] x_b_cos [0:255];
-    reg signed [19:0] x_b_sin [0:255];
-    reg signed [19:0] y_b_cos [0:255];
-    reg signed [19:0] y_b_sin [0:255];
+    logic signed [19:0] x_a_cos [0:255];
+    logic signed [19:0] x_a_sin [0:255];
+    logic signed [19:0] y_a_cos [0:255];
+    logic signed [19:0] y_a_sin [0:255];
+    logic signed [19:0] x_b_cos [0:255];
+    logic signed [19:0] x_b_sin [0:255];
+    logic signed [19:0] y_b_cos [0:255];
+    logic signed [19:0] y_b_sin [0:255];
 
-    // reg [9:0] coor1_x_w, coor1_x_r;
-    // reg [9:0] coor1_y_w, coor1_y_r;
-    reg       flag1_w, flag1_r;
+    // logic [9:0] coor1_x_w, coor1_x_r;
+    // logic [9:0] coor1_y_w, coor1_y_r;
+    logic       flag1_w, flag1_r;
 
-    reg signed [7:0] x1_w [0:255], x1_r[0:255];
-    reg signed [7:0] x2_w [0:255], x2_r[0:255];
-    reg signed [7:0] y1_w [0:255], y1_r[0:255];
-    reg signed [7:0] y2_w [0:255], y2_r[0:255];
+    logic signed [7:0] x1_w [0:255], x1_r[0:255];
+    logic signed [7:0] x2_w [0:255], x2_r[0:255];
+    logic signed [7:0] y1_w [0:255], y1_r[0:255];
+    logic signed [7:0] y2_w [0:255], y2_r[0:255];
 
-    reg signed [8:0] x1_mid [0:255], x2_mid [0:255], y1_mid [0:255], y2_mid [0:255];
-    reg [7:0] comp1 [0:255], comp2 [0:255];
+    logic signed [8:0] x1_mid [0:255], x2_mid [0:255], y1_mid [0:255], y2_mid [0:255];
+    logic [7:0] comp1 [0:255], comp2 [0:255];
 
-    // reg [9:0] coor2_x_w, coor2_x_r;
-    // reg [9:0] coor2_y_w, coor2_y_r;
-    reg       flag2_w, flag2_r;
-    reg [7:0] center;
+    // logic [9:0] coor2_x_w, coor2_x_r;
+    // logic [9:0] coor2_y_w, coor2_y_r;
+    logic       flag2_w, flag2_r;
+    logic [7:0] center;
 
-    reg [255:0] descriptor_w, descriptor_r;
+    logic [255:0] descriptor_w, descriptor_r;
 
-    reg [9:0] coor3_x_w, coor3_x_r;
-    reg [9:0] coor3_y_w, coor3_y_r;
+    logic [9:0] coor3_x_w, coor3_x_r;
+    logic [9:0] coor3_y_w, coor3_y_r;
 
-    reg [7:0] score1_w, score1_r;
-    reg [7:0] score2_w, score2_r;
-    reg [7:0] score3_w, score3_r;
+    logic [7:0] score1_w, score1_r;
+    logic [7:0] score2_w, score2_r;
+    logic [7:0] score3_w, score3_r;
 
-    reg       flag3_w, flag3_r;
+    logic       flag3_w, flag3_r;
 
     // ========== Connection ==========
-    always@(*) begin
-        for(i = 0; i < 31; i = i+1) begin
-            pixel[i][0] = i_col30[i*8+7 -: 8];
-            pixel[i][1] = i_col29[i*8+7 -: 8];
-            pixel[i][2] = i_col28[i*8+7 -: 8];
-            pixel[i][3] = i_col27[i*8+7 -: 8];
-            pixel[i][4] = i_col26[i*8+7 -: 8];
-            pixel[i][5] = i_col25[i*8+7 -: 8];
-            pixel[i][6] = i_col24[i*8+7 -: 8];
-            pixel[i][7] = i_col23[i*8+7 -: 8];
-            pixel[i][8] = i_col22[i*8+7 -: 8];
-            pixel[i][9] = i_col21[i*8+7 -: 8];
-            pixel[i][10] = i_col20[i*8+7 -: 8];
-            pixel[i][11] = i_col19[i*8+7 -: 8];
-            pixel[i][12] = i_col18[i*8+7 -: 8];
-            pixel[i][13] = i_col17[i*8+7 -: 8];
-            pixel[i][14] = i_col16[i*8+7 -: 8];
-            pixel[i][15] = i_col15[i*8+7 -: 8];
-            pixel[i][16] = i_col14[i*8+7 -: 8];
-            pixel[i][17] = i_col13[i*8+7 -: 8];
-            pixel[i][18] = i_col12[i*8+7 -: 8];
-            pixel[i][19] = i_col11[i*8+7 -: 8];
-            pixel[i][20] = i_col10[i*8+7 -: 8];
-            pixel[i][21] = i_col9[i*8+7 -: 8];
-            pixel[i][22] = i_col8[i*8+7 -: 8];
-            pixel[i][23] = i_col7[i*8+7 -: 8];
-            pixel[i][24] = i_col6[i*8+7 -: 8];
-            pixel[i][25] = i_col5[i*8+7 -: 8];
-            pixel[i][26] = i_col4[i*8+7 -: 8];
-            pixel[i][27] = i_col3[i*8+7 -: 8];
-            pixel[i][28] = i_col2[i*8+7 -: 8];
-            pixel[i][29] = i_col1[i*8+7 -: 8];
-            pixel[i][30] = i_col0[i*8+7 -: 8];
-        end
-        center = pixel[15][15];
-    end
+    // always_comb begin
+    //     for(i = 0; i < 31; i = i+1) begin
+    //         pixel[i][0] = i_col30[i*8+7 -: 8];
+    //         pixel[i][1] = i_col29[i*8+7 -: 8];
+    //         pixel[i][2] = i_col28[i*8+7 -: 8];
+    //         pixel[i][3] = i_col27[i*8+7 -: 8];
+    //         pixel[i][4] = i_col26[i*8+7 -: 8];
+    //         pixel[i][5] = i_col25[i*8+7 -: 8];
+    //         pixel[i][6] = i_col24[i*8+7 -: 8];
+    //         pixel[i][7] = i_col23[i*8+7 -: 8];
+    //         pixel[i][8] = i_col22[i*8+7 -: 8];
+    //         pixel[i][9] = i_col21[i*8+7 -: 8];
+    //         pixel[i][10] = i_col20[i*8+7 -: 8];
+    //         pixel[i][11] = i_col19[i*8+7 -: 8];
+    //         pixel[i][12] = i_col18[i*8+7 -: 8];
+    //         pixel[i][13] = i_col17[i*8+7 -: 8];
+    //         pixel[i][14] = i_col16[i*8+7 -: 8];
+    //         pixel[i][15] = i_col15[i*8+7 -: 8];
+    //         pixel[i][16] = i_col14[i*8+7 -: 8];
+    //         pixel[i][17] = i_col13[i*8+7 -: 8];
+    //         pixel[i][18] = i_col12[i*8+7 -: 8];
+    //         pixel[i][19] = i_col11[i*8+7 -: 8];
+    //         pixel[i][20] = i_col10[i*8+7 -: 8];
+    //         pixel[i][21] = i_col9[i*8+7 -: 8];
+    //         pixel[i][22] = i_col8[i*8+7 -: 8];
+    //         pixel[i][23] = i_col7[i*8+7 -: 8];
+    //         pixel[i][24] = i_col6[i*8+7 -: 8];
+    //         pixel[i][25] = i_col5[i*8+7 -: 8];
+    //         pixel[i][26] = i_col4[i*8+7 -: 8];
+    //         pixel[i][27] = i_col3[i*8+7 -: 8];
+    //         pixel[i][28] = i_col2[i*8+7 -: 8];
+    //         pixel[i][29] = i_col1[i*8+7 -: 8];
+    //         pixel[i][30] = i_col0[i*8+7 -: 8];
+    //     end
+    //     center = pixel[15][15];
+    // end
 
 
     generate
@@ -171,8 +173,8 @@ module BRIEF
     assign o_descriptor = descriptor_r;
     assign o_score = score3_r;
 
-    always@(*) begin
-        for(i = 0; i < 256; i = i+1) begin
+    always_comb begin
+        for(int i = 0; i < 256; i = i+1) begin
 
             x_a_cos[i] = (x_a[i]*i_cos);
             x_a_sin[i] = (x_a[i]*i_sin);
@@ -202,8 +204,8 @@ module BRIEF
             x2_w[i] = (x2_mid[i] > 30) ? 30 : (x2_mid[i][8] ? 0 : x2_mid[i]);
             y2_w[i] = (y2_mid[i] > 30) ? 30 : (y2_mid[i][8] ? 0 : y2_mid[i]);
 
-            comp1[i] = pixel[y1_r[i]][x1_r[i]];
-            comp2[i] = pixel[y2_r[i]][x2_r[i]];
+            comp1[i] = i_window[y1_r[i]][x1_r[i]];
+            comp2[i] = i_window[y2_r[i]][x2_r[i]];
 
             descriptor_w[i] = (flag2_r) ? comp1[i] > comp2[i] : 0;
         end
@@ -224,9 +226,9 @@ module BRIEF
     end
 
     // ========== Sequential Block ==========
-    always@(posedge i_clk or negedge i_rst_n) begin
+    always_ff @(posedge i_clk or negedge i_rst_n) begin
         if(!i_rst_n) begin
-            for(i = 0; i < 256; i = i+1) begin
+            for(int i = 0; i < 256; i = i+1) begin
                 x_a_cos_r[i] <= 0; 
                 x_a_sin_r[i] <= 0; 
                 y_a_cos_r[i] <= 0; 
@@ -255,7 +257,7 @@ module BRIEF
             score3_r <= 0;
         end
         else begin
-            for(i = 0; i < 256; i = i+1) begin
+            for(int i = 0; i < 256; i = i+1) begin
                 x_a_cos_r[i] <= x_a_cos_w[i]; 
                 x_a_sin_r[i] <= x_a_sin_w[i]; 
                 y_a_cos_r[i] <= y_a_cos_w[i]; 

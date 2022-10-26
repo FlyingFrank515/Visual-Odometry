@@ -1,5 +1,5 @@
-`include "BRIEF.v"
-`include "Key_Buffer1.v"
+`include "BRIEF.sv"
+`include "Key_Buffer1.sv"
 
 module BRIEF_Top
 #(
@@ -9,6 +9,8 @@ module BRIEF_Top
 (
     input           i_clk,
     input           i_rst_n,
+    input           i_point_valid,
+    input           i_pixel_valid,
     input [7:0]     i_pixel,
     input           i_start,
     input           i_end,
@@ -26,8 +28,8 @@ module BRIEF_Top
 
     output [7:0]    o_score,
     output          o_flag,
-    output reg      o_start,
-    output reg      o_end
+    output logic    o_start,
+    output logic      o_end
 
 );
     // parameter
@@ -38,33 +40,44 @@ module BRIEF_Top
 
     // ========== reg/wire declaration ==========
     integer i, j, k;
-    reg [2:0] state_w, state_r;
-    reg [19:0] count_w, count_r;
-    reg [9:0] coor_x_w, coor_x_r;
-    reg [9:0] coor_y_w, coor_y_r;
-    reg start_delay_r, start_delay_w;
-    reg [7:0] LINE_BUFFER_enter;
-    reg [7:0] LINE_BUFFER [0:29][0:WIDTH-1];
-    reg [7:0] LINE_BUFFER_LAST [0:31];
+    logic [2:0] state_w, state_r;
+    logic [19:0] count_w, count_r;
+    logic [9:0] coor_x_w, coor_x_r;
+    logic [9:0] coor_y_w, coor_y_r;
+    logic start_delay_r, start_delay_w;
+    logic [7:0] LINE_BUFFER_enter;
+    logic [7:0] LINE_BUFFER [0:29][0:WIDTH-1];
+    logic [7:0] LINE_BUFFER_LAST [0:31];
 
-    wire BUFFER_hit;
-    wire [11:0] BUFFER_sin, BUFFER_cos;
-    wire [9:0] BUFFER_x, BUFFER_y;
-    wire [7:0] BUFFER_score;
+    logic BUFFER_hit;
+    logic [11:0] BUFFER_sin, BUFFER_cos;
+    logic [9:0] BUFFER_x, BUFFER_y;
+    logic [7:0] BUFFER_score;
 
-    reg [247:0] BRIEF_col [0:30];
+    // logic [247:0] BRIEF_col [0:30];
+    logic [7:0] window [0:30][0:30];
 
 
     // ========== Connection ==========
-    always@(*) begin
-        for(i = 0; i < 31; i = i+1) begin
-            BRIEF_col[i] = {LINE_BUFFER[0][i], LINE_BUFFER[1][i], LINE_BUFFER[2][i], LINE_BUFFER[3][i], LINE_BUFFER[4][i], LINE_BUFFER[5][i],
-                            LINE_BUFFER[6][i], LINE_BUFFER[7][i], LINE_BUFFER[8][i], LINE_BUFFER[9][i], LINE_BUFFER[10][i], LINE_BUFFER[11][i],
-                            LINE_BUFFER[12][i], LINE_BUFFER[13][i], LINE_BUFFER[14][i], LINE_BUFFER[15][i], LINE_BUFFER[16][i], LINE_BUFFER[17][i],
-                            LINE_BUFFER[18][i], LINE_BUFFER[19][i], LINE_BUFFER[20][i], LINE_BUFFER[21][i], LINE_BUFFER[22][i], LINE_BUFFER[23][i],
-                            LINE_BUFFER[24][i], LINE_BUFFER[25][i], LINE_BUFFER[26][i], LINE_BUFFER[27][i], LINE_BUFFER[28][i], LINE_BUFFER[29][i], LINE_BUFFER_LAST[i]};
+    // always_comb begin
+    //     for(i = 0; i < 31; i = i+1) begin
+    //         BRIEF_col[i] = {LINE_BUFFER[0][i], LINE_BUFFER[1][i], LINE_BUFFER[2][i], LINE_BUFFER[3][i], LINE_BUFFER[4][i], LINE_BUFFER[5][i],
+    //                         LINE_BUFFER[6][i], LINE_BUFFER[7][i], LINE_BUFFER[8][i], LINE_BUFFER[9][i], LINE_BUFFER[10][i], LINE_BUFFER[11][i],
+    //                         LINE_BUFFER[12][i], LINE_BUFFER[13][i], LINE_BUFFER[14][i], LINE_BUFFER[15][i], LINE_BUFFER[16][i], LINE_BUFFER[17][i],
+    //                         LINE_BUFFER[18][i], LINE_BUFFER[19][i], LINE_BUFFER[20][i], LINE_BUFFER[21][i], LINE_BUFFER[22][i], LINE_BUFFER[23][i],
+    //                         LINE_BUFFER[24][i], LINE_BUFFER[25][i], LINE_BUFFER[26][i], LINE_BUFFER[27][i], LINE_BUFFER[28][i], LINE_BUFFER[29][i], LINE_BUFFER_LAST[i]};
                             
+    //     end
+    // end
+    always_comb begin
+        for(int i = 0; i < 30; i = i+1) begin
+            for (int j = 0; j < 31; j = j+1) begin
+                window[i][j] = LINE_BUFFER[i][j];
+            end           
         end
+        for (int j = 0; j < 31; j = j+1) begin
+            window[30][j] = LINE_BUFFER_LAST[j];
+        end      
     end
 
     Key_Buffer1 
@@ -75,7 +88,7 @@ module BRIEF_Top
     (
         .i_clk(i_clk),
         .i_rst_n(i_rst_n),
-        .i_flag(i_flag),
+        .i_flag(i_flag && i_point_valid),
         .i_hit(BUFFER_hit),
         .i_sin(i_sin),
         .i_cos(i_cos),
@@ -94,37 +107,39 @@ module BRIEF_Top
     (
         .i_clk(i_clk),
         .i_rst_n(i_rst_n),
-        .i_col0(BRIEF_col[0]),
-        .i_col1(BRIEF_col[1]),
-        .i_col2(BRIEF_col[2]),
-        .i_col3(BRIEF_col[3]),
-        .i_col4(BRIEF_col[4]),
-        .i_col5(BRIEF_col[5]),
-        .i_col6(BRIEF_col[6]),
-        .i_col7(BRIEF_col[7]),
-        .i_col8(BRIEF_col[8]),
-        .i_col9(BRIEF_col[9]),
-        .i_col10(BRIEF_col[10]),
-        .i_col11(BRIEF_col[11]),
-        .i_col12(BRIEF_col[12]),
-        .i_col13(BRIEF_col[13]),
-        .i_col14(BRIEF_col[14]),
-        .i_col15(BRIEF_col[15]),
-        .i_col16(BRIEF_col[16]),
-        .i_col17(BRIEF_col[17]),
-        .i_col18(BRIEF_col[18]), 
-        .i_col19(BRIEF_col[19]),
-        .i_col20(BRIEF_col[20]),
-        .i_col21(BRIEF_col[21]),
-        .i_col22(BRIEF_col[22]),
-        .i_col23(BRIEF_col[23]),
-        .i_col24(BRIEF_col[24]),
-        .i_col25(BRIEF_col[25]),
-        .i_col26(BRIEF_col[26]),
-        .i_col27(BRIEF_col[27]),
-        .i_col28(BRIEF_col[28]),
-        .i_col29(BRIEF_col[29]),
-        .i_col30(BRIEF_col[30]),
+        
+        .i_window(window),
+        // .i_col0(BRIEF_col[0]),
+            // .i_col1(BRIEF_col[1]),
+            // .i_col2(BRIEF_col[2]),
+            // .i_col3(BRIEF_col[3]),
+            // .i_col4(BRIEF_col[4]),
+            // .i_col5(BRIEF_col[5]),
+            // .i_col6(BRIEF_col[6]),
+            // .i_col7(BRIEF_col[7]),
+            // .i_col8(BRIEF_col[8]),
+            // .i_col9(BRIEF_col[9]),
+            // .i_col10(BRIEF_col[10]),
+            // .i_col11(BRIEF_col[11]),
+            // .i_col12(BRIEF_col[12]),
+            // .i_col13(BRIEF_col[13]),
+            // .i_col14(BRIEF_col[14]),
+            // .i_col15(BRIEF_col[15]),
+            // .i_col16(BRIEF_col[16]),
+            // .i_col17(BRIEF_col[17]),
+            // .i_col18(BRIEF_col[18]), 
+            // .i_col19(BRIEF_col[19]),
+            // .i_col20(BRIEF_col[20]),
+            // .i_col21(BRIEF_col[21]),
+            // .i_col22(BRIEF_col[22]),
+            // .i_col23(BRIEF_col[23]),
+            // .i_col24(BRIEF_col[24]),
+            // .i_col25(BRIEF_col[25]),
+            // .i_col26(BRIEF_col[26]),
+            // .i_col27(BRIEF_col[27]),
+            // .i_col28(BRIEF_col[28]),
+            // .i_col29(BRIEF_col[29]),
+            // .i_col30(BRIEF_col[30]),
 
         .i_coor_x(coor_x_r), 
         .i_coor_y(coor_y_r), 
@@ -144,7 +159,7 @@ module BRIEF_Top
     );
 
     // ========== Combinational Block ==========
-    always@(*) begin
+    always_comb begin
         state_w = state_r;
         count_w = count_r;
         coor_x_w = coor_x_r;
@@ -202,7 +217,7 @@ module BRIEF_Top
     end
 
     // ========== Sequential Block ==========
-    always@(posedge i_clk or negedge i_rst_n) begin
+    always_ff @(posedge i_clk or negedge i_rst_n) begin
         if(!i_rst_n) begin
             state_r <= 0;
             count_r <= 0;
@@ -210,16 +225,16 @@ module BRIEF_Top
             coor_y_r <= 0;
             // start_delay_r <= 0;
 
-            for(j = 0; j < 32; j = j+1) begin
+            for(int j = 0; j < 32; j = j+1) begin
                 LINE_BUFFER_LAST[j] <= 0;
             end
-            for(i = 0; i < 30; i = i+1) begin
-                for(j = 0; j < WIDTH; j = j+1) begin
+            for(int i = 0; i < 30; i = i+1) begin
+                for(int j = 0; j < WIDTH; j = j+1) begin
                     LINE_BUFFER[i][j] <= 0;
                 end
             end
         end
-        else begin
+        else if(i_pixel_valid) begin
             state_r <= state_w;
             count_r <= count_w;
             coor_x_r <= coor_x_w;
@@ -227,15 +242,15 @@ module BRIEF_Top
             // start_delay_r <= start_delay_w;
 
             LINE_BUFFER_LAST[0] <= LINE_BUFFER[29][WIDTH-1];
-            for(j = 1; j < 32; j = j+1) begin
+            for(int j = 1; j < 32; j = j+1) begin
                 LINE_BUFFER_LAST[j] <= LINE_BUFFER_LAST[j-1];
             end
             LINE_BUFFER[0][0] <= LINE_BUFFER_enter;
-            for(i = 1; i < 30; i = i+1) begin
+            for(int i = 1; i < 30; i = i+1) begin
                 LINE_BUFFER[i][0] <= LINE_BUFFER[i-1][WIDTH-1];
             end
-            for(i = 0; i < 30; i = i+1) begin
-                for(j = 1; j < WIDTH; j = j+1) begin
+            for(int i = 0; i < 30; i = i+1) begin
+                for(int j = 1; j < WIDTH; j = j+1) begin
                     LINE_BUFFER[i][j] <= LINE_BUFFER[i][j-1];
                 end
             end

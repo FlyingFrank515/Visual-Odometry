@@ -1,4 +1,4 @@
-`include "HAMMING.v"
+`include "HAMMING.sv"
 
 module MATCH
 #(
@@ -15,8 +15,8 @@ module MATCH
     input [7:0]     i_score,
     input [255:0]   i_descriptor,
 
-    output reg      o_next,
-    output reg      o_end,
+    output logic    o_next,
+    output logic    o_end,
     output          o_valid,
     output [9:0]    o_src_coor_x,
     output [9:0]    o_src_coor_y,
@@ -35,14 +35,14 @@ module MATCH
     // ========== reg/wire declaration ==========
     integer i, j;
     // --- others ---
-    reg [2:0] state_r, state_w;
+    logic [2:0] state_r, state_w;
 
-    // output reg
-    reg          o_valid_r, o_valid_w;
-    reg [9:0]    o_src_coor_x_r, o_src_coor_x_w;
-    reg [9:0]    o_src_coor_y_r, o_src_coor_y_w;
-    reg [9:0]    o_dst_coor_x_r, o_dst_coor_x_w;
-    reg [9:0]    o_dst_coor_y_r, o_dst_coor_y_w;
+    // output logic
+    logic          o_valid_r, o_valid_w;
+    logic [9:0]    o_src_coor_x_r, o_src_coor_x_w;
+    logic [9:0]    o_src_coor_y_r, o_src_coor_y_w;
+    logic [9:0]    o_dst_coor_x_r, o_dst_coor_x_w;
+    logic [9:0]    o_dst_coor_y_r, o_dst_coor_y_w;
 
     assign o_valid = o_valid_r;
     assign o_src_coor_x = o_src_coor_x_r;
@@ -51,57 +51,57 @@ module MATCH
     assign o_dst_coor_y = o_dst_coor_y_r;
 
     // --- SORT --- 
-    reg [9:0] SORT_coor_x_r [0:SIZE-1], SORT_coor_x_w [0:SIZE-1];
-    reg [9:0] SORT_coor_y_r [0:SIZE-1], SORT_coor_y_w [0:SIZE-1];
-    reg [7:0] SORT_score_r [0:SIZE-1], SORT_score_w [0:SIZE-1];
-    reg [255:0] SORT_desc_r [0:SIZE-1], SORT_desc_w [0:SIZE-1];
+    logic [9:0] SORT_coor_x_r [0:SIZE-1], SORT_coor_x_w [0:SIZE-1];
+    logic [9:0] SORT_coor_y_r [0:SIZE-1], SORT_coor_y_w [0:SIZE-1];
+    logic [7:0] SORT_score_r [0:SIZE-1], SORT_score_w [0:SIZE-1];
+    logic [255:0] SORT_desc_r [0:SIZE-1], SORT_desc_w [0:SIZE-1];
 
-    reg [9:0] SORT_comp_x_r, SORT_comp_x_w;
-    reg [9:0] SORT_comp_y_r, SORT_comp_y_w;
-    reg [7:0] SORT_comp_score_r, SORT_comp_score_w;
-    reg [255:0] SORT_comp_desc_r, SORT_comp_desc_w;
+    logic [9:0] SORT_comp_x_r, SORT_comp_x_w;
+    logic [9:0] SORT_comp_y_r, SORT_comp_y_w;
+    logic [7:0] SORT_comp_score_r, SORT_comp_score_w;
+    logic [255:0] SORT_comp_desc_r, SORT_comp_desc_w;
 
-    reg [10:0] SORT_count_r, SORT_count_w;
-    reg        SORT_finish_r, SORT_finish_w;
-    reg [12:0] SORT_len_r, SORT_len_w;
+    logic [10:0] SORT_count_r, SORT_count_w;
+    logic        SORT_finish_r, SORT_finish_w;
+    logic [12:0] SORT_len_r, SORT_len_w;
 
-    reg [9:0] SORT_target_x;
-    reg [9:0] SORT_target_y;
-    reg [7:0] SORT_target_score;
-    reg [255:0] SORT_target_desc;
+    logic [9:0] SORT_target_x;
+    logic [9:0] SORT_target_y;
+    logic [7:0] SORT_target_score;
+    logic [255:0] SORT_target_desc;
 
 
     // --- MIN_DISTANCE ---
-    reg [9:0] COMP1_coor_x_r [0:SIZE-1], COMP1_coor_x_w [0:SIZE-1];
-    reg [9:0] COMP1_coor_y_r [0:SIZE-1], COMP1_coor_y_w [0:SIZE-1];
-    reg [255:0] COMP1_desc_r [0:SIZE-1], COMP1_desc_w [0:SIZE-1];
-    reg [12:0] COMP1_len_r, COMP1_len_w;
+    logic [9:0] COMP1_coor_x_r [0:SIZE-1], COMP1_coor_x_w [0:SIZE-1];
+    logic [9:0] COMP1_coor_y_r [0:SIZE-1], COMP1_coor_y_w [0:SIZE-1];
+    logic [255:0] COMP1_desc_r [0:SIZE-1], COMP1_desc_w [0:SIZE-1];
+    logic [12:0] COMP1_len_r, COMP1_len_w;
     
-    reg [9:0] COMP2_coor_x_r [0:SIZE-1], COMP2_coor_x_w [0:SIZE-1];
-    reg [9:0] COMP2_coor_y_r [0:SIZE-1], COMP2_coor_y_w [0:SIZE-1];
-    reg [255:0] COMP2_desc_r [0:SIZE-1], COMP2_desc_w [0:SIZE-1];
-    reg [12:0] COMP2_len_r, COMP2_len_w;
+    logic [9:0] COMP2_coor_x_r [0:SIZE-1], COMP2_coor_x_w [0:SIZE-1];
+    logic [9:0] COMP2_coor_y_r [0:SIZE-1], COMP2_coor_y_w [0:SIZE-1];
+    logic [255:0] COMP2_desc_r [0:SIZE-1], COMP2_desc_w [0:SIZE-1];
+    logic [12:0] COMP2_len_r, COMP2_len_w;
 
-    reg [12:0] COMP1_count_r, COMP1_count_w;
-    reg [12:0] COMP2_count_r, COMP2_count_w;
+    logic [12:0] COMP1_count_r, COMP1_count_w;
+    logic [12:0] COMP2_count_r, COMP2_count_w;
 
-    reg [12:0] best_count_r, best_count_w;
-    reg [8:0] best_dist_r, best_dist_w;
+    logic [12:0] best_count_r, best_count_w;
+    logic [8:0] best_dist_r, best_dist_w;
 
     // connection
-    reg [255:0] COMP1_target_desc, COMP2_target_desc;
-    reg [12:0] COMP1_count_prev3;
-    reg [9:0] COMP1_target_x, COMP1_target_y, COMP2_target_x, COMP2_target_y;
-    reg [9:0] COMP1_best_x, COMP1_best_y;
-    reg HAMMING_valid;
-    wire [8:0] HAMMING_dist;
-    wire HAMMING_o_valid;
+    logic [255:0] COMP1_target_desc, COMP2_target_desc;
+    logic [12:0] COMP1_count_prev3;
+    logic [9:0] COMP1_target_x, COMP1_target_y, COMP2_target_x, COMP2_target_y;
+    logic [9:0] COMP1_best_x, COMP1_best_y;
+    logic HAMMING_valid;
+    logic [8:0] HAMMING_dist;
+    logic HAMMING_o_valid;
 
 
 
     // ========== Combinational Block ==========
     // --- STATE MACHINE ---
-    always@(*) begin
+    always_comb begin
         // register default value
         state_w = state_r;
         o_next = 0;
@@ -137,7 +137,7 @@ module MATCH
         SORT_target_desc = SORT_desc_r[SORT_count_r];
          
         // register default value
-        for(i = 0; i < SIZE; i = i+1) begin
+        for(int i = 0; i < SIZE; i = i+1) begin
             SORT_coor_x_w[i] = SORT_coor_x_r[i];
             SORT_coor_y_w[i] = SORT_coor_y_r[i];
             SORT_score_w[i] = SORT_score_r[i];
@@ -187,7 +187,7 @@ module MATCH
             end
             COPY: begin
                 SORT_len_w = 0;
-                for(i = 0; i < SIZE; i = i+1) begin
+                for(int i = 0; i < SIZE; i = i+1) begin
                     SORT_coor_x_w[i] = 0;
                     SORT_coor_y_w[i] = 0;
                     SORT_score_w[i] = 0;
@@ -243,7 +243,7 @@ module MATCH
 
     // --- MIN_DISTANCE ---
     // for each keypoints in comp2 array, find the closet keypoint in comp1 array
-    always@(*) begin
+    always_comb begin
         // default
         COMP1_count_w = COMP1_count_r;
         COMP2_count_w = COMP2_count_r;
@@ -307,10 +307,10 @@ module MATCH
 
 
     // ========== Sequential Block ==========
-    always@(posedge i_clk or negedge i_rst_n) begin
+    always_ff @(posedge i_clk or negedge i_rst_n) begin
         if(!i_rst_n) begin
             state_r <= 0;
-            for(i = 0; i < SIZE; i = i+1) begin
+            for(int i = 0; i < SIZE; i = i+1) begin
                 SORT_coor_x_r[i] <= 0;
                 SORT_coor_y_r[i] <= 0;
                 SORT_score_r[i] <= 0;
@@ -348,7 +348,7 @@ module MATCH
             
         else begin
             state_r <= state_w;
-            for(i = 0; i < SIZE; i = i+1) begin
+            for(int i = 0; i < SIZE; i = i+1) begin
                 SORT_coor_x_r[i] <= SORT_coor_x_w[i];
                 SORT_coor_y_r[i] <= SORT_coor_y_w[i];
                 SORT_score_r[i] <= SORT_score_w[i];

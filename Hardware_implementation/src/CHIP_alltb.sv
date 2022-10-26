@@ -177,9 +177,9 @@ module CHIP_tb;
     initial	begin
         f1 = $fopen("coores.txt","w");
         f2 = $fopen("keypts.txt","w");
-        $readmemh ("../testfile/pixel_in.txt", pixel_in);
-        $readmemh ("../testfile/pixel_in2.txt", pixel_in2);
-        $readmemh ("../testfile/pixel_in3.txt", pixel_in3);
+        $readmemh ("../testfile/pixel_in.dat", pixel_in);
+        $readmemh ("../testfile/pixel_in2.dat", pixel_in2);
+        $readmemh ("../testfile/pixel_in3.dat", pixel_in3);
     end
 
 

@@ -18,7 +18,8 @@ module MATCH_Top
     input           i_start,
     input           i_end,
 
-    output          o_end,
+    output          o_frame_end,
+    output          o_frame_start,
     output          o_valid,
     output [9:0]    o_src_coor_x,
     output [9:0]    o_src_coor_y,
@@ -73,7 +74,8 @@ module MATCH_Top
         .i_descriptor(BUFFER_descriptor),
 
         .o_next(MATCH_next),
-        .o_end(o_end),
+        .o_frame_end(o_frame_end),
+        .o_frame_start(o_frame_start),
         .o_valid(o_valid),
         .o_src_coor_x(o_src_coor_x),
         .o_src_coor_y(o_src_coor_y),

@@ -29,7 +29,27 @@ module BRIEF_Top
     output [7:0]    o_score,
     output          o_flag,
     output logic    o_start,
-    output logic      o_end
+    output logic      o_end,
+
+    // sram interface -- BRIEF window
+    input [7:0]     BRIEF_lb_sram_QA [30],
+    input [7:0]     BRIEF_lb_sram_QB [30],
+    output          BRIEF_lb_sram_WENA [30],
+    output          BRIEF_lb_sram_WENB [30],
+    output [7:0]    BRIEF_lb_sram_DA [30],
+    output [7:0]    BRIEF_lb_sram_DB [30],
+    output [9:0]    BRIEF_lb_sram_AA [30],
+    output [9:0]    BRIEF_lb_sram_AB [30]
+
+    // // sram interface -- BRIEF window
+    // input [51:0]     BRIEF_keybuf_sram_QA,
+    // input [51:0]     BRIEF_keybuf_sram_QB,
+    // output          BRIEF_keybuf_sram_WENA,
+    // output          BRIEF_keybuf_sram_WENB,
+    // output [51:0]    BRIEF_keybuf_sram_DA,
+    // output [51:0]    BRIEF_keybuf_sram_DB,
+    // output [6:0]    BRIEF_keybuf_sram_AA,
+    // output [6:0]    BRIEF_keybuf_sram_AB
 
 );
     // parameter
@@ -54,31 +74,52 @@ module BRIEF_Top
     logic [9:0] BUFFER_x, BUFFER_y;
     logic [7:0] BUFFER_score;
 
-    // logic [247:0] BRIEF_col [0:30];
     logic [7:0] window [0:30][0:30];
+
+    // BRIEF_lb_sram interface
+    logic [7:0]    BRIEF_lb_sram_QB_r [0:29];
+    logic          BRIEF_lb_sram_WENA_w [0:29], BRIEF_lb_sram_WENA_r [0:29];
+    logic          BRIEF_lb_sram_WENB_w [0:29], BRIEF_lb_sram_WENB_r [0:29];
+    logic [7:0]    BRIEF_lb_sram_DA_w [0:29], BRIEF_lb_sram_DA_r [0:29];
+    logic [9:0]    BRIEF_lb_sram_AA_w [0:29], BRIEF_lb_sram_AA_r [0:29];
+    logic [9:0]    BRIEF_lb_sram_AB_w [0:29], BRIEF_lb_sram_AB_r [0:29];
+
+    logic [7:0] inspect1, inspect2;
+    assign inspect1 = LINE_BUFFER[0][639];
+    assign inspect2 = BRIEF_lb_sram_QB_r[0];
 
 
     // ========== Connection ==========
-    // always_comb begin
-    //     for(i = 0; i < 31; i = i+1) begin
-    //         BRIEF_col[i] = {LINE_BUFFER[0][i], LINE_BUFFER[1][i], LINE_BUFFER[2][i], LINE_BUFFER[3][i], LINE_BUFFER[4][i], LINE_BUFFER[5][i],
-    //                         LINE_BUFFER[6][i], LINE_BUFFER[7][i], LINE_BUFFER[8][i], LINE_BUFFER[9][i], LINE_BUFFER[10][i], LINE_BUFFER[11][i],
-    //                         LINE_BUFFER[12][i], LINE_BUFFER[13][i], LINE_BUFFER[14][i], LINE_BUFFER[15][i], LINE_BUFFER[16][i], LINE_BUFFER[17][i],
-    //                         LINE_BUFFER[18][i], LINE_BUFFER[19][i], LINE_BUFFER[20][i], LINE_BUFFER[21][i], LINE_BUFFER[22][i], LINE_BUFFER[23][i],
-    //                         LINE_BUFFER[24][i], LINE_BUFFER[25][i], LINE_BUFFER[26][i], LINE_BUFFER[27][i], LINE_BUFFER[28][i], LINE_BUFFER[29][i], LINE_BUFFER_LAST[i]};
-                            
-    //     end
-    // end
+    // FAST_lb_sram connection
+    for(genvar i = 0; i < 30; i = i+1) begin
+        assign BRIEF_lb_sram_WENA[i] = BRIEF_lb_sram_WENA_r[i];
+        assign BRIEF_lb_sram_WENB[i] = BRIEF_lb_sram_WENB_r[i];
+        assign BRIEF_lb_sram_DA[i] = BRIEF_lb_sram_DA_r[i];
+        assign BRIEF_lb_sram_DB[i] = 0;
+        assign BRIEF_lb_sram_AA[i] = BRIEF_lb_sram_AA_r[i];
+        assign BRIEF_lb_sram_AB[i] = BRIEF_lb_sram_AB_r[i];
+    end
+
     always_comb begin
-        for(int i = 0; i < 30; i = i+1) begin
+        for(int j = 0; j < 31; j = j+1) begin
+            window[0][j] = LINE_BUFFER_LAST[30-j];
+        end
+        for(int i = 1; i < 31; i = i+1) begin
             for (int j = 0; j < 31; j = j+1) begin
-                window[i][j] = LINE_BUFFER[i][j];
+                window[i][j] = LINE_BUFFER[30-i][30-j];
             end           
         end
-        for (int j = 0; j < 31; j = j+1) begin
-            window[30][j] = LINE_BUFFER_LAST[j];
-        end      
+        // for(int i = 0; i < 30; i = i+1) begin
+        //     for (int j = 0; j < 31; j = j+1) begin
+        //         window[i][j] = LINE_BUFFER[i][j];
+        //     end           
+        // end
+        // for (int j = 0; j < 31; j = j+1) begin
+        //     window[30][j] = LINE_BUFFER_LAST[j];
+        // end      
     end
+
+    
 
     Key_Buffer1 
     #(
@@ -109,37 +150,6 @@ module BRIEF_Top
         .i_rst_n(i_rst_n),
         
         .i_window(window),
-        // .i_col0(BRIEF_col[0]),
-            // .i_col1(BRIEF_col[1]),
-            // .i_col2(BRIEF_col[2]),
-            // .i_col3(BRIEF_col[3]),
-            // .i_col4(BRIEF_col[4]),
-            // .i_col5(BRIEF_col[5]),
-            // .i_col6(BRIEF_col[6]),
-            // .i_col7(BRIEF_col[7]),
-            // .i_col8(BRIEF_col[8]),
-            // .i_col9(BRIEF_col[9]),
-            // .i_col10(BRIEF_col[10]),
-            // .i_col11(BRIEF_col[11]),
-            // .i_col12(BRIEF_col[12]),
-            // .i_col13(BRIEF_col[13]),
-            // .i_col14(BRIEF_col[14]),
-            // .i_col15(BRIEF_col[15]),
-            // .i_col16(BRIEF_col[16]),
-            // .i_col17(BRIEF_col[17]),
-            // .i_col18(BRIEF_col[18]), 
-            // .i_col19(BRIEF_col[19]),
-            // .i_col20(BRIEF_col[20]),
-            // .i_col21(BRIEF_col[21]),
-            // .i_col22(BRIEF_col[22]),
-            // .i_col23(BRIEF_col[23]),
-            // .i_col24(BRIEF_col[24]),
-            // .i_col25(BRIEF_col[25]),
-            // .i_col26(BRIEF_col[26]),
-            // .i_col27(BRIEF_col[27]),
-            // .i_col28(BRIEF_col[28]),
-            // .i_col29(BRIEF_col[29]),
-            // .i_col30(BRIEF_col[30]),
 
         .i_coor_x(coor_x_r), 
         .i_coor_y(coor_y_r), 
@@ -156,6 +166,15 @@ module BRIEF_Top
         .o_descriptor(o_descriptor),
         .o_flag(o_flag),
         .o_score(o_score)
+
+        // .BRIEF_keybuf_sram_QA(BRIEF_keybuf_sram_QA),
+        // .BRIEF_keybuf_sram_QB(BRIEF_keybuf_sram_QB),
+        // .BRIEF_keybuf_sram_WENA(BRIEF_keybuf_sram_WENA),
+        // .BRIEF_keybuf_sram_WENB(BRIEF_keybuf_sram_WENB),
+        // .BRIEF_keybuf_sram_DA(BRIEF_keybuf_sram_DA),
+        // .BRIEF_keybuf_sram_DB(BRIEF_keybuf_sram_DB),
+        // .BRIEF_keybuf_sram_AA(BRIEF_keybuf_sram_AA),
+        // .BRIEF_keybuf_sram_AB(BRIEF_keybuf_sram_AB)
     );
 
     // ========== Combinational Block ==========
@@ -177,12 +196,6 @@ module BRIEF_Top
                     o_start = 1;
                 end
             end
-            // S_WAIT1: begin
-            //     count_w = count_r + 1;
-            //     if(count_r == (4 + 9 + WIDTH*4)) begin
-            //         state_w = S_WAIT2;
-            //     end          
-            // end
             S_WAIT2: begin
                 LINE_BUFFER_enter = i_pixel;
                 count_w = count_r + 1;
@@ -216,6 +229,48 @@ module BRIEF_Top
         endcase
     end
 
+    // line buffer
+    always_comb begin
+        for(int i = 0; i < 30; i = i+1) begin
+            BRIEF_lb_sram_WENA_w[i] = 1; // 1 for read
+            BRIEF_lb_sram_WENB_w[i] = 1;
+            BRIEF_lb_sram_DA_w[i] = BRIEF_lb_sram_DA_r[i];
+            BRIEF_lb_sram_AA_w[i] = BRIEF_lb_sram_AA_r[i];
+            BRIEF_lb_sram_AB_w[i] = BRIEF_lb_sram_AB_r[i];
+        end
+        case(state_r)
+            S_IDLE: begin
+                if(i_start) begin
+                    for(int i = 0; i < 30; i = i+1) begin
+                        BRIEF_lb_sram_WENA_w[i] = 0;
+                        BRIEF_lb_sram_WENB_w[i] = 1;
+                        BRIEF_lb_sram_DA_w[i] = LINE_BUFFER[i][30];
+                        BRIEF_lb_sram_AA_w[i] = 608;
+                        BRIEF_lb_sram_AB_w[i] = 0;
+                    end
+                end
+            end
+            S_WAIT2: begin
+                for(int i = 0; i < 30; i = i+1) begin
+                    BRIEF_lb_sram_WENA_w[i] = 0;
+                    BRIEF_lb_sram_WENB_w[i] = 1;
+                    BRIEF_lb_sram_DA_w[i] = LINE_BUFFER[i][30];
+                    BRIEF_lb_sram_AA_w[i] = (BRIEF_lb_sram_AA_r[i] == 639) ? 0 : BRIEF_lb_sram_AA_r[i] + 1;
+                    BRIEF_lb_sram_AB_w[i] = (BRIEF_lb_sram_AB_r[i] == 639) ? 0 : BRIEF_lb_sram_AB_r[i] + 1;
+                end   
+            end
+            S_WORK: begin
+                for(int i = 0; i < 30; i = i+1) begin
+                    BRIEF_lb_sram_WENA_w[i] = 0;
+                    BRIEF_lb_sram_WENB_w[i] = 1;
+                    BRIEF_lb_sram_DA_w[i] = LINE_BUFFER[i][30];
+                    BRIEF_lb_sram_AA_w[i] = (BRIEF_lb_sram_AA_r[i] == 639) ? 0 : BRIEF_lb_sram_AA_r[i] + 1;
+                    BRIEF_lb_sram_AB_w[i] = (BRIEF_lb_sram_AB_r[i] == 639) ? 0 : BRIEF_lb_sram_AB_r[i] + 1;
+                end  
+            end
+        endcase
+    end
+
     // ========== Sequential Block ==========
     always_ff @(posedge i_clk or negedge i_rst_n) begin
         if(!i_rst_n) begin
@@ -232,6 +287,15 @@ module BRIEF_Top
                 for(int j = 0; j < WIDTH; j = j+1) begin
                     LINE_BUFFER[i][j] <= 0;
                 end
+            end
+
+            for(int i = 0; i < 30; i = i+1) begin
+                BRIEF_lb_sram_QB_r[i] <= 0;
+                BRIEF_lb_sram_WENA_r[i] <= 1; // read
+                BRIEF_lb_sram_WENB_r[i] <= 1; // read
+                BRIEF_lb_sram_DA_r[i] <= 0;
+                BRIEF_lb_sram_AA_r[i] <= 0;
+                BRIEF_lb_sram_AB_r[i] <= 0;
             end
         end
         else if(i_pixel_valid) begin
@@ -253,6 +317,15 @@ module BRIEF_Top
                 for(int j = 1; j < WIDTH; j = j+1) begin
                     LINE_BUFFER[i][j] <= LINE_BUFFER[i][j-1];
                 end
+            end
+
+            for(int i = 0; i < 30; i = i+1) begin
+                BRIEF_lb_sram_QB_r[i] <= BRIEF_lb_sram_QB[i];
+                BRIEF_lb_sram_WENA_r[i] <= BRIEF_lb_sram_WENA_w[i];
+                BRIEF_lb_sram_WENB_r[i] <= BRIEF_lb_sram_WENB_w[i];
+                BRIEF_lb_sram_DA_r[i] <= BRIEF_lb_sram_DA_w[i];
+                BRIEF_lb_sram_AA_r[i] <= BRIEF_lb_sram_AA_w[i];
+                BRIEF_lb_sram_AB_r[i] <= BRIEF_lb_sram_AB_w[i];
             end
         end
     end

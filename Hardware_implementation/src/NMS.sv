@@ -9,7 +9,17 @@ module NMS
     input           i_flag,
     input           i_valid,
     output [7:0]    o_score,
-    output          o_flag
+    output          o_flag,
+
+    // sram interface
+    input [9:0]     sram_QA,
+    input [9:0]     sram_QB,
+    output          sram_WENA,
+    output          sram_WENB,
+    output [9:0]    sram_DA,
+    output [9:0]    sram_DB,
+    output [9:0]    sram_AA,
+    output [9:0]    sram_AB
 );
 
 // ========== function declaration ==========
@@ -44,9 +54,6 @@ function M2; // determine whether we should reserve pixel_1
 endfunction
 // ========== reg/wire declaration ==========
 integer ia, ib, i;
-logic [7:0] candidate_score_buffer [0:WIDTH-3];
-logic       candidate_flag_buffer [0:WIDTH-3];
-logic       candidate_reserved_buffer [0:WIDTH-3];
 logic [7:0] candidate_score_start;
 logic       candidate_flag_start;
 logic       candidate_reserved_start;
@@ -61,9 +68,30 @@ logic [7:0] o_score_r, o_score_w;
 logic       o_flag_r, o_flag_w;
 logic       o_reserved;
 
+// sram interface
+logic [9:0]    sram_QB_r;
+logic          sram_WENA_w, sram_WENA_r;
+logic          sram_WENB_w, sram_WENB_r;
+logic [9:0]    sram_DA_w, sram_DA_r;
+logic [9:0]    sram_AA_w, sram_AA_r;
+logic [9:0]    sram_AB_w, sram_AB_r;
+
+logic [7:0] candidate_score_out;
+logic       candidate_flag_out;
+logic       candidate_reserved_out;
+
+logic [9:0] sram_delay [0:10];
+
 // ========== Connection ==========
 assign o_score = o_score_r;
 assign o_flag = o_flag_r;
+
+assign sram_WENA = sram_WENA_r;
+assign sram_WENB = sram_WENB_r;
+assign sram_DA = sram_DA_r;
+assign sram_DB = 0;
+assign sram_AA = sram_AA_r;
+assign sram_AB = sram_AB_r;
 // ========== Combinational Block ==========
 always_comb begin
 
@@ -87,9 +115,9 @@ always_comb begin
     B_flag_w[0] = B_flag_r[1];
     B_reserved_w[0] = B_reserved_r[1];
 
-    A_score_w[2] = candidate_score_buffer[WIDTH-3];
-    A_flag_w[2] = candidate_flag_buffer[WIDTH-3];
-    A_reserved_w[2] = candidate_reserved_buffer[WIDTH-3];
+    A_score_w[2] = candidate_score_out;
+    A_flag_w[2] = candidate_flag_out;
+    A_reserved_w[2] = candidate_reserved_out;
 
     A_score_w[1] = A_score_r[2];
     A_flag_w[1] = A_flag_r[2];
@@ -107,8 +135,20 @@ always_comb begin
     o_flag_w = o_reserved && A_flag_r[1];
     o_score_w = o_reserved ? (A_score_r[1]) : 0;
 
-    
 end
+
+always_comb begin
+    sram_WENA_w = 0;
+    sram_WENB_w = 1;
+    sram_DA_w = {candidate_score_start, candidate_flag_start, candidate_reserved_start};
+    sram_AA_w = (sram_AA_r == 639) ? 0 : sram_AA_r + 1;
+    sram_AB_w = (sram_AB_r == 639) ? 0 : sram_AB_r + 1;
+    
+    candidate_score_out = sram_delay[10][9:2];
+    candidate_flag_out = sram_delay[10][1];
+    candidate_reserved_out = sram_delay[10][0];
+end
+
 // ========== Sequential Block ==========
 always@(posedge i_clk or negedge i_rst_n) begin
     if(!i_rst_n) begin
@@ -121,11 +161,6 @@ always@(posedge i_clk or negedge i_rst_n) begin
             B_score_r[ib] <= 0;
             B_flag_r[ib] <= 0;
             B_reserved_r[ib] <= 0;
-        end
-        for(int i = 0; i < WIDTH-2; i = i+1) begin
-            candidate_score_buffer[i] <= 0;
-            candidate_flag_buffer[i] <= 0;
-            candidate_reserved_buffer[i] <= 0;
         end
         o_score_r <= 0;
         o_flag_r <= 0;
@@ -141,17 +176,39 @@ always@(posedge i_clk or negedge i_rst_n) begin
             B_flag_r[ib] <= B_flag_w[ib];
             B_reserved_r[ib] <= B_reserved_w[ib];
         end
-        for(int i = 1; i < WIDTH-2; i = i+1) begin
-            candidate_score_buffer[i] <= candidate_score_buffer[i-1];
-            candidate_flag_buffer[i] <= candidate_flag_buffer[i-1];
-            candidate_reserved_buffer[i] <= candidate_reserved_buffer[i-1];
-        end
-        candidate_score_buffer[0] <= candidate_score_start;
-        candidate_flag_buffer[0] <= candidate_flag_start;
-        candidate_reserved_buffer[0] <= candidate_reserved_start;
         o_score_r <= o_score_w;
         o_flag_r <= o_flag_w;
     end
 
+end
+
+// sram
+always_ff @(posedge i_clk or negedge i_rst_n) begin
+    if(!i_rst_n) begin
+        sram_QB_r <= 0;
+        sram_WENA_r <= 0;
+        sram_WENB_r <= 1;
+        sram_DA_r <= 0;
+        sram_AA_r <= 624;
+        sram_AB_r <= 0;
+
+        sram_delay[0] <= 0;
+        for(int i = 1; i < 11 ; i = i+1) begin
+            sram_delay[i] <= 0;
+        end
+    end
+    else begin
+        sram_QB_r <= sram_QB;
+        sram_WENA_r <= sram_WENA_w;
+        sram_WENB_r <= sram_WENB_w; 
+        sram_DA_r <= sram_DA_w;
+        sram_AA_r <= sram_AA_w;
+        sram_AB_r <= sram_AB_w;
+
+        sram_delay[0] <= sram_QB_r;
+        for(int i = 1; i < 11 ; i = i+1) begin
+            sram_delay[i] <= sram_delay[i-1];
+        end
+    end
 end
 endmodule

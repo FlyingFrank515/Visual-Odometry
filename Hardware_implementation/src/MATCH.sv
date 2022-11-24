@@ -16,7 +16,8 @@ module MATCH
     input [255:0]   i_descriptor,
 
     output logic    o_next,
-    output logic    o_end,
+    output          o_frame_end,
+    output          o_frame_start,
     output          o_valid,
     output [9:0]    o_src_coor_x,
     output [9:0]    o_src_coor_y,
@@ -97,6 +98,13 @@ module MATCH
     logic [8:0] HAMMING_dist;
     logic HAMMING_o_valid;
 
+    // start end signal
+    logic start_flag_r, start_flag_w;
+    logic o_frame_start_r, o_frame_start_w;
+    logic o_frame_end_r, o_frame_end_w;
+    assign o_frame_end = o_frame_end_r;
+    assign o_frame_start = o_frame_start_r;
+
 
 
     // ========== Combinational Block ==========
@@ -105,16 +113,23 @@ module MATCH
         // register default value
         state_w = state_r;
         o_next = 0;
-        o_end = 0;
+        o_frame_start_w = 0;
+        o_frame_end_w = 0;
+        start_flag_w = start_flag_r;
         case(state_r)
             IDLE: begin
+                if(start_flag_r == 0) begin
+                    o_frame_start_w = 1;
+                    start_flag_w = 1;
+                end 
                 if(i_flag) begin
                     state_w = WORK;
                     o_next = 1;
                 end
                 if(i_end) begin
                     state_w = COPY;
-                    o_end = 1;
+                    o_frame_end_w = 1;
+                    start_flag_w = 0;
                 end
             end
             WORK: begin
@@ -127,9 +142,22 @@ module MATCH
             end
         endcase
     end
+
+    always_ff @(posedge i_clk or negedge i_rst_n) begin
+        if(!i_rst_n) begin
+            o_frame_start_r <= 0;
+            o_frame_end_r <= 0;
+            start_flag_r <= 0;
+        end
+        else begin
+            o_frame_start_r <= o_frame_start_w;
+            o_frame_end_r <= o_frame_end_w;
+            start_flag_r <= start_flag_w;
+        end
+    end
     
     // --- SORT ---
-    always@(*) begin
+    always_comb begin
         // connection
         SORT_target_x = SORT_coor_x_r[SORT_count_r];
         SORT_target_y = SORT_coor_y_r[SORT_count_r];
@@ -198,7 +226,7 @@ module MATCH
     end
 
     // --- COPY ---
-    always@(*) begin
+    always_comb begin
         // default value
         for (i = 0; i < SIZE; i = i+1) begin
             COMP1_coor_x_w[i] = COMP1_coor_x_r[i]; 

@@ -1,6 +1,6 @@
 module Key_Buffer2
 #(
-    parameter SIZE = 12'd100   
+    parameter SIZE = 12'd10
 )
 (
     input           i_clk,
@@ -22,7 +22,7 @@ module Key_Buffer2
 );
 
     integer i;
-    logic [9:0] coor_x_w [0:SIZE-1], coor_x_r[0:SIZE-1];
+    logic [9:0] coor_x_w [0:SIZE-1], coor_x_r[0:SIZE-1]; // 10+10+8+256 -> 71, 71, 71, 71
     logic [9:0] coor_y_w [0:SIZE-1], coor_y_r[0:SIZE-1];
     logic [7:0] score_w [0:SIZE-1], score_r [0:SIZE-1];
     logic [255:0] desc_w [0:SIZE-1], desc_r[0:SIZE-1];
@@ -35,6 +35,8 @@ module Key_Buffer2
     assign o_score = score_r[SIZE-1];
     assign o_descriptor = desc_r[SIZE-1];
     assign o_flag = (count_r != 99);
+
+    // initial begin $monitor("count = %d", count_r); end
 
 
     always_comb begin

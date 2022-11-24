@@ -5,3 +5,5 @@ build/
 result/
 CPP_implementation/.DS_Store
 CPP_implementation/src/build/
+Hardware_implementation/memory
+Hardware_implementation/src/oldtb

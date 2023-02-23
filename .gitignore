@@ -6,7 +6,7 @@ result/
 CPP_implementation/.DS_Store
 CPP_implementation/src/build/
 Hardware_implementation/memory
-Hardware_implementation/sram
-Hardware_implementation/sram_v2
+Hardware_implementation/src/sram
+Hardware_implementation/src/sram_v2
 
 Hardware_implementation/src/oldtb

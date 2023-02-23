@@ -1,6 +1,7 @@
 .DS_Store
 .vscode/
-*.txt
+frank.txt
+
 build/
 result/
 CPP_implementation/.DS_Store
@@ -8,5 +9,11 @@ CPP_implementation/src/build/
 Hardware_implementation/memory
 Hardware_implementation/src/sram
 Hardware_implementation/src/sram_v2
+Hardware_implementation/golden.txt
+Hardware_implementation/sram_usage.txt
+Hardware_implementation/testfile/result
+Hardware_implementation/testfile/read.txt
+Hardware_implementation/testfile/pixel_smooth.txt
+Hardware_implementation/src/test.txt
 
 Hardware_implementation/src/oldtb

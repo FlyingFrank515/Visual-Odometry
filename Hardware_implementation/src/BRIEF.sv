@@ -6,41 +6,11 @@ module BRIEF
     input           i_rst_n,
 
     input [7:0]     i_window [0:30][0:30],
-    // input [247:0]   i_col0,
-    // input [247:0]   i_col1,
-    // input [247:0]   i_col2,
-    // input [247:0]   i_col3,
-    // input [247:0]   i_col4,
-    // input [247:0]   i_col5,
-    // input [247:0]   i_col6,
-    // input [247:0]   i_col7,
-    // input [247:0]   i_col8,
-    // input [247:0]   i_col9,
-    // input [247:0]   i_col10,
-    // input [247:0]   i_col11,
-    // input [247:0]   i_col12,
-    // input [247:0]   i_col13,
-    // input [247:0]   i_col14,
-    // input [247:0]   i_col15,
-    // input [247:0]   i_col16,
-    // input [247:0]   i_col17,
-    // input [247:0]   i_col18, 
-    // input [247:0]   i_col19,
-    // input [247:0]   i_col20,
-    // input [247:0]   i_col21,
-    // input [247:0]   i_col22,
-    // input [247:0]   i_col23,
-    // input [247:0]   i_col24,
-    // input [247:0]   i_col25,
-    // input [247:0]   i_col26,
-    // input [247:0]   i_col27,
-    // input [247:0]   i_col28,
-    // input [247:0]   i_col29,
-    // input [247:0]   i_col30,
 
     input [9:0]     i_coor_x, 
     input [9:0]     i_coor_y, 
     input [7:0]     i_score,
+    input [9:0]     i_depth,
 
     input signed [11:0]    i_sin,
     input signed [11:0]    i_cos,
@@ -52,7 +22,8 @@ module BRIEF
     output [9:0]    o_coor_y, 
     output [255:0]  o_descriptor,
     output          o_flag,
-    output [7:0]    o_score
+    output [7:0]    o_score,
+    output [9:0]    o_depth
 
 );
     // parameter
@@ -110,6 +81,10 @@ module BRIEF
     logic [7:0] score1_w, score1_r;
     logic [7:0] score2_w, score2_r;
     logic [7:0] score3_w, score3_r;
+
+    logic [9:0] depth1_w, depth1_r;
+    logic [9:0] depth2_w, depth2_r;
+    logic [9:0] depth3_w, depth3_r;
 
     logic       flag3_w, flag3_r;
 
@@ -172,6 +147,7 @@ module BRIEF
     assign o_flag = flag3_r;
     assign o_descriptor = descriptor_r;
     assign o_score = score3_r;
+    assign o_depth = depth3_r;
 
     always_comb begin
         for(int i = 0; i < 256; i = i+1) begin
@@ -222,6 +198,10 @@ module BRIEF
         score1_w = flag1_w ? i_score : 0;
         score2_w = score1_r;
         score3_w = score2_r;
+
+        depth1_w = flag1_w ? i_depth : 0;
+        depth2_w = depth1_r;
+        depth3_w = depth2_r;
         
     end
 
@@ -255,6 +235,9 @@ module BRIEF
             score1_r <= 0;
             score2_r <= 0;
             score3_r <= 0;
+            depth1_r <= 0;
+            depth2_r <= 0;
+            depth3_r <= 0;
         end
         else begin
             for(int i = 0; i < 256; i = i+1) begin
@@ -286,6 +269,9 @@ module BRIEF
             score1_r <= score1_w;
             score2_r <= score2_w;
             score3_r <= score3_w;
+            depth1_r <= depth1_w;
+            depth2_r <= depth2_w;
+            depth3_r <= depth3_w;
         end
     end
 

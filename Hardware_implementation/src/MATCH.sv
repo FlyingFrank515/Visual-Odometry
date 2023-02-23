@@ -12,6 +12,7 @@ module MATCH
     input           i_end,
     input [9:0]     i_coor_x, 
     input [9:0]     i_coor_y,
+    input [9:0]     i_depth,
     input [7:0]     i_score,
     input [255:0]   i_descriptor,
 
@@ -21,8 +22,10 @@ module MATCH
     output          o_valid,
     output [9:0]    o_src_coor_x,
     output [9:0]    o_src_coor_y,
+    output [9:0]    o_src_depth,
     output [9:0]    o_dst_coor_x,
-    output [9:0]    o_dst_coor_y
+    output [9:0]    o_dst_coor_y,
+    output [9:0]    o_dst_depth
 
 );
     // parameter
@@ -42,23 +45,29 @@ module MATCH
     logic          o_valid_r, o_valid_w;
     logic [9:0]    o_src_coor_x_r, o_src_coor_x_w;
     logic [9:0]    o_src_coor_y_r, o_src_coor_y_w;
+    logic [9:0]    o_src_depth_r, o_src_depth_w;
     logic [9:0]    o_dst_coor_x_r, o_dst_coor_x_w;
     logic [9:0]    o_dst_coor_y_r, o_dst_coor_y_w;
+    logic [9:0]    o_dst_depth_r, o_dst_depth_w;
 
     assign o_valid = o_valid_r;
     assign o_src_coor_x = o_src_coor_x_r;
     assign o_src_coor_y = o_src_coor_y_r;
     assign o_dst_coor_x = o_dst_coor_x_r;
     assign o_dst_coor_y = o_dst_coor_y_r;
+    assign o_src_depth = o_src_depth_r;
+    assign o_dst_depth = o_dst_depth_r;
 
     // --- SORT --- 
     logic [9:0] SORT_coor_x_r [0:SIZE-1], SORT_coor_x_w [0:SIZE-1];
     logic [9:0] SORT_coor_y_r [0:SIZE-1], SORT_coor_y_w [0:SIZE-1];
+    logic [9:0] SORT_depth_r [0:SIZE-1], SORT_depth_w [0:SIZE-1];
     logic [7:0] SORT_score_r [0:SIZE-1], SORT_score_w [0:SIZE-1];
     logic [255:0] SORT_desc_r [0:SIZE-1], SORT_desc_w [0:SIZE-1];
 
     logic [9:0] SORT_comp_x_r, SORT_comp_x_w;
     logic [9:0] SORT_comp_y_r, SORT_comp_y_w;
+    logic [9:0] SORT_comp_depth_r, SORT_comp_depth_w;
     logic [7:0] SORT_comp_score_r, SORT_comp_score_w;
     logic [255:0] SORT_comp_desc_r, SORT_comp_desc_w;
 
@@ -68,6 +77,7 @@ module MATCH
 
     logic [9:0] SORT_target_x;
     logic [9:0] SORT_target_y;
+    logic [9:0] SORT_target_depth;
     logic [7:0] SORT_target_score;
     logic [255:0] SORT_target_desc;
 
@@ -75,11 +85,13 @@ module MATCH
     // --- MIN_DISTANCE ---
     logic [9:0] COMP1_coor_x_r [0:SIZE-1], COMP1_coor_x_w [0:SIZE-1];
     logic [9:0] COMP1_coor_y_r [0:SIZE-1], COMP1_coor_y_w [0:SIZE-1];
+    logic [9:0] COMP1_depth_r [0:SIZE-1], COMP1_depth_w [0:SIZE-1];
     logic [255:0] COMP1_desc_r [0:SIZE-1], COMP1_desc_w [0:SIZE-1];
     logic [12:0] COMP1_len_r, COMP1_len_w;
     
     logic [9:0] COMP2_coor_x_r [0:SIZE-1], COMP2_coor_x_w [0:SIZE-1];
     logic [9:0] COMP2_coor_y_r [0:SIZE-1], COMP2_coor_y_w [0:SIZE-1];
+    logic [9:0] COMP2_depth_r [0:SIZE-1], COMP2_depth_w [0:SIZE-1];
     logic [255:0] COMP2_desc_r [0:SIZE-1], COMP2_desc_w [0:SIZE-1];
     logic [12:0] COMP2_len_r, COMP2_len_w;
 
@@ -93,7 +105,8 @@ module MATCH
     logic [255:0] COMP1_target_desc, COMP2_target_desc;
     logic [12:0] COMP1_count_prev3;
     logic [9:0] COMP1_target_x, COMP1_target_y, COMP2_target_x, COMP2_target_y;
-    logic [9:0] COMP1_best_x, COMP1_best_y;
+    logic [9:0] COMP1_target_depth, COMP2_target_depth;
+    logic [9:0] COMP1_best_x, COMP1_best_y, COMP1_best_depth;
     logic HAMMING_valid;
     logic [8:0] HAMMING_dist;
     logic HAMMING_o_valid;
@@ -102,6 +115,7 @@ module MATCH
     logic start_flag_r, start_flag_w;
     logic o_frame_start_r, o_frame_start_w;
     logic o_frame_end_r, o_frame_end_w;
+
     assign o_frame_end = o_frame_end_r;
     assign o_frame_start = o_frame_start_r;
 
@@ -163,18 +177,22 @@ module MATCH
         SORT_target_y = SORT_coor_y_r[SORT_count_r];
         SORT_target_score = SORT_score_r[SORT_count_r];
         SORT_target_desc = SORT_desc_r[SORT_count_r];
+        SORT_target_depth = SORT_depth_r[SORT_count_r];
          
         // register default value
         for(int i = 0; i < SIZE; i = i+1) begin
             SORT_coor_x_w[i] = SORT_coor_x_r[i];
             SORT_coor_y_w[i] = SORT_coor_y_r[i];
+            SORT_depth_w[i] = SORT_depth_r[i];
             SORT_score_w[i] = SORT_score_r[i];
             SORT_desc_w[i] = SORT_desc_r[i];
         end
         SORT_comp_x_w = SORT_comp_x_r;
         SORT_comp_y_w = SORT_comp_y_r;
+        SORT_comp_depth_w = SORT_comp_depth_r;
         SORT_comp_score_w = SORT_comp_score_r;
         SORT_comp_desc_w = SORT_comp_desc_r;
+        
         SORT_finish_w = SORT_finish_r;
         SORT_count_w = SORT_count_r;
         SORT_len_w = SORT_len_r;
@@ -185,6 +203,7 @@ module MATCH
                 if(i_flag) begin
                     SORT_comp_x_w = i_coor_x;
                     SORT_comp_y_w = i_coor_y;
+                    SORT_comp_depth_w = i_depth;
                     SORT_comp_score_w = i_score;
                     SORT_comp_desc_w = i_descriptor;
                     SORT_count_w = 0;
@@ -202,9 +221,11 @@ module MATCH
                         SORT_comp_y_w = SORT_target_y;
                         SORT_comp_score_w = SORT_target_score;
                         SORT_comp_desc_w = SORT_target_desc;
+                        SORT_comp_depth_w = SORT_target_depth;
 
                         SORT_coor_x_w[SORT_count_r] = SORT_comp_x_r;
                         SORT_coor_y_w[SORT_count_r] = SORT_comp_y_r;
+                        SORT_depth_w[SORT_count_r] = SORT_comp_depth_r;
                         SORT_score_w[SORT_count_r] = SORT_comp_score_r;
                         SORT_desc_w[SORT_count_r] = SORT_comp_desc_r;
                     end
@@ -218,6 +239,7 @@ module MATCH
                 for(int i = 0; i < SIZE; i = i+1) begin
                     SORT_coor_x_w[i] = 0;
                     SORT_coor_y_w[i] = 0;
+                    SORT_depth_w[i] = 0;
                     SORT_score_w[i] = 0;
                     SORT_desc_w[i] = 0;
                 end
@@ -232,10 +254,12 @@ module MATCH
             COMP1_coor_x_w[i] = COMP1_coor_x_r[i]; 
             COMP1_coor_y_w[i] = COMP1_coor_y_r[i];
             COMP1_desc_w[i] = COMP1_desc_r[i];
+            COMP1_depth_w[i] = COMP1_depth_r[i];
 
             COMP2_coor_x_w[i] = COMP2_coor_x_r[i]; 
             COMP2_coor_y_w[i] = COMP2_coor_y_r[i];
             COMP2_desc_w[i] = COMP2_desc_r[i];
+            COMP2_depth_w[i] = COMP2_depth_r[i];
         end
         COMP1_len_w = COMP1_len_r;
         COMP2_len_w = COMP2_len_r;
@@ -246,10 +270,12 @@ module MATCH
                     COMP2_coor_x_w[i] = SORT_coor_x_r[i]; 
                     COMP2_coor_y_w[i] = SORT_coor_y_r[i];
                     COMP2_desc_w[i] = SORT_desc_r[i];
+                    COMP2_depth_w[i] = SORT_depth_r[i];
 
                     COMP1_coor_x_w[i] = COMP2_coor_x_r[i]; 
                     COMP1_coor_y_w[i] = COMP2_coor_y_r[i];
                     COMP1_desc_w[i] = COMP2_desc_r[i];
+                    COMP1_depth_w[i] = COMP2_depth_r[i];
                 end
                 COMP2_len_w = SORT_len_r;
                 COMP1_len_w = COMP2_len_r;
@@ -290,13 +316,16 @@ module MATCH
         HAMMING_valid = COMP1_count_r < COMP1_len_r && COMP2_count_r < COMP2_len_r;
         COMP1_best_x = COMP1_coor_x_r[best_count_r];
         COMP1_best_y = COMP1_coor_y_r[best_count_r];
+        COMP1_best_depth = COMP1_depth_r[best_count_r];
 
         COMP1_count_prev3 = COMP1_count_r - 2;
         COMP1_target_x = COMP1_coor_x_r[COMP1_count_prev3];
         COMP1_target_y = COMP1_coor_y_r[COMP1_count_prev3];
+        COMP1_target_depth = COMP1_depth_r[COMP1_count_prev3];
 
         COMP2_target_x = COMP2_coor_x_r[COMP2_count_r];
         COMP2_target_y = COMP2_coor_y_r[COMP2_count_r];
+        COMP2_target_depth = COMP2_depth_r[COMP2_count_r];
 
 
 
@@ -320,8 +349,10 @@ module MATCH
                 if(best_dist_r <= 30) begin
                     o_dst_coor_x_w = COMP2_target_x;
                     o_dst_coor_y_w = COMP2_target_y;
+                    o_dst_depth_w = COMP2_target_depth;
                     o_src_coor_x_w = COMP1_best_x;
                     o_src_coor_y_w = COMP1_best_y;
+                    o_src_depth_w = COMP1_best_depth;
                     o_valid_w = 1;
                 end
                 
@@ -341,19 +372,23 @@ module MATCH
             for(int i = 0; i < SIZE; i = i+1) begin
                 SORT_coor_x_r[i] <= 0;
                 SORT_coor_y_r[i] <= 0;
+                SORT_depth_r[i] <= 0;
                 SORT_score_r[i] <= 0;
                 SORT_desc_r[i] <= 0;
                 
                 COMP1_coor_x_r[i] <= 0;
                 COMP1_coor_y_r[i] <= 0;
+                COMP1_depth_r[i] <= 0;
                 COMP1_desc_r[i] <= 0;
 
                 COMP2_coor_x_r[i] <= 0;
                 COMP2_coor_y_r[i] <= 0;
+                COMP2_depth_r[i] <= 0;
                 COMP2_desc_r[i] <= 0;
             end
             SORT_comp_x_r <= 0;
             SORT_comp_y_r <= 0;
+            SORT_comp_depth_r <= 0;
             SORT_comp_score_r <= 0;
             SORT_comp_desc_r <= 0;
             SORT_count_r <= 0;
@@ -365,6 +400,8 @@ module MATCH
             o_src_coor_y_r <= 0;
             o_dst_coor_x_r <= 0;
             o_dst_coor_y_r <= 0;
+            o_src_depth_r <= 0;
+            o_dst_depth_r <= 0;
 
             COMP1_len_r <= 0;
             COMP2_len_r <= 0;
@@ -379,20 +416,24 @@ module MATCH
             for(int i = 0; i < SIZE; i = i+1) begin
                 SORT_coor_x_r[i] <= SORT_coor_x_w[i];
                 SORT_coor_y_r[i] <= SORT_coor_y_w[i];
+                SORT_depth_r[i] <= SORT_depth_w[i];
                 SORT_score_r[i] <= SORT_score_w[i];
                 SORT_desc_r[i] <= SORT_desc_w[i];
                 
                 COMP1_coor_x_r[i] <= COMP1_coor_x_w[i];
                 COMP1_coor_y_r[i] <= COMP1_coor_y_w[i];
+                COMP1_depth_r[i] <= COMP1_depth_w[i];
                 COMP1_desc_r[i] <= COMP1_desc_w[i];
 
                 COMP2_coor_x_r[i] <= COMP2_coor_x_w[i];
                 COMP2_coor_y_r[i] <= COMP2_coor_y_w[i];
+                COMP2_depth_r[i] <= COMP2_depth_w[i];
                 COMP2_desc_r[i] <= COMP2_desc_w[i];
             end
             SORT_comp_x_r <= SORT_comp_x_w;
             SORT_comp_y_r <= SORT_comp_y_w;
             SORT_comp_score_r <= SORT_comp_score_w;
+            SORT_comp_depth_r <= SORT_comp_depth_w;
             SORT_comp_desc_r <= SORT_comp_desc_w;
             SORT_count_r <= SORT_count_w;
             SORT_finish_r <= SORT_finish_w;
@@ -403,6 +444,8 @@ module MATCH
             o_src_coor_y_r <= o_src_coor_y_w;
             o_dst_coor_x_r <= o_dst_coor_x_w;
             o_dst_coor_y_r <= o_dst_coor_y_w;
+            o_src_depth_r <= o_src_depth_w;
+            o_dst_depth_r <= o_dst_depth_w;
 
             COMP1_len_r <= COMP1_len_w;
             COMP2_len_r <= COMP2_len_w;

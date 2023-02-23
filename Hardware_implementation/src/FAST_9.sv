@@ -7,11 +7,12 @@ module FAST_9
     input           i_clk,
     input           i_rst_n,
     input [127:0]   i_circle, // flattened
-    input [7:0]     i_center,
+    input [17:0]     i_center, // with depth information
     input           i_valid,
 
     output          o_keypoints_flag,
-    output [7:0]    o_score
+    output [7:0]    o_score,
+    output [9:0]    o_depth
     // output          o_valid,
 
 );
@@ -45,6 +46,8 @@ endfunction
 // ========== reg/wire declaration ==========
 integer i;
 logic [7:0]  pixel [0:15];
+logic [7:0] center_pixel;
+logic [9:0] center_depth;
 logic [7:0]  diff [0:15];
 
 logic [15:0] sign;
@@ -69,6 +72,8 @@ logic [7:0]  min_stage2_w [0:15], min_stage2_r[0:15];
 
 logic [7:0] max_stage0_w [0:3], max_stage0_r [0:3];
 logic flag_delay [0:3];
+logic [9:0] depth_delay [0:8];
+logic [9:0] depth_r;
 
 logic [7:0] score_w, score_r;
 
@@ -76,6 +81,9 @@ logic [7:0] score_w, score_r;
 // ========== Connection ==========
 assign o_score = score_r;
 assign o_keypoints_flag = flag_r;
+assign o_depth = depth_r;
+assign center_pixel = i_center[17:10];
+assign center_depth = i_center[9:0];
 
 always_comb begin
     pixel[0] = i_circle[7:0];
@@ -99,8 +107,8 @@ end
 // 16 subtractors
 always_comb begin
     for(int i = 0; i < 16; i = i+1) begin
-        sign[i] = i_center > pixel[i];
-        diff[i] = i_center > pixel[i] ? (i_center - pixel[i]) : (pixel[i] - i_center);    
+        sign[i] = center_pixel > pixel[i];
+        diff[i] = center_pixel > pixel[i] ? (center_pixel - pixel[i]) : (pixel[i] - center_pixel);    
     end
 end
 
@@ -166,6 +174,7 @@ always_ff @(posedge i_clk or negedge i_rst_n) begin
         darker_r <= 0;
         brighter_r <= 0;
         flag_r <= 0;
+        depth_r <= 0;
         score_r <= 0;
         for(int i = 0; i < 16; i = i+1) begin
             diff_stage0[i] <= 0;
@@ -181,11 +190,15 @@ always_ff @(posedge i_clk or negedge i_rst_n) begin
         for(int i = 0; i < 4; i = i+1) begin
             flag_delay[i] <= 0; 
         end
+        for(int i = 0; i < 9; i = i+1) begin
+            depth_delay[i] <= 0; 
+        end
     end
     else if(i_valid)begin
         darker_r <= darker_w;
         brighter_r <= brighter_w;
         flag_r <= flag_delay[3];
+        depth_r <= depth_delay[4];
         score_r <= score_w;
         for(int i = 0; i < 16; i = i+1) begin
             diff_stage0[i] <= diff[i]; 
@@ -199,8 +212,12 @@ always_ff @(posedge i_clk or negedge i_rst_n) begin
             max_stage0_r[i] <= max_stage0_w[i]; 
         end
         flag_delay[0] <= flag_w;
+        depth_delay[0] <= center_depth;
         for(int i = 1; i < 4; i = i+1) begin
             flag_delay[i] <= flag_delay[i-1]; 
+        end
+        for(int i = 1; i < 9; i = i+1) begin
+            depth_delay[i] <= depth_delay[i-1]; 
         end
     end
     

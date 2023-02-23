@@ -5,9 +5,10 @@
 
 `ifdef RTL
     `include "CHIP_all.sv"
-    `include "sram/sram_FAST_lb.v"
-    `include "sram/sram_dp_NMS.v"
-    `include "sram/sram_dp_sincos.v"
+    `include "sram_v2/sram_FAST_lb.v"
+    `include "sram_v2/sram_dp_NMS.v"
+    `include "sram_v2/sram_dp_sincos.v"
+    `include "sram_v2/sram_BRIEF_lb.v"
 `endif
 
 // `ifdef SYN
@@ -31,26 +32,33 @@ module CHIP_tb;
     logic [7:0] pixel_in [0:307199];
     logic [7:0] pixel_in2 [0:307199];
     logic [7:0] pixel_in3 [0:307199];
-    
+    logic [9:0] depth_in [0:307199];
+    logic [9:0] depth_in2 [0:307199];
+    logic [9:0] depth_in3 [0:307199];
+
     logic start;
     logic [7:0] pixel;
+    logic [9:0] depth;
     logic valid;
     
-    logic [9:0]    inspect_coordinate_X;
-    logic [9:0]    inspect_coordinate_Y;
-    logic [7:0]    inspect_score;
-    logic          inspect_flag;
-    logic [255:0]  inspect_descriptor;
-    logic          inspect_start;
-    logic          inspect_end;
+    // logic [9:0]    inspect_coordinate_X;
+    // logic [9:0]    inspect_coordinate_Y;
+    // logic [9:0]    inspect_depth;
+    // logic [7:0]    inspect_score;
+    // logic          inspect_flag;
+    // logic [255:0]  inspect_descriptor;
+    // logic          inspect_start;
+    // logic          inspect_end;
 
     logic          o_frame_end, o_frame_start;
     logic          o_valid;
     logic          o_ready;
     logic [9:0]    o_src_coor_x;
     logic [9:0]    o_src_coor_y;
+    logic [9:0]    o_src_depth;
     logic [9:0]    o_dst_coor_x;
     logic [9:0]    o_dst_coor_y;
+    logic [9:0]    o_dst_depth;
 
     // SRAM used ports:
     // ---------------------------------------------------------------------------
@@ -60,12 +68,12 @@ module CHIP_tb;
     // ---------------------------------------------------------------------------
     // other ports-input are given in testbench (in simulation)
     // sram interface
-    logic [7:0]     bus1_sram_QA [0:5];
-    logic [7:0]     bus1_sram_QB [0:5];
+    logic [17:0]     bus1_sram_QA [0:5];
+    logic [17:0]     bus1_sram_QB [0:5];
     logic          bus1_sram_WENA [0:5];
     logic          bus1_sram_WENB [0:5];
-    logic [7:0]    bus1_sram_DA [0:5];
-    logic [7:0]    bus1_sram_DB [0:5];
+    logic [17:0]    bus1_sram_DA [0:5]; // pixel + depth
+    logic [17:0]    bus1_sram_DB [0:5]; // pixel + depth
     logic [9:0]    bus1_sram_AA [0:5];
     logic [9:0]    bus1_sram_AB [0:5];
 
@@ -78,12 +86,12 @@ module CHIP_tb;
     logic [9:0]    bus2_sram_AA [0:1];
     logic [9:0]    bus2_sram_AB [0:1];
 
-    logic [9:0]     bus3_sram_QA;
-    logic [9:0]     bus3_sram_QB;
+    logic [19:0]     bus3_sram_QA;
+    logic [19:0]     bus3_sram_QB;
     logic          bus3_sram_WENA;
     logic          bus3_sram_WENB;
-    logic [9:0]    bus3_sram_DA;
-    logic [9:0]    bus3_sram_DB;
+    logic [19:0]    bus3_sram_DA; // score, flag, reserved + depth
+    logic [19:0]    bus3_sram_DB; // score, flag, reserved + depth
     logic [9:0]    bus3_sram_AA;
     logic [9:0]    bus3_sram_AB;
 
@@ -107,12 +115,14 @@ module CHIP_tb;
         .i_clk(clk),
         .i_rst_n(rst_n),
         .i_pixel(pixel),
+        .i_depth(depth),
         .i_frame_start(start),
         .i_valid(valid),
 
         // .inspect_coordinate_X(inspect_coordinate_X),
         // .inspect_coordinate_Y(inspect_coordinate_Y),
         // .inspect_score(inspect_score),
+        // .inspect_depth(inspect_depth),
         // .inspect_flag(inspect_flag),
         // .inspect_descriptor(inspect_descriptor),
         // .inspect_start(inspect_start),
@@ -124,8 +134,10 @@ module CHIP_tb;
         .o_valid(o_valid),
         .o_src_coor_x(o_src_coor_x),
         .o_src_coor_y(o_src_coor_y),
+        .o_src_depth(o_src_depth),
         .o_dst_coor_x(o_dst_coor_x),
         .o_dst_coor_y(o_dst_coor_y),
+        .o_dst_depth(o_dst_depth),
 
         .FAST_lb_sram_QA(bus1_sram_QA),
         .FAST_lb_sram_QB(bus1_sram_QB),
@@ -365,7 +377,7 @@ module CHIP_tb;
 
     generate
         for(genvar s = 0; s < 30; s = s+1) begin
-            sram_FAST_lb uut4 (
+            sram_BRIEF_lb uut4 (
                 // clock signal
                 .CLKA(clk),
                 .CLKB(clk),
@@ -438,9 +450,12 @@ module CHIP_tb;
     initial	begin
         f1 = $fopen("../result/coores.txt","w");
         f2 = $fopen("../result/keypts.txt","w");
-        $readmemh ("../testfile/pixel_in.dat", pixel_in);
-        $readmemh ("../testfile/pixel_in2.dat", pixel_in2);
-        $readmemh ("../testfile/pixel_in3.dat", pixel_in3);
+        $readmemh ("../testfile/pixel_in.txt", pixel_in);
+        $readmemh ("../testfile/pixel_in2.txt", pixel_in2);
+        $readmemh ("../testfile/pixel_in3.txt", pixel_in3);
+        $readmemh ("../testfile/depth_in1.txt", depth_in);
+        $readmemh ("../testfile/depth_in2.txt", depth_in2);
+        $readmemh ("../testfile/depth_in3.txt", depth_in3);
     end
 
 
@@ -484,6 +499,7 @@ module CHIP_tb;
 
     always @(negedge clk)begin
         pixel = 0;
+        depth = 0;
         if(i < 307200) begin
             if(i == 0) start = 1;
             else start = 0;
@@ -492,6 +508,13 @@ module CHIP_tb;
                 1: pixel = pixel_in2[i];
                 2: pixel = pixel_in3[i];
                 default: pixel = 0;
+            endcase
+
+            case(index)
+                0: depth = depth_in[i];
+                1: depth = depth_in2[i];
+                2: depth = depth_in3[i];
+                default: depth = 0;
             endcase
             valid = 1;
             i = i+1;      
@@ -513,8 +536,8 @@ module CHIP_tb;
 
     always@(posedge clk) begin
         // if(inspect_flag) begin
-        //     $display("keypoint found: %h %h %h %h \n", inspect_coordinate_X, inspect_coordinate_Y, inspect_score, inspect_descriptor);
-        //     $fwrite(f2, "%h %h %h %h \n", inspect_coordinate_X, inspect_coordinate_Y, inspect_score, inspect_descriptor);
+        //     $display("keypoint found: %h %h %h %h %h \n", inspect_coordinate_X, inspect_coordinate_Y, inspect_score, inspect_descriptor, inspect_depth);
+        //     $fwrite(f2, "%h %h %h %h %h \n", inspect_coordinate_X, inspect_coordinate_Y, inspect_score, inspect_descriptor, inspect_depth);
         // end
         if(o_frame_start) begin
             $display("frame start");
@@ -525,8 +548,8 @@ module CHIP_tb;
             $fwrite(f1, "frame end\n");
         end
         if(o_valid) begin
-            $display("(%h, %h) <---> (%h, %h)", o_src_coor_x, o_src_coor_y, o_dst_coor_x, o_dst_coor_y);
-            $fwrite(f1, "(%h, %h) <---> (%h, %h)\n", o_src_coor_x, o_src_coor_y, o_dst_coor_x, o_dst_coor_y);
+            $display("(%h, %h, %h) <---> (%h, %h, %h)", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
+            $fwrite(f1, "(%h, %h, %h) <---> (%h, %h, %h)\n", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
         end
     end
 

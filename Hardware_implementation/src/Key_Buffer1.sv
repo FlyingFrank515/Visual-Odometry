@@ -7,7 +7,7 @@ module Key_Buffer1
     input           i_rst_n,
     input           i_flag,
     input           i_hit,
-    // input           i_valid,
+    input [9:0]     i_depth,
 
     input [11:0]    i_sin,
     input [11:0]    i_cos,
@@ -19,8 +19,8 @@ module Key_Buffer1
     output [11:0]    o_cos,
     output [9:0]     o_coor_x, 
     output [9:0]     o_coor_y,
-    output [7:0]     o_score
-    // output [9:0]     o_count
+    output [7:0]     o_score,
+    output [9:0]     o_depth
 
     // sram interface -- BRIEF window
     // input [51:0]     BRIEF_keybuf_sram_QA,
@@ -39,6 +39,7 @@ module Key_Buffer1
     logic [7:0] score_w [0:SIZE-1], score_r [0:SIZE-1];
     logic [11:0] sin_w [0:SIZE-1], sin_r[0:SIZE-1];
     logic [11:0] cos_w [0:SIZE-1], cos_r[0:SIZE-1];
+    logic [9:0] depth_w [0:SIZE-1], depth_r[0:SIZE-1];
     
     logic [9:0] count_r, count_w;
     logic [9:0] count_plus;
@@ -64,6 +65,7 @@ module Key_Buffer1
     assign o_coor_x = coor_x_r[SIZE-1];
     assign o_coor_y = coor_y_r[SIZE-1];
     assign o_score = score_r[SIZE-1];
+    assign o_depth = depth_r[SIZE-1];
     
     // initial begin $monitor("count = %d", count_r); end
 
@@ -78,6 +80,7 @@ module Key_Buffer1
             sin_w[i] = sin_r[i];
             cos_w[i] = cos_r[i];
             score_w[i] = score_r[i];
+            depth_w[i] = depth_r[i];
         end
 
         // hit -> move elements in buffer forward
@@ -88,12 +91,14 @@ module Key_Buffer1
                 sin_w[i] = sin_r[i-1];
                 cos_w[i] = cos_r[i-1];
                 score_w[i] = score_r[i-1];
+                depth_w[i] = depth_r[i-1];
             end
             coor_x_w[0] = 0;
             coor_y_w[0] = 0;
             sin_w[0] = 0;
             cos_w[0] = 0;
             score_w[0] = 0;
+            depth_w[0] = 0;
             count_w = (count_r != (SIZE-1)) ? count_r + 1 : count_r;
         end
         // flag -> put the input in backmost position
@@ -104,6 +109,7 @@ module Key_Buffer1
                 sin_w[count_r] = i_sin;
                 cos_w[count_r] = i_cos;
                 score_w[count_r] = i_score;
+                depth_w[count_r] = i_depth;
                 count_w = count_r != 0 ? count_r - 1 : count_r;
             end
             else begin
@@ -113,6 +119,8 @@ module Key_Buffer1
                     sin_w[i] = sin_r[i-1];
                     cos_w[i] = cos_r[i-1];
                     score_w[i] = score_r[i-1];
+                    depth_w[i] = depth_r[i-1];
+
                 end
                 // coor_x_w[count_r] = 0;
                 // coor_y_w[count_r] = 0;
@@ -125,6 +133,7 @@ module Key_Buffer1
                 sin_w[count_plus] = i_sin;
                 cos_w[count_plus] = i_cos;
                 score_w[count_plus] = i_score;
+                depth_w[count_plus] = i_depth;
             end
         end
     end
@@ -169,6 +178,7 @@ module Key_Buffer1
                 sin_r[i] <= 0;
                 cos_r[i] <= 0;
                 score_r[i] <= 0;
+                depth_r[i] <= 0;
             end
             count_r <= SIZE-1;
         end
@@ -179,45 +189,47 @@ module Key_Buffer1
                 sin_r[i] <= sin_w[i];
                 cos_r[i] <= cos_w[i];
                 score_r[i] <= score_w[i];
+                depth_r[i] <= depth_w[i];
+
             end
             count_r <= count_w;
         end
     end
 
-    always_ff @(posedge i_clk or negedge i_rst_n) begin
-        if(!i_rst_n) begin
-            for(int i = 0; i < SIZE; i = i+1) begin
-                coor_x_r[i] <= 0;
-                coor_y_r[i] <= 0;
-                sin_r[i] <= 0;
-                cos_r[i] <= 0;
-                score_r[i] <= 0;
-            end
-            // BRIEF_keybuf_sram_QB_r <= 0;
-            // BRIEF_keybuf_sram_WENA_r <= 1; // read
-            // BRIEF_keybuf_sram_WENB_r <= 1; // read
-            // BRIEF_keybuf_sram_DA_r <= 0;
-            // BRIEF_keybuf_sram_AA_r <= 0;
-            // BRIEF_keybuf_sram_AB_r <= 0;
-            // count_r <= SIZE-1;
-        end
-        else begin
-            for(int i = 0; i < SIZE; i = i+1) begin
-                coor_x_r[i] <= coor_x_w[i];
-                coor_y_r[i] <= coor_y_w[i];
-                sin_r[i] <= sin_w[i];
-                cos_r[i] <= cos_w[i];
-                score_r[i] <= score_w[i];
-            end
-            // BRIEF_keybuf_sram_QB_r <= BRIEF_keybuf_sram_QB;
-            // BRIEF_keybuf_sram_WENA_r <= BRIEF_keybuf_sram_WENA_w; // read
-            // BRIEF_keybuf_sram_WENB_r <= BRIEF_keybuf_sram_WENB_w; // read
-            // BRIEF_keybuf_sram_DA_r <= BRIEF_keybuf_sram_DA_w;
-            // BRIEF_keybuf_sram_AA_r <= BRIEF_keybuf_sram_AA_w;
-            // BRIEF_keybuf_sram_AB_r <= BRIEF_keybuf_sram_AB_w;
-            // count_r <= count_w;
-        end
-    end
+    // always_ff @(posedge i_clk or negedge i_rst_n) begin
+    //     if(!i_rst_n) begin
+    //         for(int i = 0; i < SIZE; i = i+1) begin
+    //             coor_x_r[i] <= 0;
+    //             coor_y_r[i] <= 0;
+    //             sin_r[i] <= 0;
+    //             cos_r[i] <= 0;
+    //             score_r[i] <= 0;
+    //         end
+    //         // BRIEF_keybuf_sram_QB_r <= 0;
+    //         // BRIEF_keybuf_sram_WENA_r <= 1; // read
+    //         // BRIEF_keybuf_sram_WENB_r <= 1; // read
+    //         // BRIEF_keybuf_sram_DA_r <= 0;
+    //         // BRIEF_keybuf_sram_AA_r <= 0;
+    //         // BRIEF_keybuf_sram_AB_r <= 0;
+    //         // count_r <= SIZE-1;
+    //     end
+    //     else begin
+    //         for(int i = 0; i < SIZE; i = i+1) begin
+    //             coor_x_r[i] <= coor_x_w[i];
+    //             coor_y_r[i] <= coor_y_w[i];
+    //             sin_r[i] <= sin_w[i];
+    //             cos_r[i] <= cos_w[i];
+    //             score_r[i] <= score_w[i];
+    //         end
+    //         // BRIEF_keybuf_sram_QB_r <= BRIEF_keybuf_sram_QB;
+    //         // BRIEF_keybuf_sram_WENA_r <= BRIEF_keybuf_sram_WENA_w; // read
+    //         // BRIEF_keybuf_sram_WENB_r <= BRIEF_keybuf_sram_WENB_w; // read
+    //         // BRIEF_keybuf_sram_DA_r <= BRIEF_keybuf_sram_DA_w;
+    //         // BRIEF_keybuf_sram_AA_r <= BRIEF_keybuf_sram_AA_w;
+    //         // BRIEF_keybuf_sram_AB_r <= BRIEF_keybuf_sram_AB_w;
+    //         // count_r <= count_w;
+    //     end
+    // end
 
 
 endmodule

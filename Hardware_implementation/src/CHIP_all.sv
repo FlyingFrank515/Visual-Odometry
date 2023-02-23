@@ -14,10 +14,12 @@ module CHIP
     input [7:0]     i_pixel,
     input           i_frame_start, // to frame_start
     input           i_valid,
+    input [9:0]     i_depth,
 
     // // debug
     // output [9:0]    inspect_coordinate_X,
     // output [9:0]    inspect_coordinate_Y,
+    // output [9:0]    inspect_depth,
     // output [7:0]    inspect_score,
     // output          inspect_flag,
     // output [255:0]  inspect_descriptor,
@@ -31,16 +33,18 @@ module CHIP
     output          o_valid,
     output [9:0]    o_src_coor_x,
     output [9:0]    o_src_coor_y,
+    output [9:0]    o_src_depth,
     output [9:0]    o_dst_coor_x,
     output [9:0]    o_dst_coor_y,
+    output [9:0]    o_dst_depth,
 
     // sram interface -- FAST window
-    input [7:0]     FAST_lb_sram_QA [6],
-    input [7:0]     FAST_lb_sram_QB [6],
+    input [17:0]     FAST_lb_sram_QA [6],
+    input [17:0]     FAST_lb_sram_QB [6],
     output          FAST_lb_sram_WENA [6],
     output          FAST_lb_sram_WENB [6],
-    output [7:0]    FAST_lb_sram_DA [6],
-    output [7:0]    FAST_lb_sram_DB [6],
+    output [17:0]    FAST_lb_sram_DA [6],
+    output [17:0]    FAST_lb_sram_DB [6],
     output [9:0]    FAST_lb_sram_AA [6],
     output [9:0]    FAST_lb_sram_AB [6],
 
@@ -55,12 +59,12 @@ module CHIP
     output [9:0]    FAST_sincos_sram_AB [2],
 
     // sram interface -- FAST NMS FIFO
-    input [9:0]     FAST_NMS_sram_QA,
-    input [9:0]     FAST_NMS_sram_QB,
+    input [19:0]     FAST_NMS_sram_QA,
+    input [19:0]     FAST_NMS_sram_QB,
     output          FAST_NMS_sram_WENA,
     output          FAST_NMS_sram_WENB,
-    output [9:0]    FAST_NMS_sram_DA,
-    output [9:0]    FAST_NMS_sram_DB,
+    output [19:0]    FAST_NMS_sram_DA,
+    output [19:0]    FAST_NMS_sram_DB,
     output [9:0]    FAST_NMS_sram_AA,
     output [9:0]    FAST_NMS_sram_AB,
 
@@ -74,27 +78,18 @@ module CHIP
     output [9:0]    BRIEF_lb_sram_AA [30],
     output [9:0]    BRIEF_lb_sram_AB [30]
 
-    // // sram interface -- BRIEF keypoint buffer
-    // input [51:0]     BRIEF_keybuf_sram_QA,
-    // input [51:0]     BRIEF_keybuf_sram_QB,
-    // output          BRIEF_keybuf_sram_WENA,
-    // output          BRIEF_keybuf_sram_WENB,
-    // output [51:0]    BRIEF_keybuf_sram_DA,
-    // output [51:0]    BRIEF_keybuf_sram_DB,
-    // output [6:0]    BRIEF_keybuf_sram_AA,
-    // output [6:0]    BRIEF_keybuf_sram_AB
     
 );
     // reg delcaration
     // bus1 (between FAST and BRIEF)
     logic [7:0]   bus1_pixel;
-    logic [9:0]   bus1_coor_x, bus1_coor_y;
+    logic [9:0]   bus1_coor_x, bus1_coor_y, bus1_depth;
     logic [11:0]  bus1_sin, bus1_cos;
     logic [7:0]   bus1_score;
     logic         bus1_flag, bus1_start, bus1_end;
     logic         bus1_point_valid, bus1_pixel_valid;
 
-    logic [9:0]   bus2_coor_x, bus2_coor_y;
+    logic [9:0]   bus2_coor_x, bus2_coor_y, bus2_depth;
     logic [255:0] bus2_desc;
     logic [7:0] bus2_score;
     logic        bus2_flag, bus2_start, bus2_end;
@@ -104,6 +99,7 @@ module CHIP
     // assign inspect_coordinate_Y = bus2_coor_y;
     // assign inspect_score = bus2_score;
     // assign inspect_descriptor = bus2_desc;
+    // assign inspect_depth = bus2_depth;
     // assign inspect_flag = bus2_flag;
     // assign inspect_start = bus2_start;
     // assign inspect_end = bus2_end;
@@ -131,6 +127,7 @@ module CHIP
         .i_pixel(i_pixel),
         .i_start(i_frame_start),
         .i_valid(i_valid),
+        .i_depth(i_depth),
 
         .o_pixel(bus1_pixel),
         .o_pixel_valid(bus1_pixel_valid),
@@ -139,6 +136,7 @@ module CHIP
         .o_cos(bus1_cos),
         .o_sin(bus1_sin),
         .o_score(bus1_score),
+        .o_depth(bus1_depth),
         .o_flag(bus1_flag),
         .o_start(bus1_start),
         .o_end(bus1_end),
@@ -192,6 +190,7 @@ module CHIP
         .i_coor_x(bus1_coor_x), 
         .i_coor_y(bus1_coor_y), 
         .i_score(bus1_score),
+        .i_depth(bus1_depth),
         .i_point_valid(bus1_point_valid),
         .i_pixel_valid(bus1_pixel_valid),
 
@@ -199,6 +198,7 @@ module CHIP
         .o_coordinate_Y(bus2_coor_y),
         .o_descriptor(bus2_desc),
         .o_score(bus2_score),
+        .o_depth(bus2_depth),
         .o_flag(bus2_flag),
         .o_start(bus2_start),
         .o_end(bus2_end),
@@ -236,6 +236,7 @@ module CHIP
         .i_coordinate_Y(bus2_coor_y),
         .i_descriptor(bus2_desc),
         .i_score(bus2_score),
+        .i_depth(bus2_depth),
         .i_flag(bus2_flag),
         .i_start(bus2_start),
         .i_end(bus2_end),
@@ -246,8 +247,10 @@ module CHIP
         .o_valid(o_valid),
         .o_src_coor_x(o_src_coor_x),
         .o_src_coor_y(o_src_coor_y),
+        .o_src_depth(o_src_depth),
         .o_dst_coor_x(o_dst_coor_x),
-        .o_dst_coor_y(o_dst_coor_y)
+        .o_dst_coor_y(o_dst_coor_y),
+        .o_dst_depth(o_dst_depth)
     );
 
 endmodule

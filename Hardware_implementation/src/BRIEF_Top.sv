@@ -21,11 +21,12 @@ module BRIEF_Top
     input [9:0]     i_coor_x, 
     input [9:0]     i_coor_y, 
     input [7:0]     i_score,
+    input [9:0]     i_depth,
 
     output [9:0]    o_coordinate_X,
     output [9:0]    o_coordinate_Y,
     output [255:0]  o_descriptor,
-
+    output [9:0]    o_depth,
     output [7:0]    o_score,
     output          o_flag,
     output logic    o_start,
@@ -73,6 +74,7 @@ module BRIEF_Top
     logic [11:0] BUFFER_sin, BUFFER_cos;
     logic [9:0] BUFFER_x, BUFFER_y;
     logic [7:0] BUFFER_score;
+    logic [9:0] BUFFER_depth;
 
     logic [7:0] window [0:30][0:30];
 
@@ -131,6 +133,7 @@ module BRIEF_Top
         .i_rst_n(i_rst_n),
         .i_flag(i_flag && i_point_valid),
         .i_hit(BUFFER_hit),
+        .i_depth(i_depth),
         .i_sin(i_sin),
         .i_cos(i_cos),
         .i_coor_x(i_coor_x), 
@@ -141,7 +144,8 @@ module BRIEF_Top
         .o_cos(BUFFER_cos),
         .o_coor_x(BUFFER_x), 
         .o_coor_y(BUFFER_y),
-        .o_score(BUFFER_score)
+        .o_score(BUFFER_score),
+        .o_depth(BUFFER_depth)
     );
 
     BRIEF brief_unit
@@ -154,6 +158,7 @@ module BRIEF_Top
         .i_coor_x(coor_x_r), 
         .i_coor_y(coor_y_r), 
         .i_score(BUFFER_score),
+        .i_depth(BUFFER_depth),
 
         .i_sin(BUFFER_sin),
         .i_cos(BUFFER_cos),
@@ -163,6 +168,7 @@ module BRIEF_Top
         .o_hit(BUFFER_hit),
         .o_coor_x(o_coordinate_X), 
         .o_coor_y(o_coordinate_Y), 
+        .o_depth(o_depth),
         .o_descriptor(o_descriptor),
         .o_flag(o_flag),
         .o_score(o_score)

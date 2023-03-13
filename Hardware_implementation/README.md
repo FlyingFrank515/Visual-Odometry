@@ -1,11 +1,18 @@
 Top module: CHIP_all.sv
-testbench: CHIP_alltb.sv
+testbench: CHIP_tb_v2.sv
 
 RTL simulation:
 
 ```
-ncverilog CHIP_alltb.sv +incdir+/opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver/ -y /opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver +libext+.v+notimingchecks +define+RTL +access+r 
+ncverilog CHIP_tb_v2.sv +incdir+/opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver/ -y /opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver +libext+.v+notimingchecks +define+RTL +access+r 
 ```
+
+or just...
+
+```
+./run_check
+```
+
 
 
 sram generate list

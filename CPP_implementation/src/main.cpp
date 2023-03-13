@@ -16,22 +16,22 @@ using namespace cv;
 #define MATCH_threshold                 30
 #define DISPLAY                         true
 #define FIXED                           true
-#define TESTBENCH                       true
-
-// Image pyramid
-#define FAST_nlevels                    1
-#define FAST_scaling                    1
+#define DEBUG                           false
 
 int main(int argc, char *argv[]){
-    // string filename = argv[3];
     string img1_path = argv[1];
     string img2_path = argv[2];
+
+    string depth1_path = argv[3];
+    string depth2_path = argv[4];
     
     // read the image
     Mat img1 = imread(img1_path, 0);
     Mat img2 = imread(img2_path, 0);
+    Mat depth1 = imread(depth1_path, 0);
+    Mat depth2 = imread(depth2_path, 0);
 
     // Paramter sequence: 
-    MYORB orb(FAST_N, FAST_threshold, FAST_orientation_patch_size, FAST_scorethreshold, FAST_edgethreshold, keypoints_num, MATCH_threshold, FAST_nlevels, FAST_scaling, img1, img2, DISPLAY, FIXED, TESTBENCH);
+    MYORB orb(FAST_N, FAST_threshold, FAST_orientation_patch_size, FAST_scorethreshold, FAST_edgethreshold, keypoints_num, MATCH_threshold, img1, img2, depth1, depth2, DISPLAY, FIXED, DEBUG);
     orb.Matching();
 }

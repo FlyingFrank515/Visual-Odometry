@@ -1,10 +1,10 @@
-./liyang-odometry ../../../lyhuang/dataset/fr1_360/rgbd_assoc.txt ../result/pose_fr1_360.txt RgbdICP
-#./liyang-odometry ../../../lyhuang/dataset/fr1_desk/rgbd_assoc.txt ../result/pose_fr1_desk.txt RgbdICP
-#./liyang-odometry ../../../lyhuang/dataset/fr1_desk2/rgbd_assoc.txt ../result/pose_fr1_desk2.txt RgbdICP
-#./liyang-odometry ../../../lyhuang/dataset/fr1_floor/rgbd_assoc.txt ../result/pose_fr1_floor.txt RgbdICP
-#./liyang-odometry ../../../lyhuang/dataset/fr1_room/rgbd_assoc.txt ../result/pose_fr1_room.txt RgbdICP
-#./liyang-odometry ../../../lyhuang/dataset/fr1_rpy/rgbd_assoc.txt ../result/pose_fr1_rpy.txt RgbdICP
-#./liyang-odometry ../../../lyhuang/dataset/fr1_xyz/rgbd_assoc.txt ../result/pose_fr1_xyz.txt RgbdICP
+./liyang-odometry ../../../../lyhuang/dataset/fr1_360/rgbd_assoc.txt ../result/pose_fr1_360.txt RgbdICP
+./liyang-odometry ../../../../lyhuang/dataset/fr1_desk/rgbd_assoc.txt ../result/pose_fr1_desk.txt RgbdICP
+./liyang-odometry ../../../../lyhuang/dataset/fr1_desk2/rgbd_assoc.txt ../result/pose_fr1_desk2.txt RgbdICP
+./liyang-odometry ../../../../lyhuang/dataset/fr1_floor/rgbd_assoc.txt ../result/pose_fr1_floor.txt RgbdICP
+./liyang-odometry ../../../../lyhuang/dataset/fr1_room/rgbd_assoc.txt ../result/pose_fr1_room.txt RgbdICP
+./liyang-odometry ../../../../lyhuang/dataset/fr1_rpy/rgbd_assoc.txt ../result/pose_fr1_rpy.txt RgbdICP
+./liyang-odometry ../../../../lyhuang/dataset/fr1_xyz/rgbd_assoc.txt ../result/pose_fr1_xyz.txt RgbdICP
 
 #./rgbd-odometry-liyang ../../dataset/fr2_360_hemisphere/rgbd_assoc.txt ./result/pose_fr2_360_hemisphere.txt RgbdICP
 #./rgbd-odometry-liyang ../../dataset/fr2_360_kidnap/rgbd_assoc.txt ./result/pose_fr2_360_kidnap.txt RgbdICP

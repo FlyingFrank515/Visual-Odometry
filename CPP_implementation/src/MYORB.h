@@ -38,6 +38,7 @@ class MYORB {
         bool                DISPLAY;
         bool                FIXED;
         bool                DEBUG; 
+        bool                TESTBENCH;
 
         // output to file
         fstream             outfile;
@@ -78,7 +79,7 @@ class MYORB {
     
     public:
         // Constructor
-        MYORB(int, int, int, int, int, int, int, Mat, Mat, Mat, Mat, bool, bool, bool);
+        MYORB(int, int, int, int, int, int, int, Mat, Mat, Mat, Mat, bool, bool, bool, bool);
 
         // Called by the main program
         vector<DMatch>     Matching();

@@ -298,6 +298,7 @@ module MATCH
     // --- MIN_DISTANCE ---
     // for each keypoints in comp2 array, find the closet keypoint in comp1 array
     always_comb begin
+        
         // default
         COMP1_count_w = COMP1_count_r;
         COMP2_count_w = COMP2_count_r;
@@ -328,7 +329,6 @@ module MATCH
         COMP2_target_depth = COMP2_depth_r[COMP2_count_r];
 
 
-
         if(state_r == COPY) begin // RESET
             COMP1_count_w = 0;
             COMP2_count_w = 0;
@@ -342,10 +342,20 @@ module MATCH
                     best_count_w = COMP1_count_prev3;
                 end
             end
+
+            // debug
+            // if(COMP2_target_x == 10'ha6 && COMP2_target_y == 10'h10e) begin
+            //     $display("COMP1_count_r: %h", COMP1_count_r);
+            //     $display("COMP1_count_prev3: %h", COMP1_count_prev3);
+            //     $display("COMP1: (%h, %h), COMP2: (%h, %h), DIST: %h", COMP1_target_x, COMP1_target_y, COMP2_target_x, COMP2_target_y, HAMMING_dist);
+            // end
+
             COMP1_count_w = COMP1_count_r + 1;
+
             // output
-            if(COMP1_count_prev3 == COMP1_len_r - 1) begin
+            if(COMP1_count_prev3 == COMP1_len_r) begin
                 // output reg
+                
                 if(best_dist_r <= 30) begin
                     o_dst_coor_x_w = COMP2_target_x;
                     o_dst_coor_y_w = COMP2_target_y;

@@ -90,39 +90,6 @@ module BRIEF_Top
     assign inspect1 = LINE_BUFFER[0][639];
     assign inspect2 = BRIEF_lb_sram_QB_r[0];
 
-
-    // ========== Connection ==========
-    // FAST_lb_sram connection
-    for(genvar i = 0; i < 30; i = i+1) begin
-        assign BRIEF_lb_sram_WENA[i] = BRIEF_lb_sram_WENA_r[i];
-        assign BRIEF_lb_sram_WENB[i] = BRIEF_lb_sram_WENB_r[i];
-        assign BRIEF_lb_sram_DA[i] = BRIEF_lb_sram_DA_r[i];
-        assign BRIEF_lb_sram_DB[i] = 0;
-        assign BRIEF_lb_sram_AA[i] = BRIEF_lb_sram_AA_r[i];
-        assign BRIEF_lb_sram_AB[i] = BRIEF_lb_sram_AB_r[i];
-    end
-
-    always_comb begin
-        for(int j = 0; j < 31; j = j+1) begin
-            window[0][j] = LINE_BUFFER_LAST[30-j];
-        end
-        for(int i = 1; i < 31; i = i+1) begin
-            for (int j = 0; j < 31; j = j+1) begin
-                window[i][j] = LINE_BUFFER[30-i][30-j];
-            end           
-        end
-        // for(int i = 0; i < 30; i = i+1) begin
-        //     for (int j = 0; j < 31; j = j+1) begin
-        //         window[i][j] = LINE_BUFFER[i][j];
-        //     end           
-        // end
-        // for (int j = 0; j < 31; j = j+1) begin
-        //     window[30][j] = LINE_BUFFER_LAST[j];
-        // end      
-    end
-
-    
-
     Key_Buffer1 
     #(
         .SIZE(12'd100)   
@@ -182,6 +149,39 @@ module BRIEF_Top
         // .BRIEF_keybuf_sram_AA(BRIEF_keybuf_sram_AA),
         // .BRIEF_keybuf_sram_AB(BRIEF_keybuf_sram_AB)
     );
+
+
+    // ========== Connection ==========
+    // FAST_lb_sram connection
+    for(genvar i = 0; i < 30; i = i+1) begin
+        assign BRIEF_lb_sram_WENA[i] = BRIEF_lb_sram_WENA_r[i];
+        assign BRIEF_lb_sram_WENB[i] = BRIEF_lb_sram_WENB_r[i];
+        assign BRIEF_lb_sram_DA[i] = BRIEF_lb_sram_DA_r[i];
+        assign BRIEF_lb_sram_DB[i] = 0;
+        assign BRIEF_lb_sram_AA[i] = BRIEF_lb_sram_AA_r[i];
+        assign BRIEF_lb_sram_AB[i] = BRIEF_lb_sram_AB_r[i];
+    end
+
+    always_comb begin
+        for(int j = 0; j < 31; j = j+1) begin
+            window[0][j] = LINE_BUFFER_LAST[30-j];
+        end
+        for(int i = 1; i < 31; i = i+1) begin
+            for (int j = 0; j < 31; j = j+1) begin
+                window[i][j] = LINE_BUFFER[30-i][30-j];
+            end           
+        end
+        // for(int i = 0; i < 30; i = i+1) begin
+        //     for (int j = 0; j < 31; j = j+1) begin
+        //         window[i][j] = LINE_BUFFER[i][j];
+        //     end           
+        // end
+        // for (int j = 0; j < 31; j = j+1) begin
+        //     window[30][j] = LINE_BUFFER_LAST[j];
+        // end      
+    end
+
+    
 
     // ========== Combinational Block ==========
     always_comb begin

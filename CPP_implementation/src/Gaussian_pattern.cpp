@@ -30,37 +30,32 @@ void MYORB::BRIEF_pattern_LUT(int index, float orientation, int cos, int sin, in
     int FIXED = 1;
 
     if(FIXED){
-        // x1 = (int(gaussian_bit_pattern_31_x_a[index]*cos/1024)) - (int(gaussian_bit_pattern_31_y_a[index]*sin/1024));
-        // y1 = (int(gaussian_bit_pattern_31_x_a[index]*sin/1024)) + (int(gaussian_bit_pattern_31_y_a[index]*cos/1024));
-        // x2 = (int(gaussian_bit_pattern_31_x_b[index]*cos/1024)) - (int(gaussian_bit_pattern_31_y_b[index]*sin/1024));
-        // y2 = (int(gaussian_bit_pattern_31_x_b[index]*sin/1024)) + (int(gaussian_bit_pattern_31_y_b[index]*cos/1024));
+        int xa_cos = int(gaussian_bit_pattern_31_x_a[index]*cos);
+        int ya_sin = int(gaussian_bit_pattern_31_y_a[index]*sin);
+        int xa_sin = int(gaussian_bit_pattern_31_x_a[index]*sin);
+        int ya_cos = int(gaussian_bit_pattern_31_y_a[index]*cos);
+        int xb_cos = int(gaussian_bit_pattern_31_x_b[index]*cos);
+        int yb_sin = int(gaussian_bit_pattern_31_y_b[index]*sin);
+        int xb_sin = int(gaussian_bit_pattern_31_x_b[index]*sin);
+        int yb_cos = int(gaussian_bit_pattern_31_y_b[index]*cos);
 
-        int xa_cos = int(gaussian_bit_pattern_31_x_a[index]*cos/1024);
-        int ya_sin = int(gaussian_bit_pattern_31_y_a[index]*sin/1024);
-        int xa_sin = int(gaussian_bit_pattern_31_x_a[index]*sin/1024);
-        int ya_cos = int(gaussian_bit_pattern_31_y_a[index]*cos/1024);
-        int xb_cos = int(gaussian_bit_pattern_31_x_b[index]*cos/1024);
-        int yb_sin = int(gaussian_bit_pattern_31_y_b[index]*sin/1024);
-        int xb_sin = int(gaussian_bit_pattern_31_x_b[index]*sin/1024);
-        int yb_cos = int(gaussian_bit_pattern_31_y_b[index]*cos/1024);
-
-        if(DEBUG){
-            cout << int(gaussian_bit_pattern_31_y_b[147]) << endl;
-            cout << "xa_cos = " << xa_cos<< endl;
-            cout << "xa_sin = " << xa_sin<< endl;
-            cout << "xb_cos = " << xb_cos<< endl;
-            cout << "xb_sin = " << xb_sin<< endl;
-            cout << "ya_cos = " << ya_cos<< endl;
-            cout << "ya_sin = " << ya_sin<< endl;
-            cout << "yb_cos = " << yb_cos<< endl;
-            cout << "yb_sin = " << yb_sin<< endl;
-        }
+        // if(DEBUG){
+        //     cout << int(gaussian_bit_pattern_31_y_b[147]) << endl;
+        //     cout << "xa_cos = " << xa_cos<< endl;
+        //     cout << "xa_sin = " << xa_sin<< endl;
+        //     cout << "xb_cos = " << xb_cos<< endl;
+        //     cout << "xb_sin = " << xb_sin<< endl;
+        //     cout << "ya_cos = " << ya_cos<< endl;
+        //     cout << "ya_sin = " << ya_sin<< endl;
+        //     cout << "yb_cos = " << yb_cos<< endl;
+        //     cout << "yb_sin = " << yb_sin<< endl;
+        // }
     
 
-        x1 = xa_cos - ya_sin;
-        y1 = xa_sin + ya_cos;
-        x2 = xb_cos - yb_sin;
-        y2 = xb_sin + yb_cos;
+        x1 = round(float(xa_cos - ya_sin)/float(1024));
+        y1 = round(float(xa_sin + ya_cos)/float(1024));
+        x2 = round(float(xb_cos - yb_sin)/float(1024));
+        y2 = round(float(xb_sin + yb_cos)/float(1024));
 
         if(x1 > 15) x1 = 15;
         if(y1 > 15) y1 = 15;
@@ -72,9 +67,6 @@ void MYORB::BRIEF_pattern_LUT(int index, float orientation, int cos, int sin, in
         if(x2 < -15) x2 = -15;
         if(y2 < -15) y2 = -15;
 
-        // if(TESTBENCH){
-        //     result_test << xa_cos << " -- ";
-        // }
     }
     
     else{
@@ -84,6 +76,16 @@ void MYORB::BRIEF_pattern_LUT(int index, float orientation, int cos, int sin, in
         y1 = round((gaussian_bit_pattern_31_x_a[index]*sin_angle + gaussian_bit_pattern_31_y_a[index]*cos_angle));
         x2 = round((gaussian_bit_pattern_31_x_b[index]*cos_angle - gaussian_bit_pattern_31_y_b[index]*sin_angle));
         y2 = round((gaussian_bit_pattern_31_x_b[index]*sin_angle + gaussian_bit_pattern_31_y_b[index]*cos_angle));
+
+        // if(x1 > 15) x1 = 15;
+        // if(y1 > 15) y1 = 15;
+        // if(x2 > 15) x2 = 15;
+        // if(y2 > 15) y2 = 15;
+
+        // if(x1 < -15) x1 = -15;
+        // if(y1 < -15) y1 = -15;
+        // if(x2 < -15) x2 = -15;
+        // if(y2 < -15) y2 = -15;
     }
 
 }

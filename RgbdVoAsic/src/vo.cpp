@@ -3,11 +3,14 @@
 #include <opencv2/imgproc.hpp>
 #include <iostream>
 #include <math.h>
+#include <gmpxx.h>
+#include <gmp.h>
 
 #include "vo.hpp"
 #include "MYORB.h"
 
 #define USE_MYORB 1// 1: MYORB, 0 : opencv ORB
+#define MUL pow(2.0, 24)
 
 using namespace cv;
 using namespace std;
@@ -17,16 +20,108 @@ const int sobelSize = 3;
 const double sobelScale = 1./8.;
 
 const bool pyramid_on = false;
-const int feature_iter_num = 5;
+const int feature_iter_num = 2;
 const int feature_corr_num = 12;
 
 const double max_value_1 = 9223372036854775808.0; // 64bits = 2^63
 //const double max_value_1 = 36893488147419103232.0; // 66bits = 2^65
+//const double max_value_2 = 73786976294838206464.0; // 67bits = 2^66
+//const double max_value_2 = 147573952589676412928.0; // 68bits = 2^67
 const double max_value_2 = 1180591620717411303424.0; // 71bits = 2^70
+//const double max_value_3 = 37778931862957161709568.0; // 76bits = 2^75
+const double max_value_3 = pow(2.0, 127); // 128bits = 2^127
+const double max_value_4 = pow(2.0, 70); 
+const double max_value_5 = pow(2.0, 178); 
+//const double max_value_6 = pow(2.0, 80); 
+const double max_value_6 = pow(2.0, 59); 
+const double max_value_3d = pow(2.0, 41); 
+const double max_value_lsm_f1 = pow(2.0, 41); 
+const double max_value_lsm_f2 = pow(2.0, 41); 
+const double max_value_lsm_f3 = pow(2.0, 41); 
+const double max_value_lsm_f4 = pow(2.0, 45); 
+const double max_value_lsm_f5 = pow(2.0, 51); //key 
 
 double trunc(double num){
 	//return (num<0)?ceil(num):floor(num);
 	return floor(num);
+}
+
+double trunc_3d(double num){
+       if(abs(num) > max_value_3d)
+       {
+           cout << "num: " << num << endl;
+           cout << "In trunc_3d " << endl;
+           exit(1);
+       }
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
+}
+
+double trunc_lsm_f1(double num){
+       if(abs(num) > max_value_lsm_f1)
+       {
+           cout << "num: " << num << endl;
+           cout << "In trunc_lsm_f1 " << endl;
+           exit(1);
+       }
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
+}
+
+double trunc_lsm_f2(double num){
+       if(abs(num) > max_value_lsm_f2)
+       {
+           cout << "num: " << num << endl;
+           cout << "In trunc_lsm_f2 " << endl;
+           exit(1);
+       }
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
+}
+
+double trunc_lsm_f3(double num){
+       if(abs(num) > max_value_lsm_f3)
+       {
+           cout << "num: " << num << endl;
+           cout << "In trunc_lsm_f3 " << endl;
+           exit(1);
+       }
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
+}
+
+double trunc_lsm_f4(double num){
+       if(abs(num) > max_value_lsm_f4)
+       {
+           cout << "num: " << num << endl;
+           cout << "In trunc_lsm_f4 " << endl;
+           exit(1);
+       }
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
+}
+
+double trunc_lsm_f5(double num){
+       if(abs(num) > max_value_lsm_f5)
+       {
+           cout << "num: " << num << endl;
+           cout << "In trunc_lsm_f5 " << endl;
+           exit(1);
+       }
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
 }
 
 double trunc1(double num){
@@ -35,7 +130,10 @@ double trunc1(double num){
            cout << "num: " << num << endl;
            exit(1);
        }
-	return floor(num);
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
 }
 
 double trunc2(double num){
@@ -44,7 +142,58 @@ double trunc2(double num){
            cout << "trunc2 num: " << num << endl;
            exit(1);
        }
-	return floor(num);
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
+}
+
+double trunc3(double num){
+       if(abs(num) > max_value_3)
+       {
+           cout << "trunc3 num: " << num << endl;
+           exit(1);
+       }
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
+}
+
+double trunc4(double num){
+       if(abs(num) > max_value_4)
+       {
+           cout << "trunc4 num: " << num << endl;
+           exit(1);
+       }
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
+}
+
+double trunc5(double num){
+       if(abs(num) > max_value_5)
+       {
+           cout << "trunc5 num: " << num << endl;
+           exit(1);
+       }
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
+}
+
+double trunc6(double num){
+       if(abs(num) > max_value_6)
+       {
+           cout << "trunc6 num: " << num << endl;
+           exit(1);
+       }
+       if(num > 0)
+	   return floor(num);
+       else
+	   return ceil(num);
 }
 
 static inline
@@ -190,12 +339,26 @@ depthTo3dNoMask(const cv::Mat& in_depth, const cv::Mat_<T>& K, cv::Mat& points3d
     for (int x = 0; x < in_depth.cols; ++x, ++point, ++depth)
     {
         T z = *depth;
-        (*point)[0] = trunc1(trunc1(x*MUL - ox*MUL) * z / (fx*MUL) * MUL);
-        (*point)[1] = trunc1(trunc1(y*MUL - oy*MUL) * z / (fy*MUL) * MUL);
-        (*point)[2] = trunc1(z * MUL);
+        (*point)[0] = trunc_3d(trunc_3d(trunc_3d(x*MUL - trunc_3d(ox*MUL)) * z / trunc_3d(fx*MUL)) * MUL);
+        (*point)[1] = trunc_3d(trunc_3d(trunc_3d(y*MUL - trunc_3d(oy*MUL)) * z / trunc_3d(fy*MUL)) * MUL);
+        (*point)[2] = trunc_3d(z * MUL);
         //(*point)[0] = trunc(trunc(x*MUL - ox*MUL) * z / (fx*MUL));
         //(*point)[1] = trunc(trunc(y*MUL - oy*MUL) * z / (fy*MUL));
         //(*point)[2] = z;
+        //if(x==340 && y==240 && z!=0)
+        //{
+        //    //cout << fixed << fx << endl;
+        //    //cout << fixed << fy << endl;
+        //    //cout << fixed << ox << endl;
+        //    //cout << fixed << oy << endl;
+        //    //cout << fixed << x << endl;
+        //    //cout << fixed << y << endl;
+        //    //cout << fixed << z << endl;
+        //    //cout << fixed << trunc_3d(y*MUL - trunc_3d(oy*MUL)) * z << endl;
+        //    //cout << fixed << trunc_3d(trunc_3d(y*MUL - trunc_3d(oy*MUL)) * z / trunc_3d(fy*MUL)) << endl;
+        //    //cout << fixed << trunc_3d(trunc_3d(trunc_3d(y*MUL - trunc_3d(oy*MUL)) * z / trunc_3d(fy*MUL)) * MUL) << endl;
+        //    //exit(1);
+        //}
     }
   }
 }
@@ -332,15 +495,15 @@ int computeCorresps(const Mat& K, const Mat& K_inv, const Mat& Rt,
     Mat Kt = Rt(Rect(3,0,1,3)).clone();
     //Kt = K * Kt;
     double * Kt_ptr = Kt.ptr<double>();
-    double fx = trunc(K.at<double>(0, 0) * MUL);
-    double fy = trunc(K.at<double>(1, 1) * MUL);
-    double cx = trunc(K.at<double>(0, 2) * MUL);
-    double cy = trunc(K.at<double>(1, 2) * MUL);
-    Kt_ptr[0] = trunc(Kt_ptr[0] * fx / MUL) + trunc(Kt_ptr[2] * cx / MUL);
-    Kt_ptr[1] = trunc(Kt_ptr[1] * fy / MUL) + trunc(Kt_ptr[2] * cy / MUL);
+    double fx = trunc1(K.at<double>(0, 0) * MUL);
+    double fy = trunc1(K.at<double>(1, 1) * MUL);
+    double cx = trunc1(K.at<double>(0, 2) * MUL);
+    double cy = trunc1(K.at<double>(1, 2) * MUL);
+    Kt_ptr[0] = trunc1(Kt_ptr[0] * fx / MUL) + trunc1(Kt_ptr[2] * cx / MUL);
+    Kt_ptr[1] = trunc1(Kt_ptr[1] * fy / MUL) + trunc1(Kt_ptr[2] * cy / MUL);
     Kt_ptr[2] = Kt_ptr[2];
-    double fx_inv = trunc(MUL * MUL / fx);
-    double fy_inv = trunc(MUL * MUL / fy);
+    double fx_inv = trunc1(MUL * MUL / fx);
+    double fy_inv = trunc1(MUL * MUL / fy);
     //double cx_inv = -cx / fx;
     //double cy_inv = -cy / fy;
 
@@ -371,15 +534,15 @@ int computeCorresps(const Mat& K, const Mat& K_inv, const Mat& Rt,
         double r20 = R.at<double>(2,0);
         double r21 = R.at<double>(2,1);
         double r22 = R.at<double>(2,2);
-        KRK_inv.at<double>(0,0) = r00 + trunc((r20 * cx * fx_inv / MUL) / MUL); 
-        KRK_inv.at<double>(0,1) = trunc((r01 * fx * fy_inv / MUL) / MUL) + trunc((r21 * cx * fy_inv / MUL) / MUL); 
-        KRK_inv.at<double>(0,2) = -trunc(r00 * cx / MUL) - trunc(((r01 * fx * cy * fy_inv / MUL) / MUL) / MUL) + trunc(r02 * fx / MUL) - trunc(((r20 * cx * cx * fx_inv / MUL) / MUL) / MUL) - trunc(((r21 * cx * cy * fy_inv / MUL) / MUL) / MUL) + trunc(r22 * cx / MUL); 
-        KRK_inv.at<double>(1,0) = trunc((r10 * fy * fx_inv / MUL) / MUL) + trunc((r20 * cy * fx_inv / MUL) / MUL); 
-        KRK_inv.at<double>(1,1) = r11 + trunc((r21 * cy * fy_inv / MUL) / MUL); 
-        KRK_inv.at<double>(1,2) = -trunc(((r10 * cx * fy * fx_inv / MUL) / MUL) / MUL) - trunc(r11 * cy / MUL) + trunc(r12 * fy / MUL) - trunc(((r20 * cx * cy * fx_inv / MUL) / MUL) / MUL) - trunc(((r21 * cy * cy * fy_inv / MUL) / MUL) / MUL) + trunc(r22 * cy / MUL) ; 
-        KRK_inv.at<double>(2,0) = trunc(r20 * fx_inv / MUL); 
-        KRK_inv.at<double>(2,1) = trunc(r21 * fy_inv / MUL); 
-        KRK_inv.at<double>(2,2) = - trunc((r20 * cx * fx_inv / MUL) / MUL) - trunc((r21 * cy * fy_inv / MUL) / MUL) + r22; 
+        KRK_inv.at<double>(0,0) = r00 + trunc1((r20 * cx * fx_inv / MUL) / MUL); 
+        KRK_inv.at<double>(0,1) = trunc1((r01 * fx * fy_inv / MUL) / MUL) + trunc1((r21 * cx * fy_inv / MUL) / MUL); 
+        KRK_inv.at<double>(0,2) = -trunc1(r00 * cx / MUL) - trunc1(((r01 * fx * cy * fy_inv / MUL) / MUL) / MUL) + trunc1(r02 * fx / MUL) - trunc1(((r20 * cx * cx * fx_inv / MUL) / MUL) / MUL) - trunc1(((r21 * cx * cy * fy_inv / MUL) / MUL) / MUL) + trunc1(r22 * cx / MUL); 
+        KRK_inv.at<double>(1,0) = trunc1((r10 * fy * fx_inv / MUL) / MUL) + trunc1((r20 * cy * fx_inv / MUL) / MUL); 
+        KRK_inv.at<double>(1,1) = r11 + trunc1((r21 * cy * fy_inv / MUL) / MUL); 
+        KRK_inv.at<double>(1,2) = -trunc1(((r10 * cx * fy * fx_inv / MUL) / MUL) / MUL) - trunc1(r11 * cy / MUL) + trunc1(r12 * fy / MUL) - trunc1(((r20 * cx * cy * fx_inv / MUL) / MUL) / MUL) - trunc1(((r21 * cy * cy * fy_inv / MUL) / MUL) / MUL) + trunc1(r22 * cy / MUL) ; 
+        KRK_inv.at<double>(2,0) = trunc1(r20 * fx_inv / MUL); 
+        KRK_inv.at<double>(2,1) = trunc1(r21 * fy_inv / MUL); 
+        KRK_inv.at<double>(2,2) = - trunc1((r20 * cx * fx_inv / MUL) / MUL) - trunc1((r21 * cy * fy_inv / MUL) / MUL) + r22; 
 
         const double * KRK_inv_ptr = KRK_inv.ptr<const double>();
         for(int u1 = 0; u1 < depth1.cols; u1++)
@@ -419,7 +582,7 @@ int computeCorresps(const Mat& K, const Mat& K_inv, const Mat& Rt,
                     if(r.contains(Point(u0,v0)))
                     {
                         double d0 = depth0.at<double>(v0,u0);
-                        if(validMask0.at<uchar>(v0, u0) && std::abs(transformed_d1 - trunc(d0*MUL)) <= trunc(maxDepthDiff*MUL) && std::abs(v1 - v0) <= maxLineDiff)
+                        if(validMask0.at<uchar>(v0, u0) && std::abs(transformed_d1 - trunc1(d0*MUL)) <= trunc1(maxDepthDiff*MUL) && std::abs(v1 - v0) <= maxLineDiff)
                         {
                             CV_DbgAssert(!cvIsNaN(d0));
                             Vec2s& c = corresps.at<Vec2s>(v0,u0);
@@ -542,13 +705,13 @@ void calcRgbdLsmMatrices(const Mat& image0, const Mat& cloud0, const Mat& Rt,
          //     tp0, fx, fy);
          double invz  = 1. / tp0.z;
          double invzw  = invz * w_sobelScale;
-         double tmp_v0 = trunc(dI_dx1.at<short int>(v1,u1) * trunc(fx * MUL) * MUL * invzw);
-         double tmp_v1 = trunc(dI_dy1.at<short int>(v1,u1) * trunc(fy * MUL) * MUL * invzw);
-         double tmp_v2 = trunc(-(tmp_v0 * tp0.x + tmp_v1 * tp0.y) * invz);
+         double tmp_v0 = trunc1(dI_dx1.at<short int>(v1,u1) * trunc1(fx * MUL) * MUL * invzw);
+         double tmp_v1 = trunc1(dI_dy1.at<short int>(v1,u1) * trunc1(fy * MUL) * MUL * invzw);
+         double tmp_v2 = trunc1(-(tmp_v0 * tp0.x + tmp_v1 * tp0.y) * invz);
 
-         A_ptr[0] = trunc((-tp0.z * tmp_v1 + tp0.y * tmp_v2) / MUL);
-         A_ptr[1] = trunc(( tp0.z * tmp_v0 - tp0.x * tmp_v2) / MUL);
-         A_ptr[2] = trunc((-tp0.y * tmp_v0 + tp0.x * tmp_v1) / MUL);
+         A_ptr[0] = trunc1((-tp0.z * tmp_v1 + tp0.y * tmp_v2) / MUL);
+         A_ptr[1] = trunc1(( tp0.z * tmp_v0 - tp0.x * tmp_v2) / MUL);
+         A_ptr[2] = trunc1((-tp0.y * tmp_v0 + tp0.x * tmp_v1) / MUL);
          A_ptr[3] = tmp_v0;
          A_ptr[4] = tmp_v1;
          A_ptr[5] = tmp_v2;
@@ -557,9 +720,9 @@ void calcRgbdLsmMatrices(const Mat& image0, const Mat& cloud0, const Mat& Rt,
         {
             double* AtA_ptr = AtA.ptr<double>(y);
             for(int x = y; x < transformDim; x++)
-                AtA_ptr[x] += trunc(A_ptr[y] * A_ptr[x] / MUL);
+                AtA_ptr[x] += trunc2(A_ptr[y] * A_ptr[x] / MUL);
 
-            AtB_ptr[y] += trunc(A_ptr[y] * diffs_ptr[correspIndex] * w);
+            AtB_ptr[y] += trunc2(A_ptr[y] * diffs_ptr[correspIndex] * w);
         }
     }
 
@@ -600,9 +763,9 @@ void calcICPLsmMatrices(const Mat& cloud0, const Mat& Rt,
 
         const Point3d& p0 = cloud0.at<Point3d>(v0,u0);
         Point3d tp0;
-        tp0.x = trunc(p0.x * Rt_ptr[0] / MUL) + trunc(p0.y * Rt_ptr[1] / MUL) + trunc(p0.z * Rt_ptr[2]  / MUL) + Rt_ptr[3] ;
-        tp0.y = trunc(p0.x * Rt_ptr[4] / MUL) + trunc(p0.y * Rt_ptr[5] / MUL) + trunc(p0.z * Rt_ptr[6]  / MUL) + Rt_ptr[7] ;
-        tp0.z = trunc(p0.x * Rt_ptr[8] / MUL) + trunc(p0.y * Rt_ptr[9] / MUL) + trunc(p0.z * Rt_ptr[10] / MUL) + Rt_ptr[11];
+        tp0.x = trunc4(p0.x * Rt_ptr[0] / MUL) + trunc4(p0.y * Rt_ptr[1] / MUL) + trunc4(p0.z * Rt_ptr[2]  / MUL) + Rt_ptr[3] ;
+        tp0.y = trunc4(p0.x * Rt_ptr[4] / MUL) + trunc4(p0.y * Rt_ptr[5] / MUL) + trunc4(p0.z * Rt_ptr[6]  / MUL) + Rt_ptr[7] ;
+        tp0.z = trunc4(p0.x * Rt_ptr[8] / MUL) + trunc4(p0.y * Rt_ptr[9] / MUL) + trunc4(p0.z * Rt_ptr[10] / MUL) + Rt_ptr[11];
 
         Vec3d n1 = normals1.at<Vec3d>(v1, u1);
         Point3d v = cloud1.at<Point3d>(v1,u1) - tp0; //MUL
@@ -614,7 +777,7 @@ void calcICPLsmMatrices(const Mat& cloud0, const Mat& Rt,
         sigma += diffs_ptr[correspIndex] * diffs_ptr[correspIndex]; //MUL^4
     }
 
-    sigma = trunc(std::sqrt(trunc(sigma/correspsCount))); //MUL^2
+    sigma = trunc3(std::sqrt(trunc5(sigma/correspsCount))); //MUL^2
 
     std::vector<double> A_buf(transformDim);
     double* A_ptr = &A_buf[0];
@@ -627,20 +790,20 @@ void calcICPLsmMatrices(const Mat& cloud0, const Mat& Rt,
         //w = w > DBL_EPSILON ? 1./w : 1.;
 
         //func(A_ptr, tps0_ptr[correspIndex], normals1.at<Vec3d>(v1, u1) * w);
-        A_ptr[0] =trunc(-tps0_ptr[correspIndex].z * normals1.at<Vec3d>(v1, u1)[1] * MUL /  w) + trunc(tps0_ptr[correspIndex].y * normals1.at<Vec3d>(v1, u1)[2] * MUL / w);
-        A_ptr[1] =trunc( tps0_ptr[correspIndex].z * normals1.at<Vec3d>(v1, u1)[0] * MUL /  w) - trunc(tps0_ptr[correspIndex].x * normals1.at<Vec3d>(v1, u1)[2] * MUL / w);
-        A_ptr[2] =trunc(-tps0_ptr[correspIndex].y * normals1.at<Vec3d>(v1, u1)[0] * MUL /  w) + trunc(tps0_ptr[correspIndex].x * normals1.at<Vec3d>(v1, u1)[1] * MUL / w);
-        A_ptr[3] =trunc(normals1.at<Vec3d>(v1, u1)[0] * MUL * MUL / w);
-        A_ptr[4] =trunc(normals1.at<Vec3d>(v1, u1)[1] * MUL * MUL / w);
-        A_ptr[5] =trunc(normals1.at<Vec3d>(v1, u1)[2] * MUL * MUL / w);
+        A_ptr[0] =trunc4(-tps0_ptr[correspIndex].z * normals1.at<Vec3d>(v1, u1)[1] * MUL /  w) + trunc4(tps0_ptr[correspIndex].y * normals1.at<Vec3d>(v1, u1)[2] * MUL / w);
+        A_ptr[1] =trunc4( tps0_ptr[correspIndex].z * normals1.at<Vec3d>(v1, u1)[0] * MUL /  w) - trunc4(tps0_ptr[correspIndex].x * normals1.at<Vec3d>(v1, u1)[2] * MUL / w);
+        A_ptr[2] =trunc4(-tps0_ptr[correspIndex].y * normals1.at<Vec3d>(v1, u1)[0] * MUL /  w) + trunc4(tps0_ptr[correspIndex].x * normals1.at<Vec3d>(v1, u1)[1] * MUL / w);
+        A_ptr[3] =trunc4(normals1.at<Vec3d>(v1, u1)[0] * MUL * MUL / w);
+        A_ptr[4] =trunc4(normals1.at<Vec3d>(v1, u1)[1] * MUL * MUL / w);
+        A_ptr[5] =trunc4(normals1.at<Vec3d>(v1, u1)[2] * MUL * MUL / w);
 
         for(int y = 0; y < transformDim; y++)
         {
             double* AtA_ptr = AtA.ptr<double>(y);
             for(int x = y; x < transformDim; x++)
-                AtA_ptr[x] += trunc(A_ptr[y] * A_ptr[x] / MUL);
+                AtA_ptr[x] += trunc4(A_ptr[y] * A_ptr[x] / MUL);
 
-            AtB_ptr[y] += trunc(A_ptr[y] * diffs_ptr[correspIndex] / w);
+            AtB_ptr[y] += trunc4(A_ptr[y] * diffs_ptr[correspIndex] / w);
         }
     }
 
@@ -682,11 +845,13 @@ void calcFeatureLsmMatrices(const Mat& cloud0, const Mat& Rt,
     
         const Point3d& p0 = cloud0.at<Point3d>(v0,u0);
         Point3d tp0;
-        tp0.x = trunc(p0.x * Rt_ptr[0] / MUL) + trunc(p0.y * Rt_ptr[1] / MUL) + trunc(p0.z * Rt_ptr[2]  / MUL) + Rt_ptr[3] ;
-        tp0.y = trunc(p0.x * Rt_ptr[4] / MUL) + trunc(p0.y * Rt_ptr[5] / MUL) + trunc(p0.z * Rt_ptr[6]  / MUL) + Rt_ptr[7] ;
-        tp0.z = trunc(p0.x * Rt_ptr[8] / MUL) + trunc(p0.y * Rt_ptr[9] / MUL) + trunc(p0.z * Rt_ptr[10] / MUL) + Rt_ptr[11];
-        int p2d_x = cvRound( (trunc(trunc(fx * MUL) * tp0.x / tp0.z) + trunc(cx * MUL)) / MUL);
-        int p2d_y = cvRound( (trunc(trunc(fy * MUL) * tp0.y / tp0.z) + trunc(cy * MUL)) / MUL);
+        tp0.x = trunc_lsm_f1(p0.x * Rt_ptr[0] / MUL) + trunc_lsm_f1(p0.y * Rt_ptr[1] / MUL) + trunc_lsm_f1(p0.z * Rt_ptr[2]  / MUL) + Rt_ptr[3] ;
+        tp0.y = trunc_lsm_f1(p0.x * Rt_ptr[4] / MUL) + trunc_lsm_f1(p0.y * Rt_ptr[5] / MUL) + trunc_lsm_f1(p0.z * Rt_ptr[6]  / MUL) + Rt_ptr[7] ;
+        tp0.z = trunc_lsm_f1(p0.x * Rt_ptr[8] / MUL) + trunc_lsm_f1(p0.y * Rt_ptr[9] / MUL) + trunc_lsm_f1(p0.z * Rt_ptr[10] / MUL) + Rt_ptr[11];
+        //int p2d_x = cvRound( (trunc1(trunc1(fx * MUL) * tp0.x / tp0.z) + trunc1(cx * MUL)) / MUL);
+        //int p2d_y = cvRound( (trunc1(trunc1(fy * MUL) * tp0.y / tp0.z) + trunc1(cy * MUL)) / MUL);
+        int p2d_x = trunc_lsm_f2( (trunc_lsm_f2(trunc_lsm_f2(fx * MUL) * tp0.x / tp0.z) + trunc_lsm_f2(cx * MUL)) / MUL);
+        int p2d_y = trunc_lsm_f2( (trunc_lsm_f2(trunc_lsm_f2(fy * MUL) * tp0.y / tp0.z) + trunc_lsm_f2(cy * MUL)) / MUL);
 
         tps0_ptr[correspIndex] = tp0;
         //diffs_x_ptr[correspIndex] = p2d_x - u1;
@@ -695,11 +860,38 @@ void calcFeatureLsmMatrices(const Mat& cloud0, const Mat& Rt,
         diffs_y_ptr[correspIndex] = v1 - p2d_y;
         sigma_x += diffs_x_ptr[correspIndex] * diffs_x_ptr[correspIndex];
         sigma_y += diffs_y_ptr[correspIndex] * diffs_y_ptr[correspIndex];
+   
+        //debug
+        //cout << "u0 " << u0 << endl;
+        //cout << "v0 " << v0 << endl;
+        //cout << "u1 " << u1 << endl;
+        //cout << "v1 " << v1 << endl;
+        //int z0 = trunc_lsm_f1(p0.z/MUL);
+        //cout << "z0 " << z0 << endl;
+        //cout << "Rt[0] "  << fixed << Rt_ptr[0] << endl;
+        //cout << "Rt[1] "  << fixed << Rt_ptr[1] << endl;
+        //cout << "Rt[2] "  << fixed << Rt_ptr[2] << endl;
+        //cout << "Rt[3] "  << fixed << Rt_ptr[3] << endl;
+        //cout << "Rt[4] "  << fixed << Rt_ptr[4] << endl;
+        //cout << "Rt[5] "  << fixed << Rt_ptr[5] << endl;
+        //cout << "Rt[6] "  << fixed << Rt_ptr[6] << endl;
+        //cout << "Rt[7] "  << fixed << Rt_ptr[7] << endl;
+        //cout << "Rt[8] "  << fixed << Rt_ptr[8] << endl;
+        //cout << "Rt[9] "  << fixed << Rt_ptr[9] << endl;
+        //cout << "Rt[10] " << fixed << Rt_ptr[10] << endl;
+        //cout << "Rt[11] " << fixed << Rt_ptr[11] << endl;
+        //cout << "p0.x " << setw(14) << setprecision(0) << fixed << tp0.x << endl;
+        //cout << "p0.y " << setw(14) << setprecision(0) << fixed << tp0.y << endl;
+        //cout << "p0.z " << setw(14) << setprecision(0) << fixed << tp0.z << endl;
+        //cout << "x:" << setw(4) << p2d_x << endl;
+        //cout << "y:" << setw(4) << p2d_y << endl;
+        //cout << "x:" << setw(4) << u1 - p2d_x << endl;
+        //cout << "y:" << setw(4) << v1 - p2d_y << endl;
     }
     //exit(1);
 
-    sigma_x = std::sqrt(sigma_x/correspsCount);
-    sigma_y = std::sqrt(sigma_y/correspsCount);
+    sigma_x = trunc_lsm_f2(std::sqrt(trunc_lsm_f2(sigma_x/correspsCount)));
+    sigma_y = trunc_lsm_f2(std::sqrt(trunc_lsm_f2(sigma_y/correspsCount)));
 
     std::vector<double> A_buf_x(transformDim);
     std::vector<double> A_buf_y(transformDim);
@@ -713,36 +905,143 @@ void calcFeatureLsmMatrices(const Mat& cloud0, const Mat& Rt,
         w_y = w_y > DBL_EPSILON ? 1./w_y : 1.;
 
         //func_x(A_ptr_x, tps0_ptr[correspIndex], fx * w_x);
-        double z_squared = trunc(tps0_ptr[correspIndex].z * tps0_ptr[correspIndex].z);
-        A_ptr_x[0] = -( trunc( trunc(fx * MUL) * tps0_ptr[correspIndex].x * tps0_ptr[correspIndex].y / z_squared ) );
-        A_ptr_x[1] = trunc(fx * MUL) + trunc( trunc(fx * MUL) * tps0_ptr[correspIndex].x * tps0_ptr[correspIndex].x / z_squared);
-        A_ptr_x[2] = -( trunc( trunc(fx * MUL) * tps0_ptr[correspIndex].y / tps0_ptr[correspIndex].z ) );
-        A_ptr_x[3] = trunc( trunc(fx * MUL) * MUL / tps0_ptr[correspIndex].z );
+        double z_squared = trunc3(tps0_ptr[correspIndex].z * tps0_ptr[correspIndex].z);
+        A_ptr_x[0] = -( trunc_lsm_f3( trunc_lsm_f3(fx * MUL) * tps0_ptr[correspIndex].x * tps0_ptr[correspIndex].y / z_squared ) );
+        A_ptr_x[1] = trunc_lsm_f3(fx * MUL) + trunc_lsm_f3( trunc_lsm_f3(fx * MUL) * tps0_ptr[correspIndex].x * tps0_ptr[correspIndex].x / z_squared);
+        A_ptr_x[2] = -( trunc_lsm_f3( trunc_lsm_f3(fx * MUL) * tps0_ptr[correspIndex].y / tps0_ptr[correspIndex].z ) );
+        A_ptr_x[3] = trunc_lsm_f3( trunc_lsm_f3(fx * MUL) * MUL / tps0_ptr[correspIndex].z );
         A_ptr_x[4] = 0;
-        A_ptr_x[5] = -( trunc(trunc(fx * MUL)  * tps0_ptr[correspIndex].x * MUL  / z_squared) );
+        A_ptr_x[5] = -( trunc_lsm_f3(trunc_lsm_f3(fx * MUL)  * tps0_ptr[correspIndex].x * MUL  / z_squared) );
 
         //func_y(A_ptr_y, tps0_ptr[correspIndex], fy * w_y);
-        A_ptr_y[0] = -trunc(fy * MUL) - trunc(trunc(fy * MUL) * tps0_ptr[correspIndex].y * tps0_ptr[correspIndex].y /z_squared);
-        A_ptr_y[1] = trunc(trunc(fy * MUL) * tps0_ptr[correspIndex].x * tps0_ptr[correspIndex].x / z_squared);
-        A_ptr_y[2] = trunc(trunc(fy * MUL) * tps0_ptr[correspIndex].x / tps0_ptr[correspIndex].z);
+        A_ptr_y[0] = -trunc_lsm_f3(fy * MUL) - trunc_lsm_f3(trunc_lsm_f3(fy * MUL) * tps0_ptr[correspIndex].y * tps0_ptr[correspIndex].y /z_squared);
+        //A_ptr_y[1] = trunc_lsm_f3(trunc_lsm_f3(fy * MUL) * tps0_ptr[correspIndex].x * tps0_ptr[correspIndex].x / z_squared);
+        A_ptr_y[1] = trunc_lsm_f3(trunc_lsm_f3(fy * MUL) * tps0_ptr[correspIndex].x * tps0_ptr[correspIndex].y / z_squared);
+        A_ptr_y[2] = trunc_lsm_f3(trunc_lsm_f3(fy * MUL) * tps0_ptr[correspIndex].x / tps0_ptr[correspIndex].z);
         A_ptr_y[3] = 0;
-        A_ptr_y[4] = trunc(trunc(fy * MUL) * MUL / tps0_ptr[correspIndex].z);
-        A_ptr_y[5] = -trunc(trunc(fy * MUL) * tps0_ptr[correspIndex].y * MUL /z_squared);
-
+        A_ptr_y[4] = trunc_lsm_f3(trunc_lsm_f3(fy * MUL) * MUL / tps0_ptr[correspIndex].z);
+        A_ptr_y[5] = -trunc_lsm_f3(trunc_lsm_f3(fy * MUL) * tps0_ptr[correspIndex].y * MUL /z_squared);
+        
         for(int y = 0; y < transformDim; y++)
         {
             double* AtA_ptr = AtA.ptr<double>(y);
             for(int x = y; x < transformDim; x++)
-                AtA_ptr[x] += trunc(A_ptr_x[y] * A_ptr_x[x] * w_x * w_x / MUL) + trunc(A_ptr_y[y] * A_ptr_y[x] * w_y * w_y / MUL);
-
-            AtB_ptr[y] += trunc(A_ptr_x[y] * w_x * w_x * diffs_x_ptr[correspIndex]) + trunc(A_ptr_y[y] * w_y * w_y * diffs_y_ptr[correspIndex]);
+            {
+                //AtA_ptr[x] += trunc1(A_ptr_x[y] * A_ptr_x[x] * w_x * w_x / MUL) + trunc1(A_ptr_y[y] * A_ptr_y[x] * w_y * w_y / MUL);
+                //HW friendly
+                //AtA_ptr[x] += trunc_lsm_f5(trunc_lsm_f4(A_ptr_x[y] * A_ptr_x[x] / MUL) + trunc_lsm_f4(A_ptr_y[y] * A_ptr_y[x] / MUL));
+                //double miss precision
+                mpz_t A_ptr_x_x;
+                mpz_t A_ptr_x_y;
+                mpz_t A_ptr_y_x;
+                mpz_t A_ptr_y_y;
+                mpz_t MUL_gmp;
+                mpz_t AtA_gmp;
+                mpz_init_set_d(A_ptr_x_x, A_ptr_x[x]);
+                mpz_init_set_d(A_ptr_x_y, A_ptr_x[y]);
+                mpz_init_set_d(A_ptr_y_x, A_ptr_y[x]);
+                mpz_init_set_d(A_ptr_y_y, A_ptr_y[y]);
+                mpz_init_set_d(MUL_gmp, MUL);
+                mpz_init_set_d(AtA_gmp, AtA_ptr[x]);
+                mpz_mul(A_ptr_x_x,A_ptr_x_x,A_ptr_x_y);
+                mpz_div(A_ptr_x_x,A_ptr_x_x,MUL_gmp);
+                mpz_mul(A_ptr_y_y,A_ptr_y_x,A_ptr_y_y);
+                mpz_div(A_ptr_y_y,A_ptr_y_y,MUL_gmp);
+                mpz_add(A_ptr_x_x,A_ptr_x_x,A_ptr_y_y);
+                mpz_add(AtA_gmp,AtA_gmp,A_ptr_x_x);
+                AtA_ptr[x] = mpz_get_d(AtA_gmp);
+            } 
+            //AtB_ptr[y] += trunc1(A_ptr_x[y] * w_x * w_x * diffs_x_ptr[correspIndex]) + trunc1(A_ptr_y[y] * w_y * w_y * diffs_y_ptr[correspIndex]);
+            //HW friendly
+            //AtB_ptr[y] += trunc_lsm_f5(trunc_lsm_f4(A_ptr_x[y] * diffs_x_ptr[correspIndex]) + trunc_lsm_f4(A_ptr_y[y] * diffs_y_ptr[correspIndex]));
+            mpz_t A_ptr_x_gmp;
+            mpz_t A_ptr_y_gmp;
+            mpz_t diffs_x_gmp;
+            mpz_t diffs_y_gmp;
+            mpz_t AtB_gmp;
+            mpz_init_set_d(A_ptr_x_gmp, A_ptr_x[y]);
+            mpz_init_set_d(A_ptr_y_gmp, A_ptr_y[y]);
+            mpz_init_set_d(diffs_x_gmp, diffs_x_ptr[correspIndex]);
+            mpz_init_set_d(diffs_y_gmp, diffs_y_ptr[correspIndex]);
+            mpz_mul(diffs_x_gmp, diffs_x_gmp, A_ptr_x_gmp);
+            mpz_mul(diffs_y_gmp, diffs_y_gmp, A_ptr_y_gmp);
+            mpz_add(diffs_x_gmp, diffs_x_gmp, diffs_y_gmp);
+            mpz_init_set_d(AtB_gmp, AtB_ptr[y]);
+            mpz_add(AtB_gmp, AtB_gmp, diffs_x_gmp);
+            AtB_ptr[y] = mpz_get_d(AtB_gmp);
         }
+        //cout << "idx " << correspIndex << endl;
+        //cout << "Ax[0] " << setw(13) << setprecision(0) << fixed << A_ptr_x[0] << endl;
+        //cout << "Ax[1] " << setw(13) << setprecision(0) << fixed << A_ptr_x[1] << endl;
+        //cout << "Ax[2] " << setw(13) << setprecision(0) << fixed << A_ptr_x[2] << endl;
+        //cout << "Ax[3] " << setw(13) << setprecision(0) << fixed << A_ptr_x[3] << endl;
+        //cout << "Ax[4] " << setw(13) << setprecision(0) << fixed << A_ptr_x[4] << endl;
+        //cout << "Ax[5] " << setw(13) << setprecision(0) << fixed << A_ptr_x[5] << endl;
+        //cout << "Ay[0] " << setw(13) << setprecision(0) << fixed << A_ptr_y[0] << endl;
+        //cout << "Ay[1] " << setw(13) << setprecision(0) << fixed << A_ptr_y[1] << endl;
+        //cout << "Ay[2] " << setw(13) << setprecision(0) << fixed << A_ptr_y[2] << endl;
+        //cout << "Ay[3] " << setw(13) << setprecision(0) << fixed << A_ptr_y[3] << endl;
+        //cout << "Ay[4] " << setw(13) << setprecision(0) << fixed << A_ptr_y[4] << endl;
+        //cout << "Ay[5] " << setw(13) << setprecision(0) << fixed << A_ptr_y[5] << endl;
+        //cout << "AtA[0][1]_tmpx_pre " << setw(17) << setprecision(0) << fixed << A_ptr_x[0] * A_ptr_x[1] << endl;
+        //cout << "AtA[0][1]_tmpy_pre " << setw(17) << setprecision(0) << fixed << A_ptr_y[0] * A_ptr_y[1] << endl;
+        //cout << "AtA[0][1]_tmpx " << setw(17) << setprecision(0) << fixed << trunc_lsm_f4(A_ptr_x[0] * A_ptr_x[1] / MUL) << endl;
+        //cout << "AtA[0][1]_tmpy " << setw(17) << setprecision(0) << fixed << trunc_lsm_f4(A_ptr_y[0] * A_ptr_y[1] / MUL) << endl;
+        //cout << "AtA[0][1] " << setw(17) << setprecision(0) << fixed << AtA.at<double>(0,1) << endl;
+        //cout << "diffs_x " << setw(17) << setprecision(0) << fixed << diffs_x_ptr[correspIndex] << endl;
+        //cout << "diffs_y " << setw(17) << setprecision(0) << fixed << diffs_y_ptr[correspIndex] << endl;
+        //cout << "AtB[0] " << setw(17) << setprecision(0) << fixed << AtB_ptr[0] << endl;
+        //exit(1);
     }
+    //exit(1);
 
     for(int y = 0; y < transformDim; y++)
         for(int x = y+1; x < transformDim; x++)
             AtA.at<double>(x,y) = AtA.at<double>(y,x);
 
+    //cout << "AtA[0][0] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(0,0) << endl;
+    //cout << "AtA[1][0] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(1,0) << endl;
+    //cout << "AtA[2][0] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(2,0) << endl;
+    //cout << "AtA[3][0] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(3,0) << endl;
+    //cout << "AtA[4][0] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(4,0) << endl;
+    //cout << "AtA[5][0] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(5,0) << endl;
+    //cout << "AtA[0][1] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(0,1) << endl;
+    //cout << "AtA[1][1] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(1,1) << endl;
+    //cout << "AtA[2][1] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(2,1) << endl;
+    //cout << "AtA[3][1] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(3,1) << endl;
+    //cout << "AtA[4][1] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(4,1) << endl;
+    //cout << "AtA[5][1] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(5,1) << endl;
+    //cout << "AtA[0][2] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(0,2) << endl;
+    //cout << "AtA[1][2] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(1,2) << endl;
+    //cout << "AtA[2][2] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(2,2) << endl;
+    //cout << "AtA[3][2] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(3,2) << endl;
+    //cout << "AtA[4][2] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(4,2) << endl;
+    //cout << "AtA[5][2] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(5,2) << endl;
+    //cout << "AtA[0][3] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(0,3) << endl;
+    //cout << "AtA[1][3] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(1,3) << endl;
+    //cout << "AtA[2][3] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(2,3) << endl;
+    //cout << "AtA[3][3] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(3,3) << endl;
+    //cout << "AtA[4][3] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(4,3) << endl;
+    //cout << "AtA[5][3] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(5,3) << endl;
+    //cout << "AtA[0][4] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(0,4) << endl;
+    //cout << "AtA[1][4] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(1,4) << endl;
+    //cout << "AtA[2][4] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(2,4) << endl;
+    //cout << "AtA[3][4] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(3,4) << endl;
+    //cout << "AtA[4][4] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(4,4) << endl;
+    //cout << "AtA[5][4] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(5,4) << endl;
+    //cout << "AtA[0][5] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(0,5) << endl;
+    //cout << "AtA[1][5] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(1,5) << endl;
+    //cout << "AtA[2][5] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(2,5) << endl;
+    //cout << "AtA[3][5] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(3,5) << endl;
+    //cout << "AtA[4][5] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(4,5) << endl;
+    //cout << "AtA[5][5] " << setw(13) << setprecision(0) << fixed << AtA.at<double>(5,5) << endl;
+    // cout << "AtB[0] " << setw(13) << setprecision(0) << fixed << AtB_ptr[0] << endl;
+    // cout << "AtB[1] " << setw(13) << setprecision(0) << fixed << AtB_ptr[1] << endl;
+    // cout << "AtB[2] " << setw(13) << setprecision(0) << fixed << AtB_ptr[2] << endl;
+    // cout << "AtB[3] " << setw(13) << setprecision(0) << fixed << AtB_ptr[3] << endl;
+    // cout << "AtB[4] " << setw(13) << setprecision(0) << fixed << AtB_ptr[4] << endl;
+    // cout << "AtB[5] " << setw(13) << setprecision(0) << fixed << AtB_ptr[5] << endl;
+    // exit(1);
 }
 
 static
@@ -763,20 +1062,20 @@ bool solveSystem(const Mat& AtA, const Mat& AtB, double detThreshold, Mat& x)
     {
         for(int m = 0; m < k; m++) //dkk = akk - lkm * lkm * dmm  = akk - lkm * umk 
         {
-            A.at<double>(k, k) = A.at<double>(k, k) - trunc((A.at<double>(k, m) * A.at<double>(m, k)) / MUL);
+            A.at<double>(k, k) = A.at<double>(k, k) - trunc6((A.at<double>(k, m) * A.at<double>(m, k)) / MUL);
         }
  
         for(int i = k+1; i < cols; i++)
         {
             for(int m = 0; m < k; m++) //uki = aki - lkm * umi
             {
-                 A.at<double>(k, i) = A.at<double>(k, i) - trunc((A.at<double>(m, i) * A.at<double>(k, m)) / MUL);
+                 A.at<double>(k, i) = A.at<double>(k, i) - trunc6((A.at<double>(m, i) * A.at<double>(k, m)) / MUL);
             }
             if(fabs(A.at<double>(k, k)) <= DBL_EPSILON)
                 return false;
          
             //lik = uki / dkk 
-            A.at<double>(i, k) = trunc(A.at<double>(k, i) * MUL / A.at<double>(k, k));
+            A.at<double>(i, k) = trunc6(A.at<double>(k, i) * MUL / A.at<double>(k, k));
         }
     }
 
@@ -784,7 +1083,7 @@ bool solveSystem(const Mat& AtA, const Mat& AtB, double detThreshold, Mat& x)
     {
         for(int k = 0; k < i; k++)
         {
-            B.at<double>(i, 0) = B.at<double>(i, 0) - trunc((A.at<double>(i, k) * B.at<double>(k, 0)) / MUL);
+            B.at<double>(i, 0) = B.at<double>(i, 0) - trunc6((A.at<double>(i, k) * B.at<double>(k, 0)) / MUL);
         }
     }
 
@@ -792,10 +1091,10 @@ bool solveSystem(const Mat& AtA, const Mat& AtB, double detThreshold, Mat& x)
     {
         if(fabs(A.at<double>(i, i)) <= DBL_EPSILON)
             return false;
-        B.at<double>(i, 0) = trunc(B.at<double>(i, 0) * MUL / A.at<double>(i, i));
+        B.at<double>(i, 0) = trunc6(B.at<double>(i, 0) * MUL / A.at<double>(i, i));
         for(int k = i+1; k < rows; k++)
         {
-            B.at<double>(i, 0) = B.at<double>(i, 0) - trunc((A.at<double>(k, i) * B.at<double>(k, 0)) / MUL);
+            B.at<double>(i, 0) = B.at<double>(i, 0) - trunc6((A.at<double>(k, i) * B.at<double>(k, 0)) / MUL);
         }
     }
 
@@ -804,12 +1103,12 @@ bool solveSystem(const Mat& AtA, const Mat& AtB, double detThreshold, Mat& x)
     //cout << "AtB " << AtB << endl;
     //cout << "A " << A << endl;
     //cout << "B " << B << endl;
-    for(int i = 0; i < rows; i++)
-    {
-            //x.at<double>(i, 0) = x.at<double>(i, 0) / MUL;
-            if(isnan(x.at<double>(i, 0)))
-                exit(1);
-    }
+    //for(int i = 0; i < rows; i++)
+    //{
+    //        //x.at<double>(i, 0) = x.at<double>(i, 0) / MUL;
+    //        if(isnan(x.at<double>(i, 0)))
+    //            exit(1);
+    //}
     //cout << "x " << x << endl;
     //cout << "A*x " << AtA*x << endl;
     //cout << "B " << AtB << endl;
@@ -856,10 +1155,10 @@ bool computeProjectiveMatrix(const Mat& ksi, Mat& Rt, double maxTranslation, dou
     //Mat R = Rt(Rect(0,0,3,3));
     Mat rvec = ksi.rowRange(0,3);
     double translation = norm(ksi.rowRange(3,6));
-    if(translation > trunc(maxTranslation*MUL))
+    if(translation > trunc1(maxTranslation*MUL))
         return false;
     double rotation = norm(rvec) * 180. / CV_PI;
-    if(rotation > trunc(maxRotation*MUL))
+    if(rotation > trunc1(maxRotation*MUL))
         return false;
  
 
@@ -902,8 +1201,8 @@ bool computeProjectiveMatrix(const Mat& ksi, Mat& Rt, double maxTranslation, dou
     //}
     //double c = x;
     //double s = y;
-    double c = trunc(cos(theta/MUL) * MUL);
-    double s = trunc(sin(theta/MUL) * MUL);
+    double c = trunc1(cos(theta/MUL) * MUL);
+    double s = trunc1(sin(theta/MUL) * MUL);
     //double c = cos(theta);
     //double s = sin(theta);
 
@@ -912,14 +1211,14 @@ bool computeProjectiveMatrix(const Mat& ksi, Mat& Rt, double maxTranslation, dou
     //double itheta = theta ? 1./theta : 0.;
     
     //r *= itheta;
-    r.x = trunc(r.x * MUL / theta);
-    r.y = trunc(r.y * MUL / theta);
-    r.z = trunc(r.z * MUL / theta);
+    r.x = trunc1(r.x * MUL / theta);
+    r.y = trunc1(r.y * MUL / theta);
+    r.z = trunc1(r.z * MUL / theta);
     
     //Matx33d rrt( r.x*r.x, r.x*r.y, r.x*r.z, r.x*r.y, r.y*r.y, r.y*r.z, r.x*r.z, r.y*r.z, r.z*r.z );
-    Matx33d rrt( trunc(r.x*r.x/MUL), trunc(r.x*r.y/MUL), trunc(r.x*r.z/MUL),
-                 trunc(r.x*r.y/MUL), trunc(r.y*r.y/MUL), trunc(r.y*r.z/MUL), 
-                 trunc(r.x*r.z/MUL), trunc(r.y*r.z/MUL), trunc(r.z*r.z/MUL) );
+    Matx33d rrt( trunc1(r.x*r.x/MUL), trunc1(r.x*r.y/MUL), trunc1(r.x*r.z/MUL),
+                 trunc1(r.x*r.y/MUL), trunc1(r.y*r.y/MUL), trunc1(r.y*r.z/MUL), 
+                 trunc1(r.x*r.z/MUL), trunc1(r.y*r.z/MUL), trunc1(r.z*r.z/MUL) );
     Matx33d r_x(    0, -r.z,  r.y,
                   r.z,    0, -r.x,
                  -r.y,  r.x,    0 );
@@ -934,15 +1233,15 @@ bool computeProjectiveMatrix(const Mat& ksi, Mat& Rt, double maxTranslation, dou
     //Rt.at<double>(0,2) = R_fix(0,2);
     //Rt.at<double>(1,2) = R_fix(1,2);
     //Rt.at<double>(2,2) = R_fix(2,2);
-    Rt.at<double>(0,0) = c + trunc(c1*rrt(0,0)/MUL) + trunc(s*r_x(0,0)/MUL);
-    Rt.at<double>(1,0) = trunc(c1*rrt(1,0)/MUL) + trunc(s*r_x(1,0)/MUL);
-    Rt.at<double>(2,0) = trunc(c1*rrt(2,0)/MUL) + trunc(s*r_x(2,0)/MUL);
-    Rt.at<double>(0,1) = trunc(c1*rrt(0,1)/MUL) + trunc(s*r_x(0,1)/MUL);
-    Rt.at<double>(1,1) = c + trunc(c1*rrt(1,1)/MUL) + trunc(s*r_x(1,1)/MUL);
-    Rt.at<double>(2,1) = trunc(c1*rrt(2,1)/MUL) + trunc(s*r_x(2,1)/MUL);
-    Rt.at<double>(0,2) = trunc(c1*rrt(0,2)/MUL) + trunc(s*r_x(0,2)/MUL);
-    Rt.at<double>(1,2) = trunc(c1*rrt(1,2)/MUL) + trunc(s*r_x(1,2)/MUL);
-    Rt.at<double>(2,2) = c + trunc(c1*rrt(2,2)/MUL) + trunc(s*r_x(2,2)/MUL);
+    Rt.at<double>(0,0) = c + trunc1(c1*rrt(0,0)/MUL) + trunc1(s*r_x(0,0)/MUL);
+    Rt.at<double>(1,0) = trunc1(c1*rrt(1,0)/MUL) + trunc1(s*r_x(1,0)/MUL);
+    Rt.at<double>(2,0) = trunc1(c1*rrt(2,0)/MUL) + trunc1(s*r_x(2,0)/MUL);
+    Rt.at<double>(0,1) = trunc1(c1*rrt(0,1)/MUL) + trunc1(s*r_x(0,1)/MUL);
+    Rt.at<double>(1,1) = c + trunc1(c1*rrt(1,1)/MUL) + trunc1(s*r_x(1,1)/MUL);
+    Rt.at<double>(2,1) = trunc1(c1*rrt(2,1)/MUL) + trunc1(s*r_x(2,1)/MUL);
+    Rt.at<double>(0,2) = trunc1(c1*rrt(0,2)/MUL) + trunc1(s*r_x(0,2)/MUL);
+    Rt.at<double>(1,2) = trunc1(c1*rrt(1,2)/MUL) + trunc1(s*r_x(1,2)/MUL);
+    Rt.at<double>(2,2) = c + trunc1(c1*rrt(2,2)/MUL) + trunc1(s*r_x(2,2)/MUL);
     //for(int i = 0; i < Rt.rows; i++)
     //{
     //    for(int j = 0; j < Rt.cols; j++)
@@ -1004,7 +1303,8 @@ void calcFeatureYEquationCoeffs(double* C, const Point3d& p3d, double fy)
     double invz  = 1. / p3d.z;
 
     C[0] = -fy - (fy * p3d.y * p3d.y * invz * invz);
-    C[1] = fy * p3d.x * p3d.x * invz * invz;
+    //C[1] = fy * p3d.x * p3d.x * invz * invz;
+    C[1] = fy * p3d.x * p3d.y * invz * invz;
     C[2] = fy * p3d.x * invz;
     C[3] = 0;
     C[4] = fy * invz;
@@ -1192,22 +1492,21 @@ bool Odometry::compute(Ptr<OdometryFrame>& srcFrame, Ptr<OdometryFrame>& dstFram
 
                #else
                // ============ Use Frank's ORB to do feature matching ============
+               // ============ Use Frank's ORB to do feature matching ============
                #define FAST_N                          9
-               #define FAST_threshold                  20
-               #define FAST_orientation_patch_size     7
-               #define FAST_scorethreshold             80
-               #define FAST_edgethreshold              31
-               #define keypoints_num                   500
-               #define MATCH_threshold                 30
-               #define DISPLAY                         false
-               #define FIXED                           true
-               #define TESTBENCH                       false
-               // Image pyramid
-               #define FAST_nlevels                    4
-               #define FAST_scaling                    2
+                #define FAST_threshold                  20
+                #define FAST_orientation_patch_size     7
+                #define FAST_scorethreshold             80
+                #define FAST_edgethreshold              31
+                #define keypoints_num                   500
+                #define MATCH_threshold                 30
+                #define DISPLAY                         false
+                #define FIXED                           true
+                #define DEBUG                           false
+                #define TESTBENCH                       false
                
                // cout << srcFrame->image.rows << " " << srcFrame->image.cols << endl;
-               MYORB orb(FAST_N, FAST_threshold, FAST_orientation_patch_size, FAST_scorethreshold, FAST_edgethreshold, keypoints_num, MATCH_threshold, FAST_nlevels, FAST_scaling, srcFrame->image, dstFrame->image, DISPLAY, FIXED, TESTBENCH);
+               MYORB orb(FAST_N, FAST_threshold, FAST_orientation_patch_size, FAST_scorethreshold, FAST_edgethreshold, keypoints_num, MATCH_threshold, srcFrame->image, dstFrame->image, srcFrame->image, dstFrame->image, DISPLAY, FIXED, DEBUG, TESTBENCH);
                std::vector<DMatch> matches = orb.Matching();
 
                // Delete matches without depth information

@@ -16,7 +16,8 @@ using namespace cv;
 #define MATCH_threshold                 30
 #define DISPLAY                         true
 #define FIXED                           true
-#define DEBUG                           false
+#define DEBUG                           true
+#define TESTBENCH                       true
 
 int main(int argc, char *argv[]){
     string img1_path = argv[1];
@@ -32,6 +33,6 @@ int main(int argc, char *argv[]){
     Mat depth2 = imread(depth2_path, 0);
 
     // Paramter sequence: 
-    MYORB orb(FAST_N, FAST_threshold, FAST_orientation_patch_size, FAST_scorethreshold, FAST_edgethreshold, keypoints_num, MATCH_threshold, img1, img2, depth1, depth2, DISPLAY, FIXED, DEBUG);
+    MYORB orb(FAST_N, FAST_threshold, FAST_orientation_patch_size, FAST_scorethreshold, FAST_edgethreshold, keypoints_num, MATCH_threshold, img1, img2, depth1, depth2, DISPLAY, FIXED, DEBUG, TESTBENCH);
     orb.Matching();
 }

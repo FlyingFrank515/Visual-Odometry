@@ -1,10 +1,27 @@
-python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_360/groundtruth.txt ../result/pose_fr1_360.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_360.txt
-#python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_desk/groundtruth.txt ../result/pose_fr1_desk.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_desk.txt
-#python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_desk2/groundtruth.txt ../result/pose_fr1_desk2.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_desk2.txt
-#python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_floor/groundtruth.txt ../result/pose_fr1_floor.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_floor.txt
-#python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_room/groundtruth.txt ../result/pose_fr1_room.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_room.txt
-#python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_rpy/groundtruth.txt ../result/pose_fr1_rpy.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_rpy.txt
-#python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_xyz/groundtruth.txt ../result/pose_fr1_xyz.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_xyz.txt
+#python ../evaluate_rpe.py ../../dataset/fr1_360/groundtruth.txt ./result/pose_fr1_360.txt --fixed_delta --delta_unit f --verbose > ./result/rpe_fr1_360.txt
+#python ../evaluate_rpe.py ../../dataset/fr1_desk/groundtruth.txt ./result/pose_fr1_desk.txt --fixed_delta --delta_unit f --verbose > ./result/rpe_fr1_desk.txt
+#python ../evaluate_rpe.py ../../dataset/fr1_desk2/groundtruth.txt ./result/pose_fr1_desk2.txt --fixed_delta --delta_unit f --verbose > ./result/rpe_fr1_desk2.txt
+#python ../evaluate_rpe.py ../../dataset/fr1_floor/groundtruth.txt ./result/pose_fr1_floor.txt --fixed_delta --delta_unit f --verbose > ./result/rpe_fr1_floor.txt
+#python ../evaluate_rpe.py ../../dataset/fr1_room/groundtruth.txt ./result/pose_fr1_room.txt --fixed_delta --delta_unit f --verbose > ./result/rpe_fr1_room.txt
+#python ../evaluate_rpe.py ../../dataset/fr1_rpy/groundtruth.txt ./result/pose_fr1_rpy.txt --fixed_delta --delta_unit f --verbose > ./result/rpe_fr1_rpy.txt
+#python ../evaluate_rpe.py ../../dataset/fr1_xyz/groundtruth.txt ./result/pose_fr1_xyz.txt --fixed_delta --delta_unit f --verbose > ./result/rpe_fr1_xyz.txt
+
+python3 ../evaluate_rpe.py ../../../../lyhuang/dataset/fr1_360/groundtruth.txt ../result/pose_fr1_360.txt --fixed_delta --scale 0.0002 --delta_unit f --verbose > ../result/rpe_fr1_360.txt
+python3 ../evaluate_rpe.py ../../../../lyhuang/dataset/fr1_desk/groundtruth.txt ../result/pose_fr1_desk.txt --fixed_delta --scale 0.0002 --delta_unit f --verbose > ../result/rpe_fr1_desk.txt
+python3 ../evaluate_rpe.py ../../../../lyhuang/dataset/fr1_desk2/groundtruth.txt ../result/pose_fr1_desk2.txt --fixed_delta --scale 0.0002 --delta_unit f --verbose > ../result/rpe_fr1_desk2.txt
+python3 ../evaluate_rpe.py ../../../../lyhuang/dataset/fr1_floor/groundtruth.txt ../result/pose_fr1_floor.txt --fixed_delta --scale 0.0002 --delta_unit f --verbose > ../result/rpe_fr1_floor.txt
+python3 ../evaluate_rpe.py ../../../../lyhuang/dataset/fr1_room/groundtruth.txt ../result/pose_fr1_room.txt --fixed_delta --scale 0.0002 --delta_unit f --verbose > ../result/rpe_fr1_room.txt
+python3 ../evaluate_rpe.py ../../../../lyhuang/dataset/fr1_rpy/groundtruth.txt ../result/pose_fr1_rpy.txt --fixed_delta --scale 0.0002 --delta_unit f --verbose > ../result/rpe_fr1_rpy.txt
+python3 ../evaluate_rpe.py ../../../../lyhuang/dataset/fr1_xyz/groundtruth.txt ../result/pose_fr1_xyz.txt --fixed_delta --scale 0.0002 --delta_unit f --verbose > ../result/rpe_fr1_xyz.txt
+
+# mine
+# python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_360/groundtruth.txt ../result/pose_fr1_360.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_360.txt
+# python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_desk/groundtruth.txt ../result/pose_fr1_desk.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_desk.txt
+# python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_desk2/groundtruth.txt ../result/pose_fr1_desk2.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_desk2.txt
+# python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_floor/groundtruth.txt ../result/pose_fr1_floor.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_floor.txt
+# python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_room/groundtruth.txt ../result/pose_fr1_room.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_room.txt
+# python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_rpy/groundtruth.txt ../result/pose_fr1_rpy.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_rpy.txt
+# python3 ../evaluate_rpe.py ../../../lyhuang/dataset/fr1_xyz/groundtruth.txt ../result/pose_fr1_xyz.txt --fixed_delta --delta_unit f --verbose > ../result/rpe_fr1_xyz.txt
 
 #python ../evaluate_rpe.py ../../dataset/fr2_360_hemisphere/groundtruth.txt ./result/pose_fr2_360_hemisphere.txt --fixed_delta --delta_unit f --verbose > ./result/rpe_fr2_360_hemisphere.txt
 #python ../evaluate_rpe.py ../../dataset/fr2_360_kidnap/groundtruth.txt ./result/pose_fr2_360_kidnap.txt --fixed_delta --delta_unit f --verbose > ./result/rpe_fr2_360_kidnap.txt

@@ -21,7 +21,7 @@ bool response_comparator(const KeyPoint& p1, const KeyPoint& p2)
     return 0;
 }
 
-MYORB::MYORB(int N, int t , int op, int st, int et, int kn, int mt, Mat img1, Mat img2, Mat depth1, Mat depth2, bool D = false, bool F = false, bool T = false){
+MYORB::MYORB(int N, int t , int op, int st, int et, int kn, int mt, Mat img1, Mat img2, Mat depth1, Mat depth2, bool D = false, bool F = false, bool T = false, bool TB = false){
     // parameters
     FAST_N = N;
     FAST_threshold = t;
@@ -35,13 +35,16 @@ MYORB::MYORB(int N, int t , int op, int st, int et, int kn, int mt, Mat img1, Ma
     DISPLAY = D;
     FIXED = F;
     DEBUG = T; 
+    TESTBENCH = TB;
 
     // outfile
-    outfile.open("../result/golden.txt", ios::out);
-    pixel_in1.open("../result/pixel_in.txt", ios::out);
-    pixel_in2.open("../result/pixel_in2.txt", ios::out);
-    depth_in1.open("../result/depth_in1.txt", ios::out);
-    depth_in2.open("../result/depth_in2.txt", ios::out);
+    if(TESTBENCH){
+        outfile.open("../result/golden.txt", ios::out);
+        pixel_in1.open("../result/pixel_in.txt", ios::out);
+        pixel_in2.open("../result/pixel_in2.txt", ios::out);
+        depth_in1.open("../result/depth_in1.txt", ios::out);
+        depth_in2.open("../result/depth_in2.txt", ios::out);
+    }
 
     // result
     if(DEBUG){
@@ -109,7 +112,7 @@ void MYORB::output_data_gen(){
 
 vector<DMatch> MYORB::Matching(){
     // generate the input data for verilog
-    input_data_gen();
+    if(TESTBENCH) input_data_gen();
 
     
     // FAST algorithm to produce keypoint lists
@@ -146,6 +149,18 @@ vector<DMatch> MYORB::Matching(){
             }
             result_key << endl;
         }
+
+        result_key << endl;
+
+        for (int i = 0; i < keylist_2.size(); i++){
+            result_key << hex << setw(3) << setfill('0') <<  int(keylist_2[i].pt.x)  << " " << setw(3) << setfill('0') << int(keylist_2[i].pt.y) << " ";
+            result_key << hex << setw(2) << int(keylist_2[i].response) << " ";
+            for (int j = 0; j < 32; j++){
+                result_key << hex << setw(2) << setfill('0') << int(descriptor_2.at<uchar>(i, 31-j));
+            }
+            result_key << endl;
+        }
+        
     }
 
 
@@ -162,9 +177,9 @@ vector<DMatch> MYORB::Matching(){
     // cout << "Optimize matches..." << endl;
     MATCH_optimization();
 
-    output_data_gen();
+    if(TESTBENCH) output_data_gen();
     
-    DISPLAY_matches();
+    if(DISPLAY) DISPLAY_matches();
 
     return good_matches;
 
@@ -578,7 +593,7 @@ void MYORB::MATCH_BFmatcher(){
             // ----
             // read << "comparing (" << keylist_1[idx1].pt.x << ", " << keylist_1[idx1].pt.y <<  ")" << " hamming = " << dec << hamming_distance_counter << " ";
             // ----
-            if(hamming_distance_counter <= min_value){
+            if(hamming_distance_counter < min_value){
                 min_index = idx1;
                 min_value = hamming_distance_counter;
                 // read << "replaced" << endl;

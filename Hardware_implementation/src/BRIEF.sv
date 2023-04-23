@@ -38,34 +38,37 @@ module BRIEF
     logic signed [7:0] x_b [0:255];
     logic signed [7:0] y_b [0:255];
 
-    logic signed [7:0] x_a_cos_w [0:255], x_a_cos_r [0:255];
-    logic signed [7:0] x_a_sin_w [0:255], x_a_sin_r [0:255];
-    logic signed [7:0] y_a_cos_w [0:255], y_a_cos_r [0:255];
-    logic signed [7:0] y_a_sin_w [0:255], y_a_sin_r [0:255];
-    logic signed [7:0] x_b_cos_w [0:255], x_b_cos_r [0:255];
-    logic signed [7:0] x_b_sin_w [0:255], x_b_sin_r [0:255];
-    logic signed [7:0] y_b_cos_w [0:255], y_b_cos_r [0:255];
-    logic signed [7:0] y_b_sin_w [0:255], y_b_sin_r [0:255];
+    logic signed [17:0] x_a_cos_w [0:255], x_a_cos_r [0:255];
+    logic signed [17:0] x_a_sin_w [0:255], x_a_sin_r [0:255];
+    logic signed [17:0] y_a_cos_w [0:255], y_a_cos_r [0:255];
+    logic signed [17:0] y_a_sin_w [0:255], y_a_sin_r [0:255];
+    logic signed [17:0] x_b_cos_w [0:255], x_b_cos_r [0:255];
+    logic signed [17:0] x_b_sin_w [0:255], x_b_sin_r [0:255];
+    logic signed [17:0] y_b_cos_w [0:255], y_b_cos_r [0:255];
+    logic signed [17:0] y_b_sin_w [0:255], y_b_sin_r [0:255];
 
-    logic signed [19:0] x_a_cos [0:255];
-    logic signed [19:0] x_a_sin [0:255];
-    logic signed [19:0] y_a_cos [0:255];
-    logic signed [19:0] y_a_sin [0:255];
-    logic signed [19:0] x_b_cos [0:255];
-    logic signed [19:0] x_b_sin [0:255];
-    logic signed [19:0] y_b_cos [0:255];
-    logic signed [19:0] y_b_sin [0:255];
+    // logic signed [19:0] x_a_cos [0:255];
+    // logic signed [19:0] x_a_sin [0:255];
+    // logic signed [19:0] y_a_cos [0:255];
+    // logic signed [19:0] y_a_sin [0:255];
+    // logic signed [19:0] x_b_cos [0:255];
+    // logic signed [19:0] x_b_sin [0:255];
+    // logic signed [19:0] y_b_cos [0:255];
+    // logic signed [19:0] y_b_sin [0:255];
 
     // logic [9:0] coor1_x_w, coor1_x_r;
     // logic [9:0] coor1_y_w, coor1_y_r;
     logic       flag1_w, flag1_r;
 
-    logic signed [7:0] x1_w [0:255], x1_r[0:255];
-    logic signed [7:0] x2_w [0:255], x2_r[0:255];
-    logic signed [7:0] y1_w [0:255], y1_r[0:255];
-    logic signed [7:0] y2_w [0:255], y2_r[0:255];
+    logic signed [8:0] x1_w [0:255], x1_r[0:255];
+    logic signed [8:0] x2_w [0:255], x2_r[0:255];
+    logic signed [8:0] y1_w [0:255], y1_r[0:255];
+    logic signed [8:0] y2_w [0:255], y2_r[0:255];
 
-    logic signed [8:0] x1_mid [0:255], x2_mid [0:255], y1_mid [0:255], y2_mid [0:255];
+    logic signed [18:0] x1_mid [0:255], x2_mid [0:255], y1_mid [0:255], y2_mid [0:255];
+    logic signed [7:0] x1_shift [0:255], x2_shift [0:255], y1_shift [0:255], y2_shift [0:255];
+    logic signed [7:0] x1_search [0:255], x2_search [0:255], y1_search [0:255], y2_search [0:255];
+    logic signed [8:0] x1_round [0:255], x2_round [0:255], y1_round [0:255], y2_round [0:255];
     logic [7:0] comp1 [0:255], comp2 [0:255];
 
     // logic [9:0] coor2_x_w, coor2_x_r;
@@ -87,45 +90,6 @@ module BRIEF
     logic [9:0] depth3_w, depth3_r;
 
     logic       flag3_w, flag3_r;
-
-    // ========== Connection ==========
-    // always_comb begin
-    //     for(i = 0; i < 31; i = i+1) begin
-    //         pixel[i][0] = i_col30[i*8+7 -: 8];
-    //         pixel[i][1] = i_col29[i*8+7 -: 8];
-    //         pixel[i][2] = i_col28[i*8+7 -: 8];
-    //         pixel[i][3] = i_col27[i*8+7 -: 8];
-    //         pixel[i][4] = i_col26[i*8+7 -: 8];
-    //         pixel[i][5] = i_col25[i*8+7 -: 8];
-    //         pixel[i][6] = i_col24[i*8+7 -: 8];
-    //         pixel[i][7] = i_col23[i*8+7 -: 8];
-    //         pixel[i][8] = i_col22[i*8+7 -: 8];
-    //         pixel[i][9] = i_col21[i*8+7 -: 8];
-    //         pixel[i][10] = i_col20[i*8+7 -: 8];
-    //         pixel[i][11] = i_col19[i*8+7 -: 8];
-    //         pixel[i][12] = i_col18[i*8+7 -: 8];
-    //         pixel[i][13] = i_col17[i*8+7 -: 8];
-    //         pixel[i][14] = i_col16[i*8+7 -: 8];
-    //         pixel[i][15] = i_col15[i*8+7 -: 8];
-    //         pixel[i][16] = i_col14[i*8+7 -: 8];
-    //         pixel[i][17] = i_col13[i*8+7 -: 8];
-    //         pixel[i][18] = i_col12[i*8+7 -: 8];
-    //         pixel[i][19] = i_col11[i*8+7 -: 8];
-    //         pixel[i][20] = i_col10[i*8+7 -: 8];
-    //         pixel[i][21] = i_col9[i*8+7 -: 8];
-    //         pixel[i][22] = i_col8[i*8+7 -: 8];
-    //         pixel[i][23] = i_col7[i*8+7 -: 8];
-    //         pixel[i][24] = i_col6[i*8+7 -: 8];
-    //         pixel[i][25] = i_col5[i*8+7 -: 8];
-    //         pixel[i][26] = i_col4[i*8+7 -: 8];
-    //         pixel[i][27] = i_col3[i*8+7 -: 8];
-    //         pixel[i][28] = i_col2[i*8+7 -: 8];
-    //         pixel[i][29] = i_col1[i*8+7 -: 8];
-    //         pixel[i][30] = i_col0[i*8+7 -: 8];
-    //     end
-    //     center = pixel[15][15];
-    // end
-
 
     generate
         for (idx = 0; idx < 256; idx = idx + 1) begin
@@ -152,36 +116,52 @@ module BRIEF
     always_comb begin
         for(int i = 0; i < 256; i = i+1) begin
 
-            x_a_cos[i] = (x_a[i]*i_cos);
-            x_a_sin[i] = (x_a[i]*i_sin);
-            y_a_cos[i] = (y_a[i]*i_cos);
-            y_a_sin[i] = (y_a[i]*i_sin);
-            x_b_cos[i] = (x_b[i]*i_cos);
-            x_b_sin[i] = (x_b[i]*i_sin);
-            y_b_cos[i] = (y_b[i]*i_cos);
-            y_b_sin[i] = (y_b[i]*i_sin);
+            x_a_cos_w[i] = (x_a[i]*i_cos);
+            x_a_sin_w[i] = (x_a[i]*i_sin);
+            y_a_cos_w[i] = (y_a[i]*i_cos);
+            y_a_sin_w[i] = (y_a[i]*i_sin);
+            x_b_cos_w[i] = (x_b[i]*i_cos);
+            x_b_sin_w[i] = (x_b[i]*i_sin);
+            y_b_cos_w[i] = (y_b[i]*i_cos);
+            y_b_sin_w[i] = (y_b[i]*i_sin);
 
-            x_a_cos_w[i] = x_a_cos[i][17] ? (x_a_cos[i][17:10] + 1) : x_a_cos[i][17:10];
-            x_a_sin_w[i] = x_a_sin[i][17] ? (x_a_sin[i][17:10] + 1) : x_a_sin[i][17:10];
-            y_a_cos_w[i] = y_a_cos[i][17] ? (y_a_cos[i][17:10] + 1) : y_a_cos[i][17:10];
-            y_a_sin_w[i] = y_a_sin[i][17] ? (y_a_sin[i][17:10] + 1) : y_a_sin[i][17:10];
-            x_b_cos_w[i] = x_b_cos[i][17] ? (x_b_cos[i][17:10] + 1) : x_b_cos[i][17:10];
-            x_b_sin_w[i] = x_b_sin[i][17] ? (x_b_sin[i][17:10] + 1) : x_b_sin[i][17:10];
-            y_b_cos_w[i] = y_b_cos[i][17] ? (y_b_cos[i][17:10] + 1) : y_b_cos[i][17:10];
-            y_b_sin_w[i] = y_b_sin[i][17] ? (y_b_sin[i][17:10] + 1) : y_b_sin[i][17:10];
+            // x_a_cos_w[i] = x_a_cos[i][17] ? (x_a_cos[i][17:10] + 1) : x_a_cos[i][17:10];
+            // x_a_sin_w[i] = x_a_sin[i][17] ? (x_a_sin[i][17:10] + 1) : x_a_sin[i][17:10];
+            // y_a_cos_w[i] = y_a_cos[i][17] ? (y_a_cos[i][17:10] + 1) : y_a_cos[i][17:10];
+            // y_a_sin_w[i] = y_a_sin[i][17] ? (y_a_sin[i][17:10] + 1) : y_a_sin[i][17:10];
+            // x_b_cos_w[i] = x_b_cos[i][17] ? (x_b_cos[i][17:10] + 1) : x_b_cos[i][17:10];
+            // x_b_sin_w[i] = x_b_sin[i][17] ? (x_b_sin[i][17:10] + 1) : x_b_sin[i][17:10];
+            // y_b_cos_w[i] = y_b_cos[i][17] ? (y_b_cos[i][17:10] + 1) : y_b_cos[i][17:10];
+            // y_b_sin_w[i] = y_b_sin[i][17] ? (y_b_sin[i][17:10] + 1) : y_b_sin[i][17:10];
 
-            x1_mid[i] = x_a_cos_r[i] - y_a_sin_r[i] + $signed(8'd15);
-            y1_mid[i] = x_a_sin_r[i] + y_a_cos_r[i] + $signed(8'd15);
-            x2_mid[i] = x_b_cos_r[i] - y_b_sin_r[i] + $signed(8'd15);
-            y2_mid[i] = x_b_sin_r[i] + y_b_cos_r[i] + $signed(8'd15);
+            x1_mid[i] = x_a_cos_r[i] - y_a_sin_r[i];
+            y1_mid[i] = x_a_sin_r[i] + y_a_cos_r[i];
+            x2_mid[i] = x_b_cos_r[i] - y_b_sin_r[i];
+            y2_mid[i] = x_b_sin_r[i] + y_b_cos_r[i];
 
-            x1_w[i] = (x1_mid[i] > 30) ? 30 : (x1_mid[i][8] ? 0 : x1_mid[i]);
-            y1_w[i] = (y1_mid[i] > 30) ? 30 : (y1_mid[i][8] ? 0 : y1_mid[i]);
-            x2_w[i] = (x2_mid[i] > 30) ? 30 : (x2_mid[i][8] ? 0 : x2_mid[i]);
-            y2_w[i] = (y2_mid[i] > 30) ? 30 : (y2_mid[i][8] ? 0 : y2_mid[i]);
+            x1_w[i] = x1_mid[i][18] ? (x1_mid[i][18:10] + (x1_mid[i][9] && |x1_mid[i][8:0])) : (x1_mid[i][18:10] + x1_mid[i][9]);
+            y1_w[i] = y1_mid[i][18] ? (y1_mid[i][18:10] + (y1_mid[i][9] && |y1_mid[i][8:0])) : (y1_mid[i][18:10] + y1_mid[i][9]);
+            x2_w[i] = x2_mid[i][18] ? (x2_mid[i][18:10] + (x2_mid[i][9] && |x2_mid[i][8:0])) : (x2_mid[i][18:10] + x2_mid[i][9]);
+            y2_w[i] = y2_mid[i][18] ? (y2_mid[i][18:10] + (y2_mid[i][9] && |y2_mid[i][8:0])) : (y2_mid[i][18:10] + y2_mid[i][9]);
+            
 
-            comp1[i] = i_window[y1_r[i]][x1_r[i]];
-            comp2[i] = i_window[y2_r[i]][x2_r[i]];
+            // x1_mid[i] = x_a_cos_r[i] - y_a_sin_r[i] + $signed(8'd15);
+            // y1_mid[i] = x_a_sin_r[i] + y_a_cos_r[i] + $signed(8'd15);
+            // x2_mid[i] = x_b_cos_r[i] - y_b_sin_r[i] + $signed(8'd15);
+            // y2_mid[i] = x_b_sin_r[i] + y_b_cos_r[i] + $signed(8'd15);
+
+            x1_shift[i] = x1_r[i] + $signed(8'd15);
+            y1_shift[i] = y1_r[i] + $signed(8'd15);
+            x2_shift[i] = x2_r[i] + $signed(8'd15);
+            y2_shift[i] = y2_r[i] + $signed(8'd15);
+
+            x1_search[i] = (x1_shift[i] > 30) ? 30 : (x1_shift[i][7] ? 0 : x1_shift[i]);
+            y1_search[i] = (y1_shift[i] > 30) ? 30 : (y1_shift[i][7] ? 0 : y1_shift[i]);
+            x2_search[i] = (x2_shift[i] > 30) ? 30 : (x2_shift[i][7] ? 0 : x2_shift[i]);
+            y2_search[i] = (y2_shift[i] > 30) ? 30 : (y2_shift[i][7] ? 0 : y2_shift[i]);
+
+            comp1[i] = i_window[y1_search[i]][x1_search[i]];
+            comp2[i] = i_window[y2_search[i]][x2_search[i]];
 
             descriptor_w[i] = (flag2_r) ? comp1[i] > comp2[i] : 0;
         end

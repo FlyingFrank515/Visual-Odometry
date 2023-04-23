@@ -16,7 +16,7 @@ module CHIP
     input           i_valid,
     input [9:0]     i_depth,
 
-    // // debug
+    // debug
     // output [9:0]    inspect_coordinate_X,
     // output [9:0]    inspect_coordinate_Y,
     // output [9:0]    inspect_depth,

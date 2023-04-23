@@ -34,35 +34,29 @@ class MYORB {
         int                 keypoints_num;
         int                 MATCH_threshold;
 
-        // Image pyramid
-        int                 FAST_nlevels;
-        float               FAST_scaling;
-        vector<Mat>         img_pyramid_1;
-        vector<Mat>         img_pyramid_2;
-
         // options
         bool                DISPLAY;
         bool                FIXED;
-        bool                TESTBENCH; 
+        bool                DEBUG; 
+        bool                TESTBENCH;
 
         // output to file
-        string              outfile_name;
         fstream             outfile;
+        fstream             pixel_in1;
+        fstream             pixel_in2;
+        fstream             depth_in1;
+        fstream             depth_in2;
 
         // FAST testbench
         fstream             result_test;
-        fstream             result_NMS;
-        fstream             result_coordinates;
-        fstream             result_mx;
-        fstream             result_my;
-        fstream             result_score;
+        fstream             result_key;
         fstream             read;
-        fstream             pixel_in;
-        fstream             pixel_smooth;
+
         
         
         // img1
         Mat                 img_1;
+        Mat                 depth_1;
         Mat                 smth_1;
         vector<KeyPoint>    keylist_1;
         Mat                 descriptor_1; 
@@ -72,6 +66,7 @@ class MYORB {
 
         // img2
         Mat                 img_2;
+        Mat                 depth_2;
         Mat                 smth_2;
         vector<KeyPoint>    keylist_2;
         Mat                 descriptor_2; 
@@ -84,7 +79,7 @@ class MYORB {
     
     public:
         // Constructor
-        MYORB(int, int, int, int, int, int, int, int, float, Mat, Mat, bool, bool, bool);
+        MYORB(int, int, int, int, int, int, int, Mat, Mat, Mat, Mat, bool, bool, bool, bool);
 
         // Called by the main program
         vector<DMatch>     Matching();
@@ -93,15 +88,17 @@ class MYORB {
         void    DISPLAY_image(Mat&, string);
         void    DISPLAY_image_with_keypoints(Mat&, vector<KeyPoint>&, string);
         void    DISPLAY_matches();
+        void    input_data_gen();
+        void    output_data_gen();
 
         // FAST
-        void    FAST_build_pyramid();
         void    FAST_detector(int);
         int     FAST_consecutive1_finder(vector<int>&);
         void    FAST_keypoint_output(vector<KeyPoint>&);
+        void    FAST_sort();
 
         // BRIEF
-        void    BRIEF_pattern_LUT(int, float, int, int, int&, int&, int&, int&);
+        void    BRIEF_pattern_LUT(int, float, int, int, int&, int&, int&, int&, bool);
         void    BRIEF_descriptor(int);
         bool    BRIEF_searcher(int, int, Mat&);
         void    BRIEF_smoothing();

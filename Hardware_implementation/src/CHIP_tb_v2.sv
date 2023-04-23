@@ -54,7 +54,7 @@ module CHIP_tb;
                 (golden_dst_depth == o_dst_depth);
     endfunction
     
-    integer i, j, f1, f2, err, index;
+    integer i, j, f1, f2, f3, err, index;
     // genvar s;
     logic clk, rst_n;
 
@@ -76,6 +76,14 @@ module CHIP_tb;
     logic [9:0] golden_pos, start_pos, end_pos;
     logic       check_again, same, reach_end, checking;
     
+    // logic [9:0]    inspect_coordinate_X;
+    // logic [9:0]    inspect_coordinate_Y;
+    // logic [9:0]    inspect_depth;
+    // logic [7:0]    inspect_score;
+    // logic          inspect_flag;
+    // logic [255:0]  inspect_descriptor;
+    // logic          inspect_start;
+    // logic          inspect_end;
 
     logic start;
     logic [7:0] pixel;
@@ -502,6 +510,8 @@ module CHIP_tb;
 
     initial begin
         f1 = $fopen("../result/check_log.txt","w");
+        f2 = $fopen("../result/read.txt","w");
+        f3 = $fopen("../result/corres.txt","w");
         clk         = 1'b1;
         rst_n       = 1'b1;  
         i           = 0;
@@ -578,10 +588,10 @@ module CHIP_tb;
         if(index == 3) begin
             for(int j = golden_pos; j < end_pos; j = j+1) begin
                 $display("Error(lack): (%h, %h, %h) <---> (%h, %h, %h)", golden_src_coor_x[j], golden_src_coor_y[j], golden_src_depth[j], golden_dst_coor_x[j], golden_dst_coor_y[j], golden_dst_depth[j]);
-                $fwrite(f1, "Error(lack): (%h, %h, %h) <---> (%h, %h, %h)", golden_src_coor_x[j], golden_src_coor_y[j], golden_src_depth[j], golden_dst_coor_x[j], golden_dst_coor_y[j], golden_dst_depth[j]);
+                $fwrite(f1, "Error(lack): (%h, %h, %h) <---> (%h, %h, %h)\n", golden_src_coor_x[j], golden_src_coor_y[j], golden_src_depth[j], golden_dst_coor_x[j], golden_dst_coor_y[j], golden_dst_depth[j]);
             end
             $display("end of checking");
-            $fwrite(f1, "end of checking");
+            $fwrite(f1, "end of checking\n");
             $finish;
         end 
 
@@ -591,7 +601,7 @@ module CHIP_tb;
                 if(check_again == 0) begin
                     if(same) begin
                         $display("pass");
-                        $fwrite(f1, "pass");
+                        $fwrite(f1, "pass\n");
                         golden_pos = golden_pos + 1;
                         break;
                     end
@@ -608,7 +618,7 @@ module CHIP_tb;
                 else begin
                     if(golden_pos == end_pos) begin // extra
                         $display("Error(extra): (%h, %h, %h) <---> (%h, %h, %h)", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
-                        $fwrite(f1, "Error(extra): (%h, %h, %h) <---> (%h, %h, %h)", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
+                        $fwrite(f1, "Error(extra): (%h, %h, %h) <---> (%h, %h, %h)\n", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
                         golden_pos = start_pos;
                         check_again = 0;
                         break;
@@ -616,10 +626,10 @@ module CHIP_tb;
                     else if(same) begin // lack
                         for(int j = start_pos; j < golden_pos; j = j+1) begin
                             $display("Error(lack): (%h, %h, %h) <---> (%h, %h, %h)", golden_src_coor_x[j], golden_src_coor_y[j], golden_src_depth[j], golden_dst_coor_x[j], golden_dst_coor_y[j], golden_dst_depth[j]);
-                            $fwrite(f1, "Error(lack): (%h, %h, %h) <---> (%h, %h, %h)", golden_src_coor_x[j], golden_src_coor_y[j], golden_src_depth[j], golden_dst_coor_x[j], golden_dst_coor_y[j], golden_dst_depth[j]);
+                            $fwrite(f1, "Error(lack): (%h, %h, %h) <---> (%h, %h, %h)\n", golden_src_coor_x[j], golden_src_coor_y[j], golden_src_depth[j], golden_dst_coor_x[j], golden_dst_coor_y[j], golden_dst_depth[j]);
                         end
                         $display("pass");
-                        $fwrite(f1, "pass");
+                        $fwrite(f1, "pass\n");
                         golden_pos = golden_pos + 1;
                         check_again = 0;
                         break;
@@ -633,23 +643,23 @@ module CHIP_tb;
         end
     end
 
-    // always@(posedge clk) begin
-    //     // if(inspect_flag) begin
-    //     //     $display("keypoint found: %h %h %h %h %h \n", inspect_coordinate_X, inspect_coordinate_Y, inspect_score, inspect_descriptor, inspect_depth);
-    //     //     $fwrite(f2, "%h %h %h %h %h \n", inspect_coordinate_X, inspect_coordinate_Y, inspect_score, inspect_descriptor, inspect_depth);
-    //     // end
-    //     if(o_frame_start) begin
-    //         $display("frame start");
-    //         $fwrite(f1, "frame start\n");
-    //     end
-    //     if(o_frame_end) begin
-    //         $display("frame end");
-    //         $fwrite(f1, "frame end\n");
-    //     end
-    //     if(o_valid) begin
-    //         $display("(%h, %h, %h) <---> (%h, %h, %h)", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
-    //         $fwrite(f1, "(%h, %h, %h) <---> (%h, %h, %h)\n", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
-    //     end
-    // end
+    always@(posedge clk) begin
+        // if(inspect_flag) begin
+        //     $display("keypoint found: %h %h %h %h %h \n", inspect_coordinate_X, inspect_coordinate_Y, inspect_score, inspect_descriptor, inspect_depth);
+        //     $fwrite(f2, "%h %h %h %h %h \n", inspect_coordinate_X, inspect_coordinate_Y, inspect_score, inspect_descriptor, inspect_depth);
+        // end
+        if(o_frame_start) begin
+            $display("frame start");
+            $fwrite(f3, "frame start\n");
+        end
+        if(o_frame_end) begin
+            $display("frame end");
+            $fwrite(f3, "frame end\n");
+        end
+        if(o_valid) begin
+            $display("(%h, %h, %h) <---> (%h, %h, %h)", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
+            $fwrite(f3, "(%h, %h, %h) <---> (%h, %h, %h)\n", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
+        end
+    end
 
 endmodule

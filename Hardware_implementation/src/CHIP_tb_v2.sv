@@ -9,6 +9,8 @@
     `include "sram_v2/sram_dp_NMS.v"
     `include "sram_v2/sram_dp_sincos.v"
     `include "sram_v2/sram_BRIEF_lb.v"
+    `include "sram_v2/sram_dp_desc.v"
+    `include "sram_v2/sram_dp_point.v"
 `endif
 
 // `ifdef SYN
@@ -145,6 +147,26 @@ module CHIP_tb;
     logic [9:0]    bus4_sram_AA [0:29];
     logic [9:0]    bus4_sram_AB [0:29];
 
+    logic [31:0]     bus5_sram_QA [0:7];
+    logic          bus5_sram_WENA [0:7];
+    logic [31:0]    bus5_sram_DA [0:7];
+    logic [8:0]    bus5_sram_AA [0:7];
+
+    logic [31:0]     bus6_sram_QA [0:7];
+    logic          bus6_sram_WENA [0:7];
+    logic [31:0]    bus6_sram_DA [0:7];
+    logic [8:0]    bus6_sram_AA [0:7];
+
+    logic [29:0]     bus7_sram_QA;
+    logic          bus7_sram_WENA;
+    logic [29:0]    bus7_sram_DA;
+    logic [8:0]    bus7_sram_AA;
+
+    logic [29:0]     bus8_sram_QA;
+    logic          bus8_sram_WENA;
+    logic [29:0]    bus8_sram_DA;
+    logic [8:0]    bus8_sram_AA;
+
     CHIP
     #(
         .WIDTH(12'd640),
@@ -214,7 +236,27 @@ module CHIP_tb;
         .BRIEF_lb_sram_DA(bus4_sram_DA),
         .BRIEF_lb_sram_DB(bus4_sram_DB),
         .BRIEF_lb_sram_AA(bus4_sram_AA),
-        .BRIEF_lb_sram_AB(bus4_sram_AB)
+        .BRIEF_lb_sram_AB(bus4_sram_AB),
+
+        .MATCH_mem1_point_QA(bus7_sram_QA),
+        .MATCH_mem1_point_WENA(bus7_sram_WENA),
+        .MATCH_mem1_point_DA(bus7_sram_DA),
+        .MATCH_mem1_point_AA(bus7_sram_AA),
+
+        .MATCH_mem2_point_QA(bus8_sram_QA),
+        .MATCH_mem2_point_WENA(bus8_sram_WENA),
+        .MATCH_mem2_point_DA(bus8_sram_DA),
+        .MATCH_mem2_point_AA(bus8_sram_AA),
+
+        .MATCH_mem1_desc_QA(bus5_sram_QA),
+        .MATCH_mem1_desc_WENA(bus5_sram_WENA),
+        .MATCH_mem1_desc_DA(bus5_sram_DA),
+        .MATCH_mem1_desc_AA(bus5_sram_AA),
+
+        .MATCH_mem2_desc_QA(bus6_sram_QA),
+        .MATCH_mem2_desc_WENA(bus6_sram_WENA),
+        .MATCH_mem2_desc_DA(bus6_sram_DA),
+        .MATCH_mem2_desc_AA(bus6_sram_AA)
     );
     generate
         for(genvar s = 0; s < 6; s = s+1) begin
@@ -484,6 +526,270 @@ module CHIP_tb;
         end
     endgenerate
 
+    generate
+        for(genvar s = 0; s < 8; s = s+1) begin
+            sram_dp_desc uut5 (
+                // clock signal
+                .CLKA(clk),
+                .CLKB(clk),
+
+                // sync clock (active high)
+                .STOVA(1'b1),
+                .STOVB(1'b1),
+
+                // setting
+                // In the event of a write/read collision, if COLLDISN is disabled, then the write is guaranteed and
+                // the read data is undefined. However, if COLLDISN is enabled, then the write is not guaranteed
+                // if the read row address and write row address match.
+                .COLLDISN(1'b0),
+
+                // address
+                .AA(bus5_sram_AA[s]),
+                .AB(8'd0),
+                // data 
+                .DA(bus5_sram_DA[s]),
+                .DB(31'd0),
+
+                // chip enable (active low, 0 for ON and 1 for OFF)
+                // .CENA(1'b1),
+                // .CENB(1'b1),
+                .CENA(1'b0),
+                .CENB(1'b1),
+
+                // write enable (active low, 0 for WRITE and 1 for READ)
+                .WENA(bus5_sram_WENA[s]),
+                .WENB(1'b1),
+
+                // data output bus
+                .QA(bus5_sram_QA[s]),
+                .QB(),
+
+                // test mode (active low, 1 for regular operation)
+                .TENA(1'b1),
+                .TENB(1'b1),
+
+                // bypass
+                .BENA(1'b1),
+                .BENB(1'b1),
+
+                // useless
+                .EMAA(3'd0),
+                .EMAB(3'd0),
+                .EMAWA(2'd0),
+                .EMAWB(2'd0),
+                .EMASA(1'b0),
+                .EMASB(1'b0),
+                .TCENA(1'b1),
+                .TWENA(1'b1),
+                .TAA(8'd0),
+                .TDA(8'd0),
+                .TQA(8'd0),
+                .TCENB(1'b1),
+                .TWENB(1'b1),
+                .TAB(8'd0),
+                .TDB(8'd0),
+                .TQB(8'd0),
+                .RET1N(1'b1)
+            );
+        end
+    endgenerate
+
+    generate
+        for(genvar s = 0; s < 8; s = s+1) begin
+            sram_dp_desc uut6 (
+                // clock signal
+                .CLKA(clk),
+                .CLKB(clk),
+
+                // sync clock (active high)
+                .STOVA(1'b1),
+                .STOVB(1'b1),
+
+                // setting
+                // In the event of a write/read collision, if COLLDISN is disabled, then the write is guaranteed and
+                // the read data is undefined. However, if COLLDISN is enabled, then the write is not guaranteed
+                // if the read row address and write row address match.
+                .COLLDISN(1'b0),
+
+                // address
+                .AA(bus6_sram_AA[s]),
+                .AB(8'd0),
+                // data 
+                .DA(bus6_sram_DA[s]),
+                .DB(31'd0),
+
+                // chip enable (active low, 0 for ON and 1 for OFF)
+                // .CENA(1'b1),
+                // .CENB(1'b1),
+                .CENA(1'b0),
+                .CENB(1'b1),
+
+                // write enable (active low, 0 for WRITE and 1 for READ)
+                .WENA(bus6_sram_WENA[s]),
+                .WENB(1'b1),
+
+                // data output bus
+                .QA(bus6_sram_QA[s]),
+                .QB(),
+
+                // test mode (active low, 1 for regular operation)
+                .TENA(1'b1),
+                .TENB(1'b1),
+
+                // bypass
+                .BENA(1'b1),
+                .BENB(1'b1),
+
+                // useless
+                .EMAA(3'd0),
+                .EMAB(3'd0),
+                .EMAWA(2'd0),
+                .EMAWB(2'd0),
+                .EMASA(1'b0),
+                .EMASB(1'b0),
+                .TCENA(1'b1),
+                .TWENA(1'b1),
+                .TAA(8'd0),
+                .TDA(8'd0),
+                .TQA(8'd0),
+                .TCENB(1'b1),
+                .TWENB(1'b1),
+                .TAB(8'd0),
+                .TDB(8'd0),
+                .TQB(8'd0),
+                .RET1N(1'b1)
+            );
+        end
+    endgenerate
+
+    sram_dp_point uut7 (
+        // clock signal
+        .CLKA(clk),
+        .CLKB(clk),
+
+        // sync clock (active high)
+        .STOVA(1'b1),
+        .STOVB(1'b1),
+
+        // setting
+        // In the event of a write/read collision, if COLLDISN is disabled, then the write is guaranteed and
+        // the read data is undefined. However, if COLLDISN is enabled, then the write is not guaranteed
+        // if the read row address and write row address match.
+        .COLLDISN(1'b0),
+
+        // address
+        .AA(bus7_sram_AA),
+        .AB(8'd0),
+        // data 
+        .DA(bus7_sram_DA),
+        .DB(31'd0),
+
+        // chip enable (active low, 0 for ON and 1 for OFF)
+        // .CENA(1'b1),
+        // .CENB(1'b1),
+        .CENA(1'b0),
+        .CENB(1'b1),
+
+        // write enable (active low, 0 for WRITE and 1 for READ)
+        .WENA(bus7_sram_WENA),
+        .WENB(1'b1),
+
+        // data output bus
+        .QA(bus7_sram_QA),
+        .QB(),
+
+        // test mode (active low, 1 for regular operation)
+        .TENA(1'b1),
+        .TENB(1'b1),
+
+        // bypass
+        .BENA(1'b1),
+        .BENB(1'b1),
+
+        // useless
+        .EMAA(3'd0),
+        .EMAB(3'd0),
+        .EMAWA(2'd0),
+        .EMAWB(2'd0),
+        .EMASA(1'b0),
+        .EMASB(1'b0),
+        .TCENA(1'b1),
+        .TWENA(1'b1),
+        .TAA(8'd0),
+        .TDA(8'd0),
+        .TQA(8'd0),
+        .TCENB(1'b1),
+        .TWENB(1'b1),
+        .TAB(8'd0),
+        .TDB(8'd0),
+        .TQB(8'd0),
+        .RET1N(1'b1)
+    );
+
+    sram_dp_point uut8 (
+        // clock signal
+        .CLKA(clk),
+        .CLKB(clk),
+
+        // sync clock (active high)
+        .STOVA(1'b1),
+        .STOVB(1'b1),
+
+        // setting
+        // In the event of a write/read collision, if COLLDISN is disabled, then the write is guaranteed and
+        // the read data is undefined. However, if COLLDISN is enabled, then the write is not guaranteed
+        // if the read row address and write row address match.
+        .COLLDISN(1'b0),
+
+        // address
+        .AA(bus8_sram_AA),
+        .AB(8'd0),
+        // data 
+        .DA(bus8_sram_DA),
+        .DB(31'd0),
+
+        // chip enable (active low, 0 for ON and 1 for OFF)
+        // .CENA(1'b1),
+        // .CENB(1'b1),
+        .CENA(1'b0),
+        .CENB(1'b1),
+
+        // write enable (active low, 0 for WRITE and 1 for READ)
+        .WENA(bus8_sram_WENA),
+        .WENB(1'b1),
+
+        // data output bus
+        .QA(bus8_sram_QA),
+        .QB(),
+
+        // test mode (active low, 1 for regular operation)
+        .TENA(1'b1),
+        .TENB(1'b1),
+
+        // bypass
+        .BENA(1'b1),
+        .BENB(1'b1),
+
+        // useless
+        .EMAA(3'd0),
+        .EMAB(3'd0),
+        .EMAWA(2'd0),
+        .EMAWB(2'd0),
+        .EMASA(1'b0),
+        .EMASB(1'b0),
+        .TCENA(1'b1),
+        .TWENA(1'b1),
+        .TAA(8'd0),
+        .TDA(8'd0),
+        .TQA(8'd0),
+        .TCENB(1'b1),
+        .TWENB(1'b1),
+        .TAB(8'd0),
+        .TDB(8'd0),
+        .TQB(8'd0),
+        .RET1N(1'b1)
+    );
+
     // `ifdef SDF
     //     initial $sdf_annotate(`SDFFILE, chip0);
     // `endif
@@ -505,7 +811,7 @@ module CHIP_tb;
 
     // initial begin
     //     $fsdbDumpfile("CHIP_check.fsdb");
-    //     $fsdbDumpvars(0, CHIP_tb, "+mda");
+    //     $fsdbDumpvars(0, CHIP_tb.chip0.MATCH_unit, "+mda");
     // end
 
     initial begin
@@ -657,7 +963,7 @@ module CHIP_tb;
             $fwrite(f3, "frame end\n");
         end
         if(o_valid) begin
-            $display("(%h, %h, %h) <---> (%h, %h, %h)", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
+            // $display("(%h, %h, %h) <---> (%h, %h, %h)", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
             $fwrite(f3, "(%h, %h, %h) <---> (%h, %h, %h)\n", o_src_coor_x, o_src_coor_y, o_src_depth, o_dst_coor_x, o_dst_coor_y, o_dst_depth);
         end
     end

@@ -10,7 +10,7 @@ Hardware_implementation/memory
 Hardware_implementation/src/sram
 Hardware_implementation/src/sram_v2
 Hardware_implementation/golden.txt
-Hardware_implementation/sram_usage.txt
+
 Hardware_implementation/testfile/result
 Hardware_implementation/testfile/read.txt
 Hardware_implementation/testfile/pixel_smooth.txt

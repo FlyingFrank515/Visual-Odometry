@@ -591,7 +591,7 @@ void MYORB::MATCH_BFmatcher(){
             //     cout << "present_hamming = " << hamming_distance_counter << endl;
             // }
             // ----
-            // read << "comparing (" << keylist_1[idx1].pt.x << ", " << keylist_1[idx1].pt.y <<  ")" << " hamming = " << dec << hamming_distance_counter << " ";
+            // read << "comparing (" << keylist_1[idx1].pt.x << ", " << keylist_1[idx1].pt.y <<  ")" << " hamming = " << dec << hamming_distance_counter << " " << endl;
             // ----
             if(hamming_distance_counter < min_value){
                 min_index = idx1;

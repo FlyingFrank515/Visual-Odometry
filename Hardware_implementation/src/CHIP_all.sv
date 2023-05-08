@@ -76,9 +76,28 @@ module CHIP
     output [7:0]    BRIEF_lb_sram_DA [30],
     output [7:0]    BRIEF_lb_sram_DB [30],
     output [9:0]    BRIEF_lb_sram_AA [30],
-    output [9:0]    BRIEF_lb_sram_AB [30]
+    output [9:0]    BRIEF_lb_sram_AB [30],
 
-    
+    input [29:0]    MATCH_mem1_point_QA,
+    output          MATCH_mem1_point_WENA,
+    output [29:0]   MATCH_mem1_point_DA,
+    output [8:0]    MATCH_mem1_point_AA,
+
+    input [29:0]    MATCH_mem2_point_QA,
+    output          MATCH_mem2_point_WENA,
+    output [29:0]   MATCH_mem2_point_DA,
+    output [8:0]    MATCH_mem2_point_AA,
+
+    input [31:0]    MATCH_mem1_desc_QA [8],
+    output          MATCH_mem1_desc_WENA [8],
+    output [31:0]   MATCH_mem1_desc_DA [8],
+    output [8:0]    MATCH_mem1_desc_AA [8],
+
+    input [31:0]    MATCH_mem2_desc_QA [8],
+    output          MATCH_mem2_desc_WENA [8],
+    output [31:0]   MATCH_mem2_desc_DA [8],
+    output [8:0]    MATCH_mem2_desc_AA [8]
+
 );
     // reg delcaration
     // bus1 (between FAST and BRIEF)
@@ -169,6 +188,8 @@ module CHIP
         .FAST_NMS_sram_DB(FAST_NMS_sram_DB),
         .FAST_NMS_sram_AA(FAST_NMS_sram_AA),
         .FAST_NMS_sram_AB(FAST_NMS_sram_AB)
+
+        
     );
 
     BRIEF_Top
@@ -250,7 +271,28 @@ module CHIP
         .o_src_depth(o_src_depth),
         .o_dst_coor_x(o_dst_coor_x),
         .o_dst_coor_y(o_dst_coor_y),
-        .o_dst_depth(o_dst_depth)
+        .o_dst_depth(o_dst_depth),
+
+        // sram interface
+        .MATCH_mem1_point_QA(MATCH_mem1_point_QA),
+        .MATCH_mem1_point_WENA(MATCH_mem1_point_WENA),
+        .MATCH_mem1_point_DA(MATCH_mem1_point_DA),
+        .MATCH_mem1_point_AA(MATCH_mem1_point_AA),
+
+        .MATCH_mem2_point_QA(MATCH_mem2_point_QA),
+        .MATCH_mem2_point_WENA(MATCH_mem2_point_WENA),
+        .MATCH_mem2_point_DA(MATCH_mem2_point_DA),
+        .MATCH_mem2_point_AA(MATCH_mem2_point_AA),
+
+        .MATCH_mem1_desc_QA(MATCH_mem1_desc_QA),
+        .MATCH_mem1_desc_WENA(MATCH_mem1_desc_WENA),
+        .MATCH_mem1_desc_DA(MATCH_mem1_desc_DA),
+        .MATCH_mem1_desc_AA(MATCH_mem1_desc_AA),
+
+        .MATCH_mem2_desc_QA(MATCH_mem2_desc_QA),
+        .MATCH_mem2_desc_WENA(MATCH_mem2_desc_WENA),
+        .MATCH_mem2_desc_DA(MATCH_mem2_desc_DA),
+        .MATCH_mem2_desc_AA(MATCH_mem2_desc_AA)
     );
 
 endmodule

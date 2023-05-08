@@ -1,5 +1,6 @@
 `include "MATCH.sv"
 `include "Key_Buffer2.sv"
+`include "MATCH_mem.sv"
 
 module MATCH_Top
 #(
@@ -27,7 +28,27 @@ module MATCH_Top
     output [9:0]    o_src_depth,
     output [9:0]    o_dst_coor_x,
     output [9:0]    o_dst_coor_y,
-    output [9:0]    o_dst_depth
+    output [9:0]    o_dst_depth,
+
+    input [29:0]    MATCH_mem1_point_QA,
+    output          MATCH_mem1_point_WENA,
+    output [29:0]   MATCH_mem1_point_DA,
+    output [8:0]    MATCH_mem1_point_AA,
+
+    input [29:0]    MATCH_mem2_point_QA,
+    output          MATCH_mem2_point_WENA,
+    output [29:0]   MATCH_mem2_point_DA,
+    output [8:0]    MATCH_mem2_point_AA,
+
+    input [31:0]    MATCH_mem1_desc_QA [8],
+    output          MATCH_mem1_desc_WENA [8],
+    output [31:0]   MATCH_mem1_desc_DA [8],
+    output [8:0]    MATCH_mem1_desc_AA [8],
+
+    input [31:0]    MATCH_mem2_desc_QA [8],
+    output          MATCH_mem2_desc_WENA [8],
+    output [31:0]   MATCH_mem2_desc_DA [8],
+    output [8:0]    MATCH_mem2_desc_AA [8]
 );
 
     logic  [9:0]     BUFFER_coor_x; 
@@ -38,6 +59,17 @@ module MATCH_Top
     logic            BUFFER_flag;
 
     logic            MATCH_next;
+
+    // to memory controller
+    logic [10:0]   mem_bus1_addr;
+    logic [285:0]  mem_bus1_wdata;
+    logic          mem_bus1_wen;
+    logic [285:0]   mem_bus1_rdata;
+
+    logic [10:0]   mem_bus2_addr;
+    logic [285:0]  mem_bus2_wdata;
+    logic          mem_bus2_wen;
+    logic [285:0]   mem_bus2_rdata;
 
     Key_Buffer2
     #(
@@ -89,7 +121,54 @@ module MATCH_Top
         .o_src_depth(o_src_depth),
         .o_dst_coor_x(o_dst_coor_x),
         .o_dst_coor_y(o_dst_coor_y),
-        .o_dst_depth(o_dst_depth)
+        .o_dst_depth(o_dst_depth),
+
+        // to memory controller
+        .mem1_addr(mem_bus1_addr),
+        .mem1_wdata(mem_bus1_wdata),
+        .mem1_wen(mem_bus1_wen),
+        .mem1_rdata(mem_bus1_rdata),
+        .mem2_addr(mem_bus2_addr),
+        .mem2_wdata(mem_bus2_wdata),
+        .mem2_wen(mem_bus2_wen),
+        .mem2_rdata(mem_bus2_rdata)
     );
+
+    MATCH_mem u_match_mem_controller
+    (
+        .i_clk(i_clk),
+        .i_rst_n(i_rst_n),
+
+        // to memory controller
+        .mem1_addr(mem_bus1_addr),
+        .mem1_wdata(mem_bus1_wdata),
+        .mem1_wen(mem_bus1_wen),
+        .mem1_rdata(mem_bus1_rdata),
+        .mem2_addr(mem_bus2_addr),
+        .mem2_wdata(mem_bus2_wdata),
+        .mem2_wen(mem_bus2_wen),
+        .mem2_rdata(mem_bus2_rdata),
+
+        // sram interface
+        .MATCH_mem1_point_QA(MATCH_mem1_point_QA),
+        .MATCH_mem1_point_WENA(MATCH_mem1_point_WENA),
+        .MATCH_mem1_point_DA(MATCH_mem1_point_DA),
+        .MATCH_mem1_point_AA(MATCH_mem1_point_AA),
+
+        .MATCH_mem2_point_QA(MATCH_mem2_point_QA),
+        .MATCH_mem2_point_WENA(MATCH_mem2_point_WENA),
+        .MATCH_mem2_point_DA(MATCH_mem2_point_DA),
+        .MATCH_mem2_point_AA(MATCH_mem2_point_AA),
+
+        .MATCH_mem1_desc_QA(MATCH_mem1_desc_QA),
+        .MATCH_mem1_desc_WENA(MATCH_mem1_desc_WENA),
+        .MATCH_mem1_desc_DA(MATCH_mem1_desc_DA),
+        .MATCH_mem1_desc_AA(MATCH_mem1_desc_AA),
+
+        .MATCH_mem2_desc_QA(MATCH_mem2_desc_QA),
+        .MATCH_mem2_desc_WENA(MATCH_mem2_desc_WENA),
+        .MATCH_mem2_desc_DA(MATCH_mem2_desc_DA),
+        .MATCH_mem2_desc_AA(MATCH_mem2_desc_AA)
+    ); 
 
 endmodule

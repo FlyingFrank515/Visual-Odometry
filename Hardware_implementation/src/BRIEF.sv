@@ -10,7 +10,7 @@ module BRIEF
     input [9:0]     i_coor_x, 
     input [9:0]     i_coor_y, 
     input [7:0]     i_score,
-    input [9:0]     i_depth,
+    input [15:0]     i_depth,
 
     input signed [11:0]    i_sin,
     input signed [11:0]    i_cos,
@@ -23,7 +23,7 @@ module BRIEF
     output [255:0]  o_descriptor,
     output          o_flag,
     output [7:0]    o_score,
-    output [9:0]    o_depth
+    output [15:0]    o_depth
 
 );
     // parameter
@@ -85,9 +85,9 @@ module BRIEF
     logic [7:0] score2_w, score2_r;
     logic [7:0] score3_w, score3_r;
 
-    logic [9:0] depth1_w, depth1_r;
-    logic [9:0] depth2_w, depth2_r;
-    logic [9:0] depth3_w, depth3_r;
+    logic [15:0] depth1_w, depth1_r;
+    logic [15:0] depth2_w, depth2_r;
+    logic [15:0] depth3_w, depth3_r;
 
     logic       flag3_w, flag3_r;
 

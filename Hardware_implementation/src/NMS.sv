@@ -7,19 +7,19 @@ module NMS
     input           i_rst_n,
     input [7:0]     i_score,
     input           i_flag,
-    input [9:0]     i_depth,
+    input [15:0]     i_depth,
     input           i_valid,
     output [7:0]    o_score,
-    output [9:0]    o_depth,
+    output [15:0]    o_depth,
     output          o_flag,
 
     // sram interface
-    input [19:0]     sram_QA,
-    input [19:0]     sram_QB,
+    input [25:0]     sram_QA,
+    input [25:0]     sram_QB,
     output          sram_WENA,
     output          sram_WENB,
-    output [19:0]    sram_DA,
-    output [19:0]    sram_DB,
+    output [25:0]    sram_DA,
+    output [25:0]    sram_DB,
     output [9:0]    sram_AA,
     output [9:0]    sram_AB
 );
@@ -57,39 +57,39 @@ endfunction
 // ========== reg/wire declaration ==========
 integer ia, ib, i;
 logic [7:0] candidate_score_start;
-logic [9:0] candidate_depth_start;
+logic [15:0] candidate_depth_start;
 logic       candidate_flag_start;
 logic       candidate_reserved_start;
 
 logic [7:0] B_score_r [0:4],      B_score_w [0:4];
 logic       B_flag_r [0:4],       B_flag_w [0:4];
 logic       B_reserved_r [0:4],   B_reserved_w [0:4];
-logic [9:0] B_depth_r [0:4],      B_depth_w [0:4];
+logic [15:0] B_depth_r [0:4],      B_depth_w [0:4];
 
 logic [7:0] A_score_r [0:2],      A_score_w [0:2];
 logic       A_flag_r [0:2],       A_flag_w [0:2];
 logic       A_reserved_r [0:2],   A_reserved_w [0:2];
-logic [9:0] A_depth_r [0:2],      A_depth_w [0:2];
+logic [15:0] A_depth_r [0:2],      A_depth_w [0:2];
 
 logic [7:0] o_score_r, o_score_w;
 logic       o_flag_r, o_flag_w;
-logic [9:0] o_depth_r, o_depth_w;
+logic [15:0] o_depth_r, o_depth_w;
 logic       o_reserved;
 
 // sram interface
-logic [19:0]    sram_QB_r;
+logic [25:0]    sram_QB_r;
 logic          sram_WENA_w, sram_WENA_r;
 logic          sram_WENB_w, sram_WENB_r;
-logic [19:0]    sram_DA_w, sram_DA_r;
+logic [25:0]    sram_DA_w, sram_DA_r;
 logic [9:0]    sram_AA_w, sram_AA_r;
 logic [9:0]    sram_AB_w, sram_AB_r;
 
 logic [7:0] candidate_score_out;
-logic [9:0] candidate_depth_out;
+logic [15:0] candidate_depth_out;
 logic       candidate_flag_out;
 logic       candidate_reserved_out;
 
-logic [19:0] sram_delay [0:10];
+logic [25:0] sram_delay [0:10];
 
 // ========== Connection ==========
 assign o_score = o_score_r;
@@ -164,7 +164,7 @@ always_comb begin
     sram_AA_w = (sram_AA_r == 639) ? 0 : sram_AA_r + 1;
     sram_AB_w = (sram_AB_r == 639) ? 0 : sram_AB_r + 1;
     
-    candidate_depth_out = sram_delay[10][19:10];
+    candidate_depth_out = sram_delay[10][25:10];
     candidate_score_out = sram_delay[10][9:2];
     candidate_flag_out = sram_delay[10][1];
     candidate_reserved_out = sram_delay[10][0];

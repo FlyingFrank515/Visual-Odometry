@@ -13,7 +13,7 @@ module FAST_Detector
     input           i_clk,
     input           i_rst_n,
     input [7:0]     i_pixel,
-    input [9:0]     i_depth,
+    input [15:0]     i_depth,
     input           i_start,
     input           i_valid,
 
@@ -27,19 +27,19 @@ module FAST_Detector
     output [11:0]   o_cos,
     output [11:0]   o_sin,
     output [7:0]    o_score,
-    output [9:0]    o_depth,
+    output [15:0]    o_depth,
     output          o_flag,
     output logic    o_start,
     output logic    o_end,
     output          o_point_valid,
 
     // sram interface -- FAST window
-    input [17:0]     FAST_lb_sram_QA [6],
-    input [17:0]     FAST_lb_sram_QB [6],
+    input [23:0]     FAST_lb_sram_QA [6],
+    input [23:0]     FAST_lb_sram_QB [6],
     output          FAST_lb_sram_WENA [6],
     output          FAST_lb_sram_WENB [6],
-    output [17:0]    FAST_lb_sram_DA [6],
-    output [17:0]    FAST_lb_sram_DB [6],
+    output [23:0]    FAST_lb_sram_DA [6],
+    output [23:0]    FAST_lb_sram_DB [6],
     output [9:0]    FAST_lb_sram_AA [6],
     output [9:0]    FAST_lb_sram_AB [6],
 
@@ -54,12 +54,12 @@ module FAST_Detector
     output [9:0]    FAST_sincos_sram_AB [2],
 
     // sram interface -- FAST NMS FIFO
-    input [19:0]     FAST_NMS_sram_QA,
-    input [19:0]     FAST_NMS_sram_QB,
+    input [25:0]     FAST_NMS_sram_QA,
+    input [25:0]     FAST_NMS_sram_QB,
     output          FAST_NMS_sram_WENA,
     output          FAST_NMS_sram_WENB,
-    output [19:0]    FAST_NMS_sram_DA,
-    output [19:0]    FAST_NMS_sram_DB,
+    output [25:0]    FAST_NMS_sram_DA,
+    output [25:0]    FAST_NMS_sram_DB,
     output [9:0]    FAST_NMS_sram_AA,
     output [9:0]    FAST_NMS_sram_AB
 
@@ -75,20 +75,20 @@ module FAST_Detector
     logic [19:0] count_w, count_r;
     logic [9:0] coor_x_w, coor_x_r;
     logic [9:0] coor_y_w, coor_y_r;
-    logic [17:0] LINE_BUFFER_enter;
-    logic [17:0] LINE_BUFFER [0:5][0:12];
-    logic [17:0] LINE_BUFFER_LAST [0:4];
+    logic [23:0] LINE_BUFFER_enter;
+    logic [23:0] LINE_BUFFER [0:5][0:12];
+    logic [23:0] LINE_BUFFER_LAST [0:4];
 
     logic [127:0] FAST_circle;
-    logic [17:0] FAST_center;
+    logic [23:0] FAST_center;
 
     logic [7:0] FAST_score;
     logic       FAST_flag;
-    logic [9:0] FAST_depth;
+    logic [15:0] FAST_depth;
 
     logic [7:0]    NMS_score;
     logic          NMS_flag;
-    logic [9:0]    NMS_depth;
+    logic [15:0]    NMS_depth;
 
     logic [55:0] Orient_col;
     logic [39:0] SMOOTH_col;
@@ -105,15 +105,15 @@ module FAST_Detector
     logic [9:0] o_y_r, o_y_w;
     logic [7:0] o_score_r, o_score_w;
     logic       o_flag_r, o_flag_w;
-    logic [9:0] o_depth_r, o_depth_w;
+    logic [15:0] o_depth_r, o_depth_w;
     logic [11:0] o_cos_w, o_cos_r;
     logic [11:0] o_sin_w, o_sin_r;
 
     // FAST_lb_sram interface
-    logic [17:0]    FAST_lb_sram_QB_r [0:5];
+    logic [23:0]    FAST_lb_sram_QB_r [0:5];
     logic          FAST_lb_sram_WENA_w [0:5], FAST_lb_sram_WENA_r [0:5];
     logic          FAST_lb_sram_WENB_w [0:5], FAST_lb_sram_WENB_r [0:5];
-    logic [17:0]    FAST_lb_sram_DA_w [0:5], FAST_lb_sram_DA_r [0:5];
+    logic [23:0]    FAST_lb_sram_DA_w [0:5], FAST_lb_sram_DA_r [0:5];
     logic [9:0]    FAST_lb_sram_AA_w [0:5], FAST_lb_sram_AA_r [0:5];
     logic [9:0]    FAST_lb_sram_AB_w [0:5], FAST_lb_sram_AB_r [0:5];
 
@@ -164,12 +164,12 @@ module FAST_Detector
 
 
     always_comb begin
-        FAST_circle = {LINE_BUFFER[0][2][17:10], LINE_BUFFER[0][3][17:10], LINE_BUFFER[0][4][17:10], LINE_BUFFER[1][5][17:10], LINE_BUFFER[2][6][17:10], LINE_BUFFER[3][6][17:10], LINE_BUFFER[4][6][17:10], LINE_BUFFER[5][5][17:10]
-        , LINE_BUFFER_LAST[4][17:10], LINE_BUFFER_LAST[3][17:10], LINE_BUFFER_LAST[2][17:10], LINE_BUFFER[5][1][17:10], LINE_BUFFER[4][0][17:10], LINE_BUFFER[3][0][17:10], LINE_BUFFER[2][0][17:10], LINE_BUFFER[1][1][17:10]};
+        FAST_circle = {LINE_BUFFER[0][2][23:16], LINE_BUFFER[0][3][23:16], LINE_BUFFER[0][4][23:16], LINE_BUFFER[1][5][23:16], LINE_BUFFER[2][6][23:16], LINE_BUFFER[3][6][23:16], LINE_BUFFER[4][6][23:16], LINE_BUFFER[5][5][23:16]
+        , LINE_BUFFER_LAST[4][23:16], LINE_BUFFER_LAST[3][23:16], LINE_BUFFER_LAST[2][23:16], LINE_BUFFER[5][1][23:16], LINE_BUFFER[4][0][23:16], LINE_BUFFER[3][0][23:16], LINE_BUFFER[2][0][23:16], LINE_BUFFER[1][1][23:16]};
         FAST_center = LINE_BUFFER[3][3];
 
-        Orient_col = {LINE_BUFFER[0][0][17:10], LINE_BUFFER[1][0][17:10], LINE_BUFFER[2][0][17:10], LINE_BUFFER[3][0][17:10], LINE_BUFFER[4][0][17:10], LINE_BUFFER[5][0][17:10], LINE_BUFFER_LAST[0][17:10]}; // up to down
-        SMOOTH_col = {LINE_BUFFER[0][0][17:10], LINE_BUFFER[1][0][17:10], LINE_BUFFER[2][0][17:10], LINE_BUFFER[3][0][17:10], LINE_BUFFER[4][0][17:10]};
+        Orient_col = {LINE_BUFFER[0][0][23:16], LINE_BUFFER[1][0][23:16], LINE_BUFFER[2][0][23:16], LINE_BUFFER[3][0][23:16], LINE_BUFFER[4][0][23:16], LINE_BUFFER[5][0][23:16], LINE_BUFFER_LAST[0][23:16]}; // up to down
+        SMOOTH_col = {LINE_BUFFER[0][0][23:16], LINE_BUFFER[1][0][23:16], LINE_BUFFER[2][0][23:16], LINE_BUFFER[3][0][23:16], LINE_BUFFER[4][0][23:16]};
     end
 
     SMOOTH

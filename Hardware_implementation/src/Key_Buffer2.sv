@@ -13,13 +13,13 @@ module Key_Buffer2
     input [9:0]     i_coor_y, 
     input [7:0]     i_score,
     input [255:0]   i_descriptor,
-    input [9:0]     i_depth,
+    input [15:0]     i_depth,
 
     output [9:0]     o_coor_x, 
     output [9:0]     o_coor_y,
     output [7:0]     o_score,
     output [255:0]   o_descriptor,
-    output [9:0]     o_depth,
+    output [15:0]     o_depth,
     output           o_flag
 
 );
@@ -29,7 +29,7 @@ module Key_Buffer2
     logic [9:0] coor_y_w [0:SIZE-1], coor_y_r[0:SIZE-1];
     logic [7:0] score_w [0:SIZE-1], score_r [0:SIZE-1];
     logic [255:0] desc_w [0:SIZE-1], desc_r[0:SIZE-1];
-    logic [9:0] depth_w [0:SIZE-1], depth_r[0:SIZE-1];
+    logic [15:0] depth_w [0:SIZE-1], depth_r[0:SIZE-1];
     
     logic [9:0] count_r, count_w;
     logic [9:0] count_plus;

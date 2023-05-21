@@ -5,12 +5,13 @@
 
 `ifdef RTL
     `include "CHIP_all.sv"
-    `include "sram_v2/sram_FAST_lb.v"
-    `include "sram_v2/sram_dp_NMS.v"
-    `include "sram_v2/sram_dp_sincos.v"
-    `include "sram_v2/sram_BRIEF_lb.v"
-    `include "sram_v2/sram_dp_desc.v"
-    `include "sram_v2/sram_dp_point.v"
+    `include "sram_v3/sram_lb_FAST.v"
+    `include "sram_v3/sram_FIFO_NMS.v"
+    `include "sram_v3/sram_dp_sincos.v"
+    `include "sram_v3/sram_BRIEF_lb.v"
+    `include "sram_v3/sram_dp_desc.v"
+    `include "sram_v3/sram_dp_point.v"
+    `include "sram_v3/sram_dp_depth.v"
 `endif
 
 // `ifdef SYN
@@ -30,16 +31,16 @@ module CHIP_tb;
     function bit compare(
         input logic [9:0]  golden_src_coor_x,
         input logic [9:0]  golden_src_coor_y,
-        input logic [9:0]  golden_src_depth,
+        input logic [15:0]  golden_src_depth,
         input logic [9:0]  golden_dst_coor_x,
         input logic [9:0]  golden_dst_coor_y,
-        input logic [9:0]  golden_dst_depth,
+        input logic [15:0]  golden_dst_depth,
         input logic [9:0]  o_src_coor_x,
         input logic [9:0]  o_src_coor_y,
-        input logic [9:0]  o_src_depth,
+        input logic [15:0]  o_src_depth,
         input logic [9:0]  o_dst_coor_x,
         input logic [9:0]  o_dst_coor_y,
-        input logic [9:0]  o_dst_depth);
+        input logic [15:0]  o_dst_depth);
 
         // $display("%h, %h, %b", golden_src_coor_x, o_src_coor_x, golden_src_coor_x == o_src_coor_x);
         // $display("%h, %h, %b", golden_src_coor_y, o_src_coor_y, golden_src_coor_y == o_src_coor_y);
@@ -63,17 +64,17 @@ module CHIP_tb;
     logic [7:0] pixel_in [0:307199];
     logic [7:0] pixel_in2 [0:307199];
     logic [7:0] pixel_in3 [0:307199];
-    logic [9:0] depth_in [0:307199];
-    logic [9:0] depth_in2 [0:307199];
-    logic [9:0] depth_in3 [0:307199];
+    logic [15:0] depth_in [0:307199];
+    logic [15:0] depth_in2 [0:307199];
+    logic [15:0] depth_in3 [0:307199];
 
     logic [71:0] golden_raw [0:199];
     logic [9:0]  golden_src_coor_x[0:199];
     logic [9:0]  golden_src_coor_y[0:199];
-    logic [9:0]  golden_src_depth[0:199];
+    logic [15:0]  golden_src_depth[0:199];
     logic [9:0]  golden_dst_coor_x[0:199];
     logic [9:0]  golden_dst_coor_y[0:199];
-    logic [9:0]  golden_dst_depth[0:199];
+    logic [15:0]  golden_dst_depth[0:199];
     
     logic [9:0] golden_pos, start_pos, end_pos;
     logic       check_again, same, reach_end, checking;
@@ -89,7 +90,7 @@ module CHIP_tb;
 
     logic start;
     logic [7:0] pixel;
-    logic [9:0] depth;
+    logic [15:0] depth;
     logic valid;
     
 
@@ -98,10 +99,10 @@ module CHIP_tb;
     logic          o_ready;
     logic [9:0]    o_src_coor_x;
     logic [9:0]    o_src_coor_y;
-    logic [9:0]    o_src_depth;
+    logic [15:0]    o_src_depth;
     logic [9:0]    o_dst_coor_x;
     logic [9:0]    o_dst_coor_y;
-    logic [9:0]    o_dst_depth;
+    logic [15:0]    o_dst_depth;
 
     // SRAM used ports:
     // ---------------------------------------------------------------------------
@@ -111,12 +112,12 @@ module CHIP_tb;
     // ---------------------------------------------------------------------------
     // other ports-input are given in testbench (in simulation)
     // sram interface
-    logic [17:0]     bus1_sram_QA [0:5];
-    logic [17:0]     bus1_sram_QB [0:5];
+    logic [23:0]     bus1_sram_QA [0:5];
+    logic [23:0]     bus1_sram_QB [0:5];
     logic          bus1_sram_WENA [0:5];
     logic          bus1_sram_WENB [0:5];
-    logic [17:0]    bus1_sram_DA [0:5]; // pixel + depth
-    logic [17:0]    bus1_sram_DB [0:5]; // pixel + depth
+    logic [23:0]    bus1_sram_DA [0:5]; // pixel + depth
+    logic [23:0]    bus1_sram_DB [0:5]; // pixel + depth
     logic [9:0]    bus1_sram_AA [0:5];
     logic [9:0]    bus1_sram_AB [0:5];
 
@@ -129,12 +130,12 @@ module CHIP_tb;
     logic [9:0]    bus2_sram_AA [0:1];
     logic [9:0]    bus2_sram_AB [0:1];
 
-    logic [19:0]     bus3_sram_QA;
-    logic [19:0]     bus3_sram_QB;
+    logic [25:0]     bus3_sram_QA;
+    logic [25:0]     bus3_sram_QB;
     logic          bus3_sram_WENA;
     logic          bus3_sram_WENB;
-    logic [19:0]    bus3_sram_DA; // score, flag, reserved + depth
-    logic [19:0]    bus3_sram_DB; // score, flag, reserved + depth
+    logic [25:0]    bus3_sram_DA; // score, flag, reserved + depth
+    logic [25:0]    bus3_sram_DB; // score, flag, reserved + depth
     logic [9:0]    bus3_sram_AA;
     logic [9:0]    bus3_sram_AB;
 
@@ -157,15 +158,25 @@ module CHIP_tb;
     logic [31:0]    bus6_sram_DA [0:7];
     logic [8:0]    bus6_sram_AA [0:7];
 
-    logic [29:0]     bus7_sram_QA;
+    logic [19:0]     bus7_sram_QA;
     logic          bus7_sram_WENA;
-    logic [29:0]    bus7_sram_DA;
+    logic [19:0]    bus7_sram_DA;
     logic [8:0]    bus7_sram_AA;
 
-    logic [29:0]     bus8_sram_QA;
+    logic [19:0]     bus8_sram_QA;
     logic          bus8_sram_WENA;
-    logic [29:0]    bus8_sram_DA;
+    logic [19:0]    bus8_sram_DA;
     logic [8:0]    bus8_sram_AA;
+
+    logic [15:0]     bus9_sram_QA;
+    logic          bus9_sram_WENA;
+    logic [15:0]    bus9_sram_DA;
+    logic [8:0]    bus9_sram_AA;
+
+    logic [15:0]     bus10_sram_QA;
+    logic          bus10_sram_WENA;
+    logic [15:0]    bus10_sram_DA;
+    logic [8:0]    bus10_sram_AA;
 
     CHIP
     #(
@@ -248,6 +259,16 @@ module CHIP_tb;
         .MATCH_mem2_point_DA(bus8_sram_DA),
         .MATCH_mem2_point_AA(bus8_sram_AA),
 
+        .MATCH_mem1_depth_QA(bus9_sram_QA),
+        .MATCH_mem1_depth_WENA(bus9_sram_WENA),
+        .MATCH_mem1_depth_DA(bus9_sram_DA),
+        .MATCH_mem1_depth_AA(bus9_sram_AA),
+
+        .MATCH_mem2_depth_QA(bus10_sram_QA),
+        .MATCH_mem2_depth_WENA(bus10_sram_WENA),
+        .MATCH_mem2_depth_DA(bus10_sram_DA),
+        .MATCH_mem2_depth_AA(bus10_sram_AA),
+
         .MATCH_mem1_desc_QA(bus5_sram_QA),
         .MATCH_mem1_desc_WENA(bus5_sram_WENA),
         .MATCH_mem1_desc_DA(bus5_sram_DA),
@@ -260,7 +281,7 @@ module CHIP_tb;
     );
     generate
         for(genvar s = 0; s < 6; s = s+1) begin
-            sram_FAST_lb uut1 (
+            sram_lb_FAST uut1 (
                 // clock signal
                 .CLKA(clk),
                 .CLKB(clk),
@@ -394,7 +415,7 @@ module CHIP_tb;
         end
     endgenerate
     
-    sram_dp_NMS uut3 (
+    sram_FIFO_NMS uut3 (
         // clock signal
         .CLKA(clk),
         .CLKB(clk),
@@ -790,6 +811,133 @@ module CHIP_tb;
         .RET1N(1'b1)
     );
 
+    sram_dp_depth uut9 (
+        // clock signal
+        .CLKA(clk),
+        .CLKB(clk),
+
+        // sync clock (active high)
+        .STOVA(1'b1),
+        .STOVB(1'b1),
+
+        // setting
+        // In the event of a write/read collision, if COLLDISN is disabled, then the write is guaranteed and
+        // the read data is undefined. However, if COLLDISN is enabled, then the write is not guaranteed
+        // if the read row address and write row address match.
+        .COLLDISN(1'b0),
+
+        // address
+        .AA(bus9_sram_AA),
+        .AB(8'd0),
+        // data 
+        .DA(bus9_sram_DA),
+        .DB(31'd0),
+
+        // chip enable (active low, 0 for ON and 1 for OFF)
+        // .CENA(1'b1),
+        // .CENB(1'b1),
+        .CENA(1'b0),
+        .CENB(1'b1),
+
+        // write enable (active low, 0 for WRITE and 1 for READ)
+        .WENA(bus9_sram_WENA),
+        .WENB(1'b1),
+
+        // data output bus
+        .QA(bus9_sram_QA),
+        .QB(),
+
+        // test mode (active low, 1 for regular operation)
+        .TENA(1'b1),
+        .TENB(1'b1),
+
+        // bypass
+        .BENA(1'b1),
+        .BENB(1'b1),
+
+        // useless
+        .EMAA(3'd0),
+        .EMAB(3'd0),
+        .EMAWA(2'd0),
+        .EMAWB(2'd0),
+        .EMASA(1'b0),
+        .EMASB(1'b0),
+        .TCENA(1'b1),
+        .TWENA(1'b1),
+        .TAA(8'd0),
+        .TDA(8'd0),
+        .TQA(8'd0),
+        .TCENB(1'b1),
+        .TWENB(1'b1),
+        .TAB(8'd0),
+        .TDB(8'd0),
+        .TQB(8'd0),
+        .RET1N(1'b1)
+    );
+
+    sram_dp_depth uut10 (
+        // clock signal
+        .CLKA(clk),
+        .CLKB(clk),
+
+        // sync clock (active high)
+        .STOVA(1'b1),
+        .STOVB(1'b1),
+
+        // setting
+        // In the event of a write/read collision, if COLLDISN is disabled, then the write is guaranteed and
+        // the read data is undefined. However, if COLLDISN is enabled, then the write is not guaranteed
+        // if the read row address and write row address match.
+        .COLLDISN(1'b0),
+
+        // address
+        .AA(bus10_sram_AA),
+        .AB(8'd0),
+        // data 
+        .DA(bus10_sram_DA),
+        .DB(31'd0),
+
+        // chip enable (active low, 0 for ON and 1 for OFF)
+        // .CENA(1'b1),
+        // .CENB(1'b1),
+        .CENA(1'b0),
+        .CENB(1'b1),
+
+        // write enable (active low, 0 for WRITE and 1 for READ)
+        .WENA(bus10_sram_WENA),
+        .WENB(1'b1),
+
+        // data output bus
+        .QA(bus10_sram_QA),
+        .QB(),
+
+        // test mode (active low, 1 for regular operation)
+        .TENA(1'b1),
+        .TENB(1'b1),
+
+        // bypass
+        .BENA(1'b1),
+        .BENB(1'b1),
+
+        // useless
+        .EMAA(3'd0),
+        .EMAB(3'd0),
+        .EMAWA(2'd0),
+        .EMAWB(2'd0),
+        .EMASA(1'b0),
+        .EMASB(1'b0),
+        .TCENA(1'b1),
+        .TWENA(1'b1),
+        .TAA(8'd0),
+        .TDA(8'd0),
+        .TQA(8'd0),
+        .TCENB(1'b1),
+        .TWENB(1'b1),
+        .TAB(8'd0),
+        .TDB(8'd0),
+        .TQB(8'd0),
+        .RET1N(1'b1)
+    );
     // `ifdef SDF
     //     initial $sdf_annotate(`SDFFILE, chip0);
     // `endif
@@ -952,7 +1100,7 @@ module CHIP_tb;
     always@(posedge clk) begin
         // if(inspect_flag) begin
         //     $display("keypoint found: %h %h %h %h %h \n", inspect_coordinate_X, inspect_coordinate_Y, inspect_score, inspect_descriptor, inspect_depth);
-        //     $fwrite(f2, "%h %h %h %h %h \n", inspect_coordinate_X, inspect_coordinate_Y, inspect_score, inspect_descriptor, inspect_depth);
+        //     // $fwrite(f2, "%h %h %h %h %h \n", inspect_coordinate_X, inspect_coordinate_Y, inspect_score, inspect_descriptor, inspect_depth);
         // end
         if(o_frame_start) begin
             $display("frame start");

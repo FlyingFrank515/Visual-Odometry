@@ -7,7 +7,7 @@ module Key_Buffer1
     input           i_rst_n,
     input           i_flag,
     input           i_hit,
-    input [9:0]     i_depth,
+    input [15:0]     i_depth,
 
     input [11:0]    i_sin,
     input [11:0]    i_cos,
@@ -20,7 +20,7 @@ module Key_Buffer1
     output [9:0]     o_coor_x, 
     output [9:0]     o_coor_y,
     output [7:0]     o_score,
-    output [9:0]     o_depth
+    output [15:0]     o_depth
 
     // sram interface -- BRIEF window
     // input [51:0]     BRIEF_keybuf_sram_QA,
@@ -39,7 +39,7 @@ module Key_Buffer1
     logic [7:0] score_w [0:SIZE-1], score_r [0:SIZE-1];
     logic [11:0] sin_w [0:SIZE-1], sin_r[0:SIZE-1];
     logic [11:0] cos_w [0:SIZE-1], cos_r[0:SIZE-1];
-    logic [9:0] depth_w [0:SIZE-1], depth_r[0:SIZE-1];
+    logic [15:0] depth_w [0:SIZE-1], depth_r[0:SIZE-1];
     
     logic [9:0] count_r, count_w;
     logic [9:0] count_plus;

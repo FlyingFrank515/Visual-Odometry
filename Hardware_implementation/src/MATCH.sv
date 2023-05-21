@@ -12,7 +12,7 @@ module MATCH
     input           i_end,
     input [9:0]     i_coor_x, 
     input [9:0]     i_coor_y,
-    input [9:0]     i_depth,
+    input [15:0]     i_depth,
     input [7:0]     i_score,
     input [255:0]   i_descriptor,
 
@@ -22,21 +22,21 @@ module MATCH
     output          o_valid,
     output [9:0]    o_src_coor_x,
     output [9:0]    o_src_coor_y,
-    output [9:0]    o_src_depth,
+    output [15:0]    o_src_depth,
     output [9:0]    o_dst_coor_x,
     output [9:0]    o_dst_coor_y,
-    output [9:0]    o_dst_depth,
+    output [15:0]    o_dst_depth,
 
     // to memory controller
     output logic [10:0]   mem1_addr,
-    output logic [285:0]  mem1_wdata,
+    output logic [291:0]  mem1_wdata,
     output logic         mem1_wen,
-    input [285:0]   mem1_rdata,
+    input [291:0]   mem1_rdata,
 
     output logic [10:0]   mem2_addr,
-    output logic [285:0]  mem2_wdata,
+    output logic [291:0]  mem2_wdata,
     output logic         mem2_wen,
-    input [285:0]   mem2_rdata
+    input [291:0]   mem2_rdata
 );
     // parameter
     localparam IDLE = 2'd0;
@@ -55,10 +55,10 @@ module MATCH
     logic          o_valid_r, o_valid_w;
     logic [9:0]    o_src_coor_x_r, o_src_coor_x_w;
     logic [9:0]    o_src_coor_y_r, o_src_coor_y_w;
-    logic [9:0]    o_src_depth_r, o_src_depth_w;
+    logic [15:0]    o_src_depth_r, o_src_depth_w;
     logic [9:0]    o_dst_coor_x_r, o_dst_coor_x_w;
     logic [9:0]    o_dst_coor_y_r, o_dst_coor_y_w;
-    logic [9:0]    o_dst_depth_r, o_dst_depth_w;
+    logic [15:0]    o_dst_depth_r, o_dst_depth_w;
 
     assign o_valid = o_valid_r;
     assign o_src_coor_x = o_src_coor_x_r;
@@ -71,13 +71,13 @@ module MATCH
     // --- SORT --- 
     logic [9:0] SORT_coor_x_r [0:SIZE-1], SORT_coor_x_w [0:SIZE-1];
     logic [9:0] SORT_coor_y_r [0:SIZE-1], SORT_coor_y_w [0:SIZE-1];
-    logic [9:0] SORT_depth_r [0:SIZE-1], SORT_depth_w [0:SIZE-1];
+    logic [15:0] SORT_depth_r [0:SIZE-1], SORT_depth_w [0:SIZE-1];
     logic [7:0] SORT_score_r [0:SIZE-1], SORT_score_w [0:SIZE-1];
     logic [255:0] SORT_desc_r [0:SIZE-1], SORT_desc_w [0:SIZE-1];
 
     logic [9:0] SORT_comp_x_r, SORT_comp_x_w;
     logic [9:0] SORT_comp_y_r, SORT_comp_y_w;
-    logic [9:0] SORT_comp_depth_r, SORT_comp_depth_w;
+    logic [15:0] SORT_comp_depth_r, SORT_comp_depth_w;
     logic [7:0] SORT_comp_score_r, SORT_comp_score_w;
     logic [255:0] SORT_comp_desc_r, SORT_comp_desc_w;
 
@@ -87,7 +87,7 @@ module MATCH
 
     logic [9:0] SORT_target_x;
     logic [9:0] SORT_target_y;
-    logic [9:0] SORT_target_depth;
+    logic [15:0] SORT_target_depth;
     logic [7:0] SORT_target_score;
     logic [255:0] SORT_target_desc;
 
@@ -107,20 +107,22 @@ module MATCH
     // best (src)
     logic [9:0] src_best_x_r, src_best_x_w;
     logic [9:0] src_best_y_r, src_best_y_w;
-    logic [9:0] src_best_depth_r, src_best_depth_w;
+    logic [15:0] src_best_depth_r, src_best_depth_w;
 
     // buffer for point data
     logic [9:0] src_delay_x_1, src_delay_x_2;
     logic [9:0] src_delay_y_1, src_delay_y_2;
-    logic [9:0] src_delay_depth_1, src_delay_depth_2;
+    logic [15:0] src_delay_depth_1, src_delay_depth_2;
 
     // connection
     logic [255:0] src_target_desc, dst_target_desc;
-    logic [9:0] src_target_x, src_target_y, src_target_depth, src_len;
-    logic [9:0] dst_target_x, dst_target_y, dst_target_depth, dst_len;
+    logic [9:0] src_target_x, src_target_y, src_len;
+    logic [9:0] dst_target_x, dst_target_y, dst_len;
+    logic [15:0] src_target_depth, dst_target_depth;
 
-    logic [9:0] dst_this_x_w, dst_this_y_w, dst_this_depth_w;
-    logic [9:0] dst_this_x_r, dst_this_y_r, dst_this_depth_r;
+    logic [9:0] dst_this_x_w, dst_this_y_w;
+    logic [9:0] dst_this_x_r, dst_this_y_r;
+    logic [15:0] dst_this_depth_w, dst_this_depth_r;
     logic HAMMING_valid;
     logic [8:0] HAMMING_dist;
     logic HAMMING_o_valid;
@@ -139,26 +141,26 @@ module MATCH
     always_comb begin
         case(src_num_r)
             1: begin // mem1: src/mem2: dst
-                src_target_x = mem1_rdata[285:276];
-                src_target_y = mem1_rdata[275:266];
-                src_target_depth = mem1_rdata[265:256];
+                src_target_x = mem1_rdata[291:282];
+                src_target_y = mem1_rdata[281:272];
+                src_target_depth = mem1_rdata[271:256];
                 src_target_desc = mem1_rdata[255:0];
                 src_len = COMP1_len_r;
-                dst_target_x = mem2_rdata[285:276];
-                dst_target_y = mem2_rdata[275:266];
-                dst_target_depth = mem2_rdata[265:256];
+                dst_target_x = mem2_rdata[291:282];
+                dst_target_y = mem2_rdata[281:272];
+                dst_target_depth = mem2_rdata[271:256];
                 dst_target_desc = mem2_rdata[255:0];
                 dst_len = COMP2_len_r;
             end
             default: begin // mem1: dst/mem2: src
-                dst_target_x = mem1_rdata[285:276];
-                dst_target_y = mem1_rdata[275:266];
-                dst_target_depth = mem1_rdata[265:256];
+                dst_target_x = mem1_rdata[291:282];
+                dst_target_y = mem1_rdata[281:272];
+                dst_target_depth = mem1_rdata[271:256];
                 dst_target_desc = mem1_rdata[255:0];
                 dst_len = COMP1_len_r;
-                src_target_x = mem2_rdata[285:276];
-                src_target_y = mem2_rdata[275:266];
-                src_target_depth = mem2_rdata[265:256];
+                src_target_x = mem2_rdata[291:282];
+                src_target_y = mem2_rdata[281:272];
+                src_target_depth = mem2_rdata[271:256];
                 src_target_desc = mem2_rdata[255:0];
                 src_len = COMP2_len_r;
             end

@@ -21,12 +21,12 @@ module BRIEF_Top
     input [9:0]     i_coor_x, 
     input [9:0]     i_coor_y, 
     input [7:0]     i_score,
-    input [9:0]     i_depth,
+    input [15:0]     i_depth,
 
     output [9:0]    o_coordinate_X,
     output [9:0]    o_coordinate_Y,
     output [255:0]  o_descriptor,
-    output [9:0]    o_depth,
+    output [15:0]    o_depth,
     output [7:0]    o_score,
     output          o_flag,
     output logic    o_start,
@@ -74,7 +74,7 @@ module BRIEF_Top
     logic [11:0] BUFFER_sin, BUFFER_cos;
     logic [9:0] BUFFER_x, BUFFER_y;
     logic [7:0] BUFFER_score;
-    logic [9:0] BUFFER_depth;
+    logic [15:0] BUFFER_depth;
 
     logic [7:0] window [0:30][0:30];
 

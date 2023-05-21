@@ -15,7 +15,7 @@ module MATCH_Top
     input [9:0]     i_coordinate_Y,
     input [255:0]   i_descriptor,
     input [7:0]     i_score,
-    input [9:0]     i_depth,
+    input [15:0]     i_depth,
     input           i_flag,
     input           i_start,
     input           i_end,
@@ -25,20 +25,30 @@ module MATCH_Top
     output          o_valid,
     output [9:0]    o_src_coor_x,
     output [9:0]    o_src_coor_y,
-    output [9:0]    o_src_depth,
+    output [15:0]    o_src_depth,
     output [9:0]    o_dst_coor_x,
     output [9:0]    o_dst_coor_y,
-    output [9:0]    o_dst_depth,
+    output [15:0]    o_dst_depth,
 
-    input [29:0]    MATCH_mem1_point_QA,
+    input [19:0]    MATCH_mem1_point_QA,
     output          MATCH_mem1_point_WENA,
-    output [29:0]   MATCH_mem1_point_DA,
+    output [19:0]   MATCH_mem1_point_DA,
     output [8:0]    MATCH_mem1_point_AA,
 
-    input [29:0]    MATCH_mem2_point_QA,
+    input [19:0]    MATCH_mem2_point_QA,
     output          MATCH_mem2_point_WENA,
-    output [29:0]   MATCH_mem2_point_DA,
+    output [19:0]   MATCH_mem2_point_DA,
     output [8:0]    MATCH_mem2_point_AA,
+
+    input [15:0]    MATCH_mem1_depth_QA,
+    output          MATCH_mem1_depth_WENA,
+    output [15:0]   MATCH_mem1_depth_DA,
+    output [8:0]    MATCH_mem1_depth_AA,
+
+    input [15:0]    MATCH_mem2_depth_QA,
+    output          MATCH_mem2_depth_WENA,
+    output [15:0]   MATCH_mem2_depth_DA,
+    output [8:0]    MATCH_mem2_depth_AA,
 
     input [31:0]    MATCH_mem1_desc_QA [8],
     output          MATCH_mem1_desc_WENA [8],
@@ -53,7 +63,7 @@ module MATCH_Top
 
     logic  [9:0]     BUFFER_coor_x; 
     logic  [9:0]     BUFFER_coor_y;
-    logic  [9:0]     BUFFER_depth;
+    logic  [15:0]     BUFFER_depth;
     logic  [7:0]     BUFFER_score;
     logic  [255:0]   BUFFER_descriptor;
     logic            BUFFER_flag;
@@ -62,14 +72,14 @@ module MATCH_Top
 
     // to memory controller
     logic [10:0]   mem_bus1_addr;
-    logic [285:0]  mem_bus1_wdata;
+    logic [291:0]  mem_bus1_wdata;
     logic          mem_bus1_wen;
-    logic [285:0]   mem_bus1_rdata;
+    logic [291:0]   mem_bus1_rdata;
 
     logic [10:0]   mem_bus2_addr;
-    logic [285:0]  mem_bus2_wdata;
+    logic [291:0]  mem_bus2_wdata;
     logic          mem_bus2_wen;
-    logic [285:0]   mem_bus2_rdata;
+    logic [291:0]   mem_bus2_rdata;
 
     Key_Buffer2
     #(
@@ -159,6 +169,16 @@ module MATCH_Top
         .MATCH_mem2_point_WENA(MATCH_mem2_point_WENA),
         .MATCH_mem2_point_DA(MATCH_mem2_point_DA),
         .MATCH_mem2_point_AA(MATCH_mem2_point_AA),
+
+        .MATCH_mem1_depth_QA(MATCH_mem1_depth_QA),
+        .MATCH_mem1_depth_WENA(MATCH_mem1_depth_WENA),
+        .MATCH_mem1_depth_DA(MATCH_mem1_depth_DA),
+        .MATCH_mem1_depth_AA(MATCH_mem1_depth_AA),
+
+        .MATCH_mem2_depth_QA(MATCH_mem2_depth_QA),
+        .MATCH_mem2_depth_WENA(MATCH_mem2_depth_WENA),
+        .MATCH_mem2_depth_DA(MATCH_mem2_depth_DA),
+        .MATCH_mem2_depth_AA(MATCH_mem2_depth_AA),
 
         .MATCH_mem1_desc_QA(MATCH_mem1_desc_QA),
         .MATCH_mem1_desc_WENA(MATCH_mem1_desc_WENA),

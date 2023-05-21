@@ -7,12 +7,12 @@ module FAST_9
     input           i_clk,
     input           i_rst_n,
     input [127:0]   i_circle, // flattened
-    input [17:0]     i_center, // with depth information
+    input [23:0]     i_center, // with depth information
     input           i_valid,
 
     output          o_keypoints_flag,
     output [7:0]    o_score,
-    output [9:0]    o_depth
+    output [15:0]    o_depth
     // output          o_valid,
 
 );
@@ -72,8 +72,8 @@ logic [7:0]  min_stage2_w [0:15], min_stage2_r[0:15];
 
 logic [7:0] max_stage0_w [0:3], max_stage0_r [0:3];
 logic flag_delay [0:3];
-logic [9:0] depth_delay [0:8];
-logic [9:0] depth_r;
+logic [15:0] depth_delay [0:8];
+logic [15:0] depth_r;
 
 logic [7:0] score_w, score_r;
 
@@ -82,8 +82,8 @@ logic [7:0] score_w, score_r;
 assign o_score = score_r;
 assign o_keypoints_flag = flag_r;
 assign o_depth = depth_r;
-assign center_pixel = i_center[17:10];
-assign center_depth = i_center[9:0];
+assign center_pixel = i_center[23:16];
+assign center_depth = i_center[15:0];
 
 always_comb begin
     pixel[0] = i_circle[7:0];

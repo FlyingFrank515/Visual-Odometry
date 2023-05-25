@@ -14,7 +14,7 @@ module CHIP
     input [7:0]     i_pixel,
     input           i_frame_start, // to frame_start
     input           i_valid,
-    input [15:0]     i_depth,
+    input [15:0]    i_depth,
 
     // debug
     // output [9:0]    inspect_coordinate_X,
@@ -33,10 +33,10 @@ module CHIP
     output          o_valid,
     output [9:0]    o_src_coor_x,
     output [9:0]    o_src_coor_y,
-    output [15:0]    o_src_depth,
+    output [15:0]   o_src_depth,
     output [9:0]    o_dst_coor_x,
     output [9:0]    o_dst_coor_y,
-    output [15:0]    o_dst_depth,
+    output [15:0]   o_dst_depth,
 
     // sram interface -- FAST window
     input [23:0]     FAST_lb_sram_QA [6],

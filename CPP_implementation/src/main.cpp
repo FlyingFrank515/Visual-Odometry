@@ -29,8 +29,8 @@ int main(int argc, char *argv[]){
     // read the image
     Mat img1 = imread(img1_path, 0);
     Mat img2 = imread(img2_path, 0);
-    Mat depth1 = imread(depth1_path, 0);
-    Mat depth2 = imread(depth2_path, 0);
+    Mat depth1 = imread(depth1_path, IMREAD_UNCHANGED);
+    Mat depth2 = imread(depth2_path, IMREAD_UNCHANGED);
 
     // Paramter sequence: 
     MYORB orb(FAST_N, FAST_threshold, FAST_orientation_patch_size, FAST_scorethreshold, FAST_edgethreshold, keypoints_num, MATCH_threshold, img1, img2, depth1, depth2, DISPLAY, FIXED, DEBUG, TESTBENCH);

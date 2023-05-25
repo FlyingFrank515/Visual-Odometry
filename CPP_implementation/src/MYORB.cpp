@@ -39,18 +39,18 @@ MYORB::MYORB(int N, int t , int op, int st, int et, int kn, int mt, Mat img1, Ma
 
     // outfile
     if(TESTBENCH){
-        outfile.open("../result/golden.txt", ios::out);
-        pixel_in1.open("../result/pixel_in.txt", ios::out);
-        pixel_in2.open("../result/pixel_in2.txt", ios::out);
-        depth_in1.open("../result/depth_in1.txt", ios::out);
-        depth_in2.open("../result/depth_in2.txt", ios::out);
+        outfile.open("./sim_data/golden.txt", ios::out);
+        pixel_in1.open("./sim_data/pixel_in.txt", ios::out);
+        pixel_in2.open("./sim_data/pixel_in2.txt", ios::out);
+        depth_in1.open("./sim_data/depth_in1.txt", ios::out);
+        depth_in2.open("./sim_data/depth_in2.txt", ios::out);
     }
 
     // result
     if(DEBUG){
-        result_test.open("../result/result_test.txt", ios::out);
-        result_key.open("../result/result_key.txt", ios::out);
-        read.open("../result/read.txt", ios::out);
+        result_test.open("./sim_data/result_test.txt", ios::out);
+        result_key.open("./sim_data/result_key.txt", ios::out);
+        read.open("./sim_data/read.txt", ios::out);
     }
 
     // img1
@@ -79,12 +79,12 @@ void MYORB::input_data_gen(){
     }
     for (int i = 0; i < depth_1.rows; i++){
         for (int j = 0; j < depth_1.cols; j++){
-            depth_in1 << hex << (int)depth_1.at<uchar>(i, j) << endl;
+            depth_in1 << hex << (int)depth_1.at<ushort>(i, j) << endl;
         }
     }
     for (int i = 0; i < depth_2.rows; i++){
         for (int j = 0; j < depth_2.cols; j++){
-            depth_in2 << hex << (int)depth_2.at<uchar>(i, j) << endl;
+            depth_in2 << hex << (int)depth_2.at<ushort>(i, j) << endl;
         }
     }
 }
@@ -94,18 +94,18 @@ void MYORB::output_data_gen(){
     for(int i = 0; i < good_matches.size(); i++){
         int x1 = int(keylist_1[good_matches[i].trainIdx].pt.x);
         int y1 = int(keylist_1[good_matches[i].trainIdx].pt.y);
-        int d1 = int(depth_1.at<uchar>(y1, x1));
+        int d1 = int(depth_1.at<ushort>(y1, x1));
         int x2 = int(keylist_2[good_matches[i].queryIdx].pt.x);
         int y2 = int(keylist_2[good_matches[i].queryIdx].pt.y);
-        int d2 = int(depth_2.at<uchar>(y2, x2));
+        int d2 = int(depth_2.at<ushort>(y2, x2));
 
-        read << "(" << hex << setw(3) << setfill('0') << x1 << ", " << hex << setw(3) << setfill('0') << y1 << ", " << hex << setw(3) << setfill('0') << d1 << ")";
+        read << "(" << hex << setw(3) << setfill('0') << x1 << ", " << hex << setw(3) << setfill('0') << y1 << ", " << hex << setw(4) << setfill('0') << d1 << ")";
         read << " <---> ";
-        read << "(" << hex << setw(3) << setfill('0') << x2 << ", " << hex << setw(3) << setfill('0') << y2 << ", " << hex << setw(3) << setfill('0') << d2 << ")";
+        read << "(" << hex << setw(3) << setfill('0') << x2 << ", " << hex << setw(3) << setfill('0') << y2 << ", " << hex << setw(4) << setfill('0') << d2 << ")";
         read << " " << hex << int(good_matches[i].distance) << endl;  
 
-        outfile << hex << setw(3) << setfill('0') << x1 << hex << setw(3) << setfill('0') << y1 << hex << setw(3) << setfill('0') << d1;
-        outfile << hex << setw(3) << setfill('0') << x2 << hex << setw(3) << setfill('0') << y2 << hex << setw(3) << setfill('0') << d2;
+        outfile << hex << setw(3) << setfill('0') << x1 << hex << setw(3) << setfill('0') << y1 << hex << setw(4) << setfill('0') << d1;
+        outfile << hex << setw(3) << setfill('0') << x2 << hex << setw(3) << setfill('0') << y2 << hex << setw(4) << setfill('0') << d2;
         outfile << endl;  
     }
 }
@@ -121,7 +121,7 @@ vector<DMatch> MYORB::Matching(){
     FAST_detector(2);
 
     FAST_sort();
-    cout << keylist_1.size() << "  " << keylist_2.size() << endl;
+    //cout << keylist_1.size() << "  " << keylist_2.size() << endl;
     
     
     // smoothing the image

@@ -14,12 +14,6 @@
     `include "sram_v3/sram_dp_depth.v"
 `endif
 
-// `ifdef SYN
-//     `include "FFT_syn.v"
-//     // `include "tsmc13.v"
-//     `define SDF
-//     `define SDFFILE "FFT_syn.sdf"
-// `endif
 
 // simulation
 // RTL: ncverilog CHIP_alltb.sv +incdir+/opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver/ -y /opt/CAD/synopsys/synthesis/2019.12/dw/sim_ver +libext+.v+notimingchecks +define+RTL +access+r 
@@ -68,7 +62,7 @@ module CHIP_tb;
     logic [15:0] depth_in2 [0:307199];
     logic [15:0] depth_in3 [0:307199];
 
-    logic [71:0] golden_raw [0:199];
+    logic [79:0] golden_raw [0:199];
     logic [9:0]  golden_src_coor_x[0:199];
     logic [9:0]  golden_src_coor_y[0:199];
     logic [15:0]  golden_src_depth[0:199];
@@ -945,12 +939,12 @@ module CHIP_tb;
 
     always_comb begin // golden connection
         for(int i = 0; i < 199; i = i+1) begin
-            golden_src_coor_x[i] = golden_raw[i+1][69:60];
-            golden_src_coor_y[i] = golden_raw[i+1][57:48];
-            golden_src_depth[i] = golden_raw[i+1][45:36];
-            golden_dst_coor_x[i] = golden_raw[i+1][33:24];
-            golden_dst_coor_y[i] = golden_raw[i+1][21:12];
-            golden_dst_depth[i] = golden_raw[i+1][9:0];
+            golden_src_coor_x[i] = golden_raw[i+1][77:68];
+            golden_src_coor_y[i] = golden_raw[i+1][65:56];
+            golden_src_depth[i] = golden_raw[i+1][55:40];
+            golden_dst_coor_x[i] = golden_raw[i+1][37:28];
+            golden_dst_coor_y[i] = golden_raw[i+1][25:16];
+            golden_dst_depth[i] = golden_raw[i+1][15:0];
         end
 
         checking = (index == 2);

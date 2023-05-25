@@ -47,7 +47,7 @@ endfunction
 integer i;
 logic [7:0]  pixel [0:15];
 logic [7:0] center_pixel;
-logic [9:0] center_depth;
+logic [15:0] center_depth;
 logic [7:0]  diff [0:15];
 
 logic [15:0] sign;
